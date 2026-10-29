@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 from django.apps import apps
@@ -17,6 +18,8 @@ MODELS = [
     "offers.Offer",
     "stores.Store",
     "stores.OpeningHours",
+    "payments.PaymentMethod",
+    "payments.PaymentMethodChange",
 ]
 pytestmark = pytest.mark.django_db
 
@@ -62,10 +65,12 @@ def test_seed_demo_creates_expected_data(debug):
     assert c["stores.Store"] == 5
     assert c["accounts.User"] == 2
     assert c["accounts.LoyaltyCard"] == 1
+    assert c["payments.PaymentMethod"] == 3
+    assert c["payments.PaymentMethodChange"] == 3
 
     flyer = Flyer.objects.get()
     today = timezone.localdate()
-    assert flyer.title == "Demo weekly flyer"
+    assert flyer.title == "Prospectus de la semaine"
     assert flyer.status == Flyer.Status.PUBLISHED
     assert flyer.valid_from == today
     assert flyer.valid_to == today + datetime.timedelta(days=6)
@@ -155,4 +160,67 @@ def test_seed_demo_leaves_flyer_draft_when_another_flyer_blocks_today(debug):
 
     publish_flyer(other)
     seed()  # must warn, not crash
-    assert Flyer.objects.get(title="Demo weekly flyer").status == Flyer.Status.DRAFT
+    assert Flyer.objects.get(title="Prospectus de la semaine").status == Flyer.Status.DRAFT
+
+
+def test_seed_demo_prices_are_whole_xof_amounts(debug):
+    from offers.models import Offer
+
+    seed()
+    offers = list(Offer.objects.all())
+    assert offers
+    for offer in offers:
+        assert offer.price == offer.price.quantize(Decimal("1"))
+        assert Decimal("500") <= offer.price <= Decimal("25000")
+        assert offer.price % 5 == 0
+        if offer.old_price is not None:
+            assert offer.old_price == offer.old_price.quantize(Decimal("1"))
+            assert offer.old_price % 5 == 0
+            assert offer.old_price > offer.price
+
+
+def test_seed_demo_stores_are_in_cote_divoire(debug):
+    from stores.models import Store
+
+    seed()
+    stores = list(Store.objects.all())
+    assert len(stores) == 5
+    assert {s.city for s in stores} <= {"Abidjan", "Bouaké"}
+    for store in stores:
+        assert Decimal("4") <= store.latitude <= Decimal("11")
+        assert Decimal("-9") <= store.longitude <= Decimal("-2")
+
+
+def test_seed_demo_payment_methods_are_public_and_fake(debug):
+    seed()
+    res = APIClient().get("/api/v1/payment-methods")
+    assert res.status_code == 200
+    rows = res.json()["results"]
+    assert {r["provider"]: r["phone_number"] for r in rows} == {
+        "wave": "+2250100000001",
+        "orange_money": "+2250700000002",
+        "mtn_momo": "+2250500000003",
+    }
+    assert all(r["display_name"] and r["instructions"] for r in rows)
+
+
+def test_seed_demo_rerun_updates_payment_methods_without_audit_duplicates(debug):
+    from payments.models import PaymentMethod, PaymentMethodChange
+
+    seed()
+    assert PaymentMethodChange.objects.count() == 3
+    seed()
+    assert PaymentMethodChange.objects.count() == 3
+    PaymentMethod.objects.filter(provider="wave").update(phone_number="+2250100000099")
+    seed()
+    assert PaymentMethod.objects.count() == 3
+    assert PaymentMethod.objects.get(provider="wave").phone_number == "+2250100000001"
+    assert PaymentMethodChange.objects.count() == 4
+
+
+def test_seed_demo_uses_french_catalog(debug):
+    from catalog.models import Category
+
+    seed()
+    names = set(Category.objects.values_list("name", flat=True))
+    assert "Fruits et légumes" in names and "Boissons" in names

@@ -2,11 +2,11 @@ import re
 
 from django.core.exceptions import ValidationError
 
+from common.messages import msg_lazy
+
 _SEPARATORS = re.compile(r"[ .\-]")
 _NORMALISED = re.compile(r"\+225\d{10}")
-_MESSAGE = (
-    "Enter a valid Ivorian phone number: 10 digits, e.g. 07 01 02 03 04 or +225 07 01 02 03 04."
-)
+_MESSAGE = msg_lazy("invalid_phone")
 
 
 def normalize_ci_phone(raw: str) -> str:

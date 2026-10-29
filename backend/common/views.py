@@ -1,4 +1,9 @@
+from django.utils import translation
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.views import SpectacularAPIView
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
@@ -11,3 +16,11 @@ class PublicReadMixin(APIView):
 
     authentication_classes: list = []
     permission_classes = [AllowAny]
+
+
+class EnglishSchemaView(SpectacularAPIView):
+    # Kept as a comment: the schema is always rendered in English whatever the request language.
+    @extend_schema(exclude=True)
+    def get(self, request: Request, *args: object, **kwargs: object) -> Response:
+        with translation.override("en"):
+            return super().get(request, *args, **kwargs)

@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 
 from catalog.models import Product
+from common.messages import msg
 
 from .models import ListItem, ShoppingList
 
@@ -40,7 +41,7 @@ class ListItemSerializer(serializers.ModelSerializer):
         product = attrs.get("product", instance.product if instance else None)
         text = attrs.get("text", instance.text if instance else "")
         if product is None and not text.strip():
-            raise serializers.ValidationError("Either product or text is required.")
+            raise serializers.ValidationError(msg("item_needs_product_or_text"))
         return attrs
 
     def to_representation(self, instance: ListItem) -> dict[str, Any]:

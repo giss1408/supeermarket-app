@@ -68,14 +68,40 @@ coverage report --include="accounts/*" --fail-under=85   # likewise offers/*, sh
 
 CI enforces at least 85% line coverage on `accounts`, `offers` and `shopping`.
 
+## Language and currency
+
+The API is French by default (`LANGUAGE_CODE = "fr"`; supported: `fr`, `en`). `LocaleMiddleware`
+reads `Accept-Language`: no header, `fr`, `fr-CI`, `fr-FR` and unsupported languages (e.g. `de`)
+answer in French; `Accept-Language: en` answers in English. Error `code` values (`validation_error`,
+`not_found`, ...) are English snake_case in both languages, so clients should branch on `code` and
+field keys, never on message text. The currency is `XOF` (override with `CURRENCY`); prices are whole
+amounts. `TIME_ZONE` stays `UTC`.
+
+- **OpenAPI stays English.** `backend/openapi.yaml` and `/api/schema/` are always rendered in
+  English, whatever the language. `python manage.py spectacular` is a project command
+  (`common/management/commands/spectacular.py`) that shadows the library one and generates under
+  English; the CLI call above is unchanged. Keep `common` before `drf_spectacular` in
+  `INSTALLED_APPS`.
+- **Message catalog.** Django and DRF built-in messages (password validators, required, ...) are
+  translated by Django. Our own custom validation messages (payments, accounts, shopping) live in
+  the plain dict `common/messages.py` (`msg(key, **fmt)`, `msg_lazy` for import-time use), with a
+  French and an English text per key (a test enforces both). No `.po`/`.mo` files.
+- **Known gap.** These stay English: the JSON error `detail` written by `common/handlers.py` and the
+  error handler, messages in `staff` and `uploads`, the Django admin and management commands. The
+  mobile app does not display `detail`.
+
 ## Demo data
 
 `python manage.py seed_demo` fills a development database (it refuses to run unless `DEBUG` is
 true, which is the case with `config.settings.dev`). It is idempotent: re-running it keeps the same
-rows and re-publishes the "Demo weekly flyer" for the current week if its dates have passed.
+rows and re-publishes the "Prospectus de la semaine" flyer for the current week if its dates have passed.
 
-It creates 6 categories, 24 products, one published flyer with 12 offers, 5 stores with opening
-hours (Mon-Sat; Sunday closed except for the Express store), a staff user `staff@example.com` and a
+It creates Ivorian demo data: 6 French-named categories, 24 products, one published flyer with 12
+offers in whole XOF amounts, 5 stores (Cocody, Marcory, Yopougon, Plateau, Bouaké) with opening
+hours (Mon-Sat; Sunday closed except for Cocody), three payment methods (Wave
+`+2250100000001`, Orange Money `+2250700000002`, MTN MoMo `+2250500000003`; obviously fake numbers,
+created through `payments.services` so they are audited once and updated, never duplicated, on
+re-runs), a staff user `staff@example.com` and a
 customer `customer@example.com` (with loyalty card). No images are created.
 
 Passwords come from `DEMO_STAFF_PASSWORD` and `DEMO_CUSTOMER_PASSWORD`. If unset, these dev-only
@@ -124,7 +150,7 @@ Set these in `.env.prod` (template with comments: `.env.prod.example`).
 | `ALLOWED_HOSTS` | yes | none | Comma-separated, no `*`. First entry is used by the health check. |
 | `CSRF_TRUSTED_ORIGINS` | no | empty | Comma-separated origins with scheme. |
 | `DOMAIN`, `ACME_EMAIL` | yes (Caddy) | none | Public host name and Let's Encrypt contact. |
-| `CURRENCY` | no | `EUR` | |
+| `CURRENCY` | no | `XOF` | Currency code shown to clients (CFA franc, no decimals in practice). |
 | `SECURE_SSL_REDIRECT` | no | `1` | `/healthz` is always exempt. |
 | `SECURE_HSTS_SECONDS` | no | `31536000` | `.env.prod.example` ships `3600`: keep it short for the first deploy until HTTPS is verified, then raise it to `31536000`. |
 | `SECURE_HSTS_INCLUDE_SUBDOMAINS` | no | off | Set `1` only if all subdomains are HTTPS-only. |

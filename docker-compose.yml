@@ -32,7 +32,7 @@ services:
       SECRET_KEY: dev-secret-key
       DATABASE_URL: postgres://app:app@db:5432/app
       ALLOWED_HOSTS: "*"
-      CURRENCY: EUR
+      CURRENCY: XOF
       EMAIL_HOST: mailpit
       EMAIL_PORT: "1025"
     volumes:

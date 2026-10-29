@@ -25,8 +25,9 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_spectacular",
+    # `common` must precede drf_spectacular: its `spectacular` command shadows the library's.
     "common",
+    "drf_spectacular",
     "accounts",
     "catalog",
     "offers",
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -88,7 +90,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "fr"
+LANGUAGES = [("fr", "Français"), ("en", "English")]
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
@@ -147,4 +150,4 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
-CURRENCY = os.environ.get("CURRENCY", "EUR")
+CURRENCY = os.environ.get("CURRENCY", "XOF")

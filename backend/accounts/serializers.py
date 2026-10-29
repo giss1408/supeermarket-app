@@ -6,9 +6,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import LoyaltyCard, User
+from common.messages import msg
 
-EMAIL_TAKEN = "A user with this email already exists."
+from .models import LoyaltyCard, User
 
 
 def _email_taken(email: str) -> bool:
@@ -27,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value: str) -> str:
         value = value.lower()
         if _email_taken(value):
-            raise serializers.ValidationError(EMAIL_TAKEN)
+            raise serializers.ValidationError(msg("email_taken"))
         return value
 
     def validate_password(self, value: str) -> str:
@@ -38,7 +38,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         try:
             return User.objects.create_user(**validated_data)
         except IntegrityError as exc:
-            raise serializers.ValidationError({"email": [EMAIL_TAKEN]}) from exc
+            raise serializers.ValidationError({"email": [msg("email_taken")]}) from exc
 
 
 class LogoutSerializer(serializers.Serializer):
@@ -48,14 +48,14 @@ class LogoutSerializer(serializers.Serializer):
         try:
             RefreshToken(value)  # type: ignore[arg-type]
         except TokenError as exc:
-            raise serializers.ValidationError("Invalid or expired token.") from exc
+            raise serializers.ValidationError(msg("invalid_token")) from exc
         return value
 
     def save(self, **kwargs: Any) -> None:
         try:
             RefreshToken(self.validated_data["refresh"]).blacklist()  # type: ignore[arg-type]
         except TokenError as exc:
-            raise serializers.ValidationError({"refresh": ["Invalid or expired token."]}) from exc
+            raise serializers.ValidationError({"refresh": [msg("invalid_token")]}) from exc
 
 
 class MeSerializer(serializers.ModelSerializer):

@@ -16,6 +16,8 @@ from django.utils import timezone
 from catalog.models import Category, Product
 from offers.models import Flyer, Offer
 from offers.services import publish_flyer, unpublish_flyer
+from payments.models import PaymentMethod
+from payments.services import create_method, update_method
 from stores.models import OpeningHours, Store
 
 # Dev-only defaults (documented in README); override with the DEMO_*_PASSWORD env vars.
@@ -23,74 +25,157 @@ DEFAULT_STAFF_PASSWORD = "demo-staff-pass-123"
 DEFAULT_CUSTOMER_PASSWORD = "demo-customer-pass-123"
 STAFF_EMAIL = "staff@example.com"
 CUSTOMER_EMAIL = "customer@example.com"
-FLYER_TITLE = "Demo weekly flyer"
+FLYER_TITLE = "Prospectus de la semaine"
 FLYER_DAYS = 7
 
-# category name -> [(product name, unit)]
-CATALOG: dict[str, list[tuple[str, str]]] = {
-    "Fruit & Vegetables": [
-        ("Bananas", "1 kg"),
-        ("Red apples", "1 kg"),
-        ("Tomatoes on the vine", "500 g"),
-        ("Carrots", "1 kg"),
-    ],
-    "Dairy & Eggs": [
-        ("Whole milk", "1 l"),
-        ("Free-range eggs", "10 pcs"),
-        ("Gouda slices", "200 g"),
-        ("Natural yoghurt", "500 g"),
-    ],
-    "Bakery": [
-        ("Wholegrain bread", "750 g"),
-        ("Butter croissants", "4 pcs"),
-        ("Bread rolls", "6 pcs"),
-        ("Apple pie", "1 pc"),
-    ],
-    "Meat & Fish": [
-        ("Chicken breast", "500 g"),
-        ("Minced beef", "500 g"),
-        ("Salmon fillet", "250 g"),
-        ("Smoked ham", "150 g"),
-    ],
-    "Pantry": [
-        ("Spaghetti", "500 g"),
-        ("Basmati rice", "1 kg"),
-        ("Olive oil", "750 ml"),
-        ("Tomato sauce", "400 g"),
-    ],
-    "Drinks": [
-        ("Sparkling water", "6 x 1.5 l"),
-        ("Orange juice", "1 l"),
-        ("Ground coffee", "500 g"),
-        ("Green tea", "20 bags"),
-    ],
-}
+# slug, category name, [(product name, unit)]
+CATALOG: list[tuple[str, str, list[tuple[str, str]]]] = [
+    (
+        "fruits-legumes",
+        "Fruits et légumes",
+        [
+            ("Bananes plantain", "1 kg"),
+            ("Mangues", "1 kg"),
+            ("Tomates", "500 g"),
+            ("Aubergines", "1 kg"),
+        ],
+    ),
+    (
+        "produits-laitiers-oeufs",
+        "Produits laitiers et œufs",
+        [
+            ("Lait entier", "1 L"),
+            ("Œufs frais", "30 unités"),
+            ("Fromage portion", "8 portions"),
+            ("Yaourt nature", "500 g"),
+        ],
+    ),
+    (
+        "boulangerie",
+        "Boulangerie",
+        [
+            ("Pain de mie", "500 g"),
+            ("Croissants", "4 unités"),
+            ("Baguette", "1 unité"),
+            ("Gâteau au coco", "1 unité"),
+        ],
+    ),
+    (
+        "viandes-poissons",
+        "Viandes et poissons",
+        [
+            ("Poulet entier", "1 kg"),
+            ("Bœuf haché", "500 g"),
+            ("Poisson capitaine", "1 kg"),
+            ("Sardines en boîte", "125 g"),
+        ],
+    ),
+    (
+        "epicerie",
+        "Épicerie",
+        [
+            ("Riz parfumé", "5 kg"),
+            ("Huile de palme", "1 L"),
+            ("Attiéké", "1 kg"),
+            ("Concentré de tomate", "400 g"),
+        ],
+    ),
+    (
+        "boissons",
+        "Boissons",
+        [
+            ("Eau minérale", "paquet de 6 x 1,5 L"),
+            ("Jus d'orange", "1 L"),
+            ("Café moulu", "250 g"),
+            ("Thé vert", "20 sachets"),
+        ],
+    ),
+]
 
-# (product name, price, old_price, badge_text)
+# (product name, price XOF, old_price XOF, badge_text)
 OFFERS: list[tuple[str, str, str | None, str]] = [
-    ("Bananas", "1.29", "1.79", "-28%"),
-    ("Red apples", "1.99", None, ""),
-    ("Whole milk", "0.99", "1.19", "Weekly deal"),
-    ("Free-range eggs", "2.49", None, ""),
-    ("Wholegrain bread", "1.89", "2.39", "-20%"),
-    ("Butter croissants", "1.49", None, "New"),
-    ("Chicken breast", "4.99", "6.49", "Save 1.50"),
-    ("Salmon fillet", "3.99", None, ""),
-    ("Spaghetti", "0.89", "1.29", "-30%"),
-    ("Olive oil", "5.49", "7.99", "Best price"),
-    ("Sparkling water", "2.99", None, ""),
-    ("Ground coffee", "3.99", "5.49", "-27%"),
+    ("Bananes plantain", "750", "1000", "-25%"),
+    ("Mangues", "1000", None, ""),
+    ("Lait entier", "1100", "1300", "Offre de la semaine"),
+    ("Œufs frais", "2500", None, ""),
+    ("Pain de mie", "800", "1000", "-20%"),
+    ("Croissants", "1000", None, "Nouveau"),
+    ("Poulet entier", "3500", "4500", "Économisez 1000 F"),
+    ("Poisson capitaine", "4500", None, ""),
+    ("Riz parfumé", "5500", "7500", "-27%"),
+    ("Huile de palme", "1800", "2300", "Meilleur prix"),
+    ("Eau minérale", "1500", None, ""),
+    ("Café moulu", "2000", "2500", "-20%"),
 ]
 
-# name, address, postcode, lat, lng, phone, closed weekdays (0 = Monday)
+# name, address, city, lat, lng, phone, closed weekdays (0 = Monday)
 STORES: list[tuple[str, str, str, str, str, str, set[int]]] = [
-    ("Demo Market Central", "1 Market Square", "10001", "50.100000", "8.100000", "555-0101", {6}),
-    ("Demo Market North", "22 Northgate Road", "10002", "50.140000", "8.120000", "555-0102", {6}),
-    ("Demo Market Riverside", "5 River Walk", "10003", "50.090000", "8.150000", "555-0103", {6}),
-    ("Demo Market Old Town", "9 Cobble Lane", "10004", "50.110000", "8.070000", "555-0104", {6}),
-    ("Demo Market Express", "3 Station Plaza", "10005", "50.105000", "8.130000", "555-0105", set()),
+    (
+        "Supermarché Cocody Angré",
+        "Boulevard des Martyrs, Angré 8e tranche",
+        "Abidjan",
+        "5.401500",
+        "-3.987000",
+        "+2252722000101",
+        set(),
+    ),
+    (
+        "Supermarché Marcory Zone 4",
+        "Rue du Canal, Zone 4",
+        "Abidjan",
+        "5.298000",
+        "-3.998000",
+        "+2252721000102",
+        {6},
+    ),
+    (
+        "Supermarché Yopougon Siporex",
+        "Avenue principale de Siporex",
+        "Abidjan",
+        "5.336000",
+        "-4.085000",
+        "+2252723000103",
+        {6},
+    ),
+    (
+        "Supermarché Plateau",
+        "Avenue Franchet d'Esperey",
+        "Abidjan",
+        "5.322000",
+        "-4.021000",
+        "+2252720000104",
+        {6},
+    ),
+    (
+        "Supermarché Bouaké Centre",
+        "Avenue Houphouët-Boigny",
+        "Bouaké",
+        "7.690000",
+        "-5.030000",
+        "+2252731000105",
+        {6},
+    ),
 ]
-CITY = "Exampleville"
+POSTCODE = "01"
+
+# provider -> (display name, obviously fake number, short instructions)
+PAYMENT_METHODS: dict[str, tuple[str, str, str]] = {
+    "wave": (
+        "Wave",
+        "+2250100000001",
+        "Envoyez le montant au numéro Wave ci-dessus, puis présentez la confirmation en caisse.",
+    ),
+    "orange_money": (
+        "Orange Money",
+        "+2250700000002",
+        "Envoyez le montant au numéro Orange Money ci-dessus, puis présentez le SMS reçu.",
+    ),
+    "mtn_momo": (
+        "MTN MoMo",
+        "+2250500000003",
+        "Envoyez le montant au numéro MTN MoMo ci-dessus, puis présentez le SMS reçu.",
+    ),
+}
 
 
 def ean13(index: int) -> str:
@@ -120,6 +205,7 @@ class Command(BaseCommand):
             products = self._catalog()
             self._flyer(products)
             self._stores()
+            self._payment_methods()
             self._users(staff_pw, customer_pw)
 
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
@@ -130,8 +216,7 @@ class Command(BaseCommand):
     def _catalog(self) -> dict[str, Product]:
         products: dict[str, Product] = {}
         index = 0
-        for sort_order, (cat_name, items) in enumerate(CATALOG.items()):
-            slug = cat_name.lower().replace(" & ", "-").replace(" ", "-")
+        for sort_order, (slug, cat_name, items) in enumerate(CATALOG):
             category, _ = Category.objects.update_or_create(
                 slug=slug, defaults={"name": cat_name, "sort_order": sort_order}
             )
@@ -174,13 +259,13 @@ class Command(BaseCommand):
             self.stderr.write(f"Demo flyer left as a draft: {' '.join(exc.messages)}")
 
     def _stores(self) -> None:
-        for name, address, postcode, lat, lng, phone, closed in STORES:
+        for name, address, city, lat, lng, phone, closed in STORES:
             store, _ = Store.objects.update_or_create(
                 name=name,
                 defaults={
                     "address": address,
-                    "city": CITY,
-                    "postcode": postcode,
+                    "city": city,
+                    "postcode": POSTCODE,
                     "latitude": Decimal(lat),
                     "longitude": Decimal(lng),
                     "phone": phone,
@@ -201,11 +286,25 @@ class Command(BaseCommand):
                     store=store, weekday=weekday, defaults={"opens": opens, "closes": closes}
                 )
 
+    def _payment_methods(self) -> None:
+        for provider, (display_name, phone, instructions) in PAYMENT_METHODS.items():
+            fields = {
+                "phone_number": phone,
+                "display_name": display_name,
+                "instructions": instructions,
+                "is_active": True,
+            }
+            method = PaymentMethod.objects.filter(provider=provider).first()
+            if method is None:
+                create_method(user=None, provider=provider, **fields)
+            else:
+                update_method(method, user=None, **fields)  # audits only real changes
+
     def _users(self, staff_pw: str, customer_pw: str) -> None:
         User = get_user_model()
         for email, name, role, password in (
-            (STAFF_EMAIL, "Demo Staff", "staff", staff_pw),
-            (CUSTOMER_EMAIL, "Demo Customer", "customer", customer_pw),
+            (STAFF_EMAIL, "Équipe démo", "staff", staff_pw),
+            (CUSTOMER_EMAIL, "Client démo", "customer", customer_pw),
         ):
             user = User.objects.filter(email__iexact=email).first()
             if user is None:

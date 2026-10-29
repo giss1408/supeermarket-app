@@ -4,11 +4,11 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
 from rest_framework import serializers
 
+from common.messages import msg
+
 from . import services
 from .models import PaymentMethod
 from .validators import normalize_ci_phone
-
-_DUPLICATE_PROVIDER = "A payment method for this provider already exists."
 
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
@@ -48,9 +48,9 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
     def validate_provider(self, value: str) -> str:
         if self.instance is not None:
             if value != self.instance.provider:
-                raise serializers.ValidationError("The provider of a payment method cannot change.")
+                raise serializers.ValidationError(msg("provider_immutable"))
         elif PaymentMethod.objects.filter(provider=value).exists():
-            raise serializers.ValidationError(_DUPLICATE_PROVIDER)
+            raise serializers.ValidationError(msg("provider_exists"))
         return value
 
     def validate_phone_number(self, value: str) -> str:
@@ -61,13 +61,15 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
 
     def validate_current_password(self, value: str) -> str:
         if not self.context["request"].user.check_password(value):
-            raise serializers.ValidationError("Incorrect password.")
+            raise serializers.ValidationError(msg("incorrect_password"))
         return value
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         # A partial update skips `required`, but the step-up is needed on every write.
         if "current_password" not in attrs:
-            raise serializers.ValidationError({"current_password": ["This field is required."]})
+            raise serializers.ValidationError(
+                {"current_password": [msg("current_password_required")]}
+            )
         attrs.pop("current_password", None)
         return attrs
 
@@ -77,7 +79,7 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
         except DjangoValidationError as exc:
             raise _to_drf(exc) from None
         except IntegrityError:
-            raise serializers.ValidationError({"provider": [_DUPLICATE_PROVIDER]}) from None
+            raise serializers.ValidationError({"provider": [msg("provider_exists")]}) from None
 
     def update(self, instance: PaymentMethod, validated_data: dict[str, Any]) -> PaymentMethod:
         validated_data.pop("provider", None)

@@ -216,3 +216,30 @@ def test_current_password_is_required_write_only_in_requests_and_absent_from_res
     item = schema["paths"]["/api/v1/staff/payment-methods/{id}"]
     assert "delete" not in item
     assert "put" not in item
+
+
+ENGLISH_HELP = "A unique integer value identifying this flyer."
+CURSOR_HELP = "The pagination cursor value."
+
+
+def test_schema_is_english_whatever_the_default_language(tmp_path, settings):
+    from django.utils import translation
+
+    settings.LANGUAGE_CODE = "fr"
+    # Sanity: under the fr locale the library's own help texts do come out French.
+    with translation.override("fr"):
+        assert translation.gettext(CURSOR_HELP) != CURSOR_HELP
+    out = tmp_path / "fr.yaml"
+    with translation.override("fr"):
+        call_command("spectacular", file=str(out), validate=True, fail_on_warn=True)
+    text = out.read_text()
+    assert text == COMMITTED.read_text()
+    assert ENGLISH_HELP in text and CURSOR_HELP in text
+
+
+def test_schema_endpoint_is_english_for_a_french_client(db):
+    res = APIClient().get("/api/schema/", HTTP_ACCEPT_LANGUAGE="fr")
+    assert res.status_code == 200
+    body = res.content.decode()
+    assert ENGLISH_HELP in body and CURSOR_HELP in body
+    assert body == COMMITTED.read_text()
