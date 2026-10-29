@@ -86,6 +86,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "common.errors.custom_exception_handler",
+    "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultCursorPagination",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
