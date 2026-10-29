@@ -9,3 +9,4 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "packages/api_client/**"
+    - "test/generated_migrations/**"
