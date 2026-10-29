@@ -9,6 +9,7 @@ from common.pagination import DefaultCursorPagination
 
 from .models import ListItem, ShoppingList
 from .serializers import (
+    ListItemResponseSerializer,
     ListItemSerializer,
     ShoppingListDetailSerializer,
     ShoppingListSerializer,
@@ -52,6 +53,7 @@ class ShoppingListDetailView(OwnedListMixin, generics.RetrieveUpdateDestroyAPIVi
     http_method_names = ["get", "patch", "delete", "head", "options"]
 
 
+@extend_schema(request=ListItemSerializer, responses={201: ListItemResponseSerializer})
 class ListItemCreateView(OwnedListMixin, generics.CreateAPIView):
     serializer_class = ListItemSerializer
 
@@ -60,6 +62,9 @@ class ListItemCreateView(OwnedListMixin, generics.CreateAPIView):
         serializer.save(list=shopping_list)
 
 
+@extend_schema_view(
+    patch=extend_schema(request=ListItemSerializer, responses=ListItemResponseSerializer)
+)
 class ListItemDetailView(OwnedListMixin, generics.UpdateAPIView, generics.DestroyAPIView):
     serializer_class = ListItemSerializer
     http_method_names = ["patch", "delete", "options"]

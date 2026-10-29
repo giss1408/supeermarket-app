@@ -154,6 +154,13 @@ def test_shopping_list_detail_items_are_typed_list_items(schema):
     assert items["type"] == "array"
     assert items["items"] == {"$ref": "#/components/schemas/ListItem"}
     assert {"id", "product", "text", "checked"} <= set(schemas["ListItem"]["properties"])
+    product = schemas["ListItem"]["properties"]["product"]
+    assert product["nullable"] is True
+    assert product["allOf"] == [{"$ref": "#/components/schemas/ProductSummary"}]
+    assert schemas["ListItemRequest"]["properties"]["product"] == {
+        "type": "integer",
+        "nullable": True,
+    }
 
 
 FORM_TYPES = ("application/x-www-form-urlencoded", "multipart/form-data")

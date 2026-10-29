@@ -1,7 +1,7 @@
 import datetime
 from typing import Any
 
-from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 
 from catalog.models import Product
@@ -10,7 +10,7 @@ from .models import ListItem, ShoppingList
 
 
 class ProductSummarySerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(read_only=True)
+    image = serializers.ImageField(read_only=True, allow_null=True)
 
     class Meta:
         model = Product
@@ -53,6 +53,14 @@ class ListItemSerializer(serializers.ModelSerializer):
         return data
 
 
+@extend_schema_serializer(component_name="ListItem")
+class ListItemResponseSerializer(ListItemSerializer):
+    # Documentation only: what the API returns for an item (``product`` is a summary object).
+    # ListItemSerializer stays the input serializer (``product`` is an id); its to_representation
+    # swaps in the summary, which spectacular cannot see.
+    product = ProductSummarySerializer(read_only=True, allow_null=True)  # type: ignore[assignment]
+
+
 class ShoppingListSerializer(serializers.ModelSerializer):
     item_count = serializers.IntegerField(read_only=True)
 
@@ -70,7 +78,7 @@ class ShoppingListDetailSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "items", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    @extend_schema_field(ListItemSerializer(many=True))
+    @extend_schema_field(ListItemResponseSerializer(many=True))
     def get_items(self, obj: ShoppingList) -> list[dict[str, Any]]:
         items = obj.items.select_related("product").order_by("checked", "created_at", "id")
         return ListItemSerializer(items, many=True, context=self.context).data  # type: ignore[return-value]

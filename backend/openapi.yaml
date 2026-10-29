@@ -1529,7 +1529,9 @@ components:
           type: integer
           readOnly: true
         product:
-          type: integer
+          allOf:
+          - $ref: '#/components/schemas/ProductSummary'
+          readOnly: true
           nullable: true
         text:
           type: string
@@ -1551,6 +1553,7 @@ components:
       required:
       - created_at
       - id
+      - product
       - updated_at
     ListItemRequest:
       type: object
@@ -2134,6 +2137,27 @@ components:
       required:
       - category
       - id
+      - name
+    ProductSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        unit:
+          type: string
+          maxLength: 50
+        image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+      required:
+      - id
+      - image
       - name
     Register:
       type: object
