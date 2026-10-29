@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_database.dart';
+import 'search_functions.dart';
 import 'daos/card_dao.dart';
 import 'daos/lists_dao.dart';
 import 'daos/outbox_dao.dart';
@@ -18,7 +19,10 @@ import 'daos/sync_meta_dao.dart';
 QueryExecutor openConnection() => LazyDatabase(() async {
       final dir = await getApplicationSupportDirectory();
       final file = File(p.join(dir.path, 'supermarket.sqlite'));
-      return NativeDatabase.createInBackground(file);
+      return NativeDatabase.createInBackground(
+        file,
+        setup: registerSearchFunctions,
+      );
     });
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {

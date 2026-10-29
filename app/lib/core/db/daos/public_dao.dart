@@ -86,13 +86,9 @@ class PublicDao extends DatabaseAccessor<AppDatabase> with _$PublicDaoMixin {
     if (categorySlug != null) {
       q.where(categories.slug.equals(categorySlug));
     }
-    final trimmed = query.trim();
-    if (trimmed.isNotEmpty) {
-      q.where(
-        containsLiteral(products.name, trimmed) |
-            containsLiteral(offers.badgeText, trimmed),
-      );
-    }
+    final byName = containsFolded(products.name, query);
+    final byBadge = containsFolded(offers.badgeText, query);
+    if (byName != null && byBadge != null) q.where(byName | byBadge);
     return q.watch().map(
           (rows) => [
             for (final r in rows)

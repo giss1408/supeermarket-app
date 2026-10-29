@@ -33,5 +33,11 @@ git-ignored.
   regenerate the migration-test helpers, then commit both:
   `dart run drift_dev schema dump lib/core/db/app_database.dart lib/core/db/drift_schemas/`
   `dart run drift_dev schema generate lib/core/db/drift_schemas test/generated_migrations/`
-- Tests use `NativeDatabase.memory()` and need the system SQLite
+- Search is accent-insensitive: `registerSearchFunctions` (`lib/core/db/search_functions.dart`)
+  registers the SQL function `fold_search` (lowercase and strip diacritics, same as
+  `foldSearch` in Dart) on every connection, because SQLite `LIKE` only folds ASCII
+  case. Any new text search must compare `fold_search(column)` with the
+  Dart-folded query (use `containsFolded`), and any new `NativeDatabase` must pass
+  `setup: registerSearchFunctions`.
+- Tests use `NativeDatabase.memory(setup: registerSearchFunctions)` and need the system SQLite
   (`libsqlite3-dev` on Linux, as in CI).

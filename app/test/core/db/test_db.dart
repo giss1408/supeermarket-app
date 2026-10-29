@@ -1,10 +1,11 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supermarket_app/core/db/app_database.dart';
+import 'package:supermarket_app/core/db/search_functions.dart';
 
 /// In-memory database, closed automatically at the end of the test.
 AppDatabase createTestDb() {
-  final db = AppDatabase(NativeDatabase.memory());
+  final db = AppDatabase(NativeDatabase.memory(setup: registerSearchFunctions));
   addTearDown(db.close);
   return db;
 }

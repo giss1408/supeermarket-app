@@ -1,13 +1,19 @@
 import 'package:drift/drift.dart';
 
+import '../../util/search_fold.dart';
+
 /// Escapes `%`, `_` and the escape character `\` for `LIKE ... ESCAPE '\'`.
 String escapeLike(String input) =>
     input.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
 
-/// `column LIKE %input% ESCAPE '\'`: a literal, case-insensitive (ASCII)
-/// contains check. Drift 2.23's `like` has no ESCAPE support.
-Expression<bool> containsLiteral(Expression<String> column, String input) =>
-    _LikeEscape(column, '%${escapeLike(input)}%');
+/// `fold_search(column) LIKE %fold(input)% ESCAPE '\'`: accent- and
+/// case-insensitive literal contains check. Requires `registerSearchFunctions`
+/// on the connection. Returns null when the query folds to nothing (no filter).
+Expression<bool>? containsFolded(Expression<String> column, String input) {
+  final folded = foldSearch(input).trim();
+  if (folded.isEmpty) return null;
+  return _LikeEscape(column, '%${escapeLike(folded)}%');
+}
 
 class _LikeEscape extends Expression<bool> {
   _LikeEscape(this.column, this.pattern);
@@ -20,8 +26,9 @@ class _LikeEscape extends Expression<bool> {
 
   @override
   void writeInto(GenerationContext context) {
+    context.buffer.write('fold_search(');
     column.writeInto(context);
-    context.buffer.write(' LIKE ');
+    context.buffer.write(') LIKE ');
     Variable<String>(pattern).writeInto(context);
     context.buffer.write(r" ESCAPE '\'");
   }

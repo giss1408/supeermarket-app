@@ -39,6 +39,7 @@ dependencies:
   flutter_riverpod: 2.6.1
   go_router: 15.1.2
   drift: 2.23.1
+  sqlite3: 2.9.4 # direct: createFunction in search_functions.dart (already resolved transitively)
   sqlite3_flutter_libs: 0.5.42
   path_provider: 2.1.5
   path: 1.9.0

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../app_database.dart';
 import '../tables.dart';
+import '../../util/search_fold.dart';
 import 'like_escape.dart';
 
 part 'stores_dao.g.dart';
@@ -32,14 +33,13 @@ class StoresDao extends DatabaseAccessor<AppDatabase> with _$StoresDaoMixin {
 
   Stream<List<StoreRow>> watchStores({String query = ''}) {
     final q = select(stores)..orderBy([(t) => OrderingTerm.asc(t.name)]);
-    final trimmed = query.trim();
-    if (trimmed.isNotEmpty) {
+    if (foldSearch(query).trim().isNotEmpty) {
       q.where(
         (t) =>
-            containsLiteral(t.name, trimmed) |
-            containsLiteral(t.city, trimmed) |
-            containsLiteral(t.postcode, trimmed) |
-            containsLiteral(t.address, trimmed),
+            containsFolded(t.name, query)! |
+            containsFolded(t.city, query)! |
+            containsFolded(t.postcode, query)! |
+            containsFolded(t.address, query)!,
       );
     }
     return q.watch();
