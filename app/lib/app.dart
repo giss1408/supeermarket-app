@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/config/app_config.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/brand.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final _router = GoRouter(
@@ -25,10 +27,9 @@ class SupermarketApp extends ConsumerWidget {
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-      ),
+      theme: lightTheme(Brand.neutral),
+      darkTheme: darkTheme(Brand.neutral),
+      themeMode: ThemeMode.system,
       locale: AppConfig.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

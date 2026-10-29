@@ -7,5 +7,77 @@
   "appTitle": "Supermarché - courses et offres",
   "@appTitle": {
     "description": "Titre de l'application pour le système."
+  },
+  "errorValidation": "Certaines informations sont invalides. Vérifiez les champs signalés.",
+  "@errorValidation": {
+    "description": "Erreur de validation côté serveur."
+  },
+  "errorNotAuthenticated": "Votre session a expiré. Connectez-vous pour continuer.",
+  "@errorNotAuthenticated": {
+    "description": "Non authentifié."
+  },
+  "errorPermissionDenied": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+  "@errorPermissionDenied": {
+    "description": "Accès refusé."
+  },
+  "errorNotFound": "Élément introuvable. Il a peut-être été supprimé.",
+  "@errorNotFound": {
+    "description": "Ressource inexistante."
+  },
+  "errorThrottled": "Trop de requêtes. Patientez un instant puis réessayez.",
+  "@errorThrottled": {
+    "description": "Limitation de débit."
+  },
+  "errorConflict": "Cette action entre en conflit avec l'état actuel. Actualisez et réessayez.",
+  "@errorConflict": {
+    "description": "Conflit."
+  },
+  "errorServer": "Le service rencontre un problème. Réessayez dans quelques instants.",
+  "@errorServer": {
+    "description": "Erreur serveur."
+  },
+  "errorCsrf": "Votre session n'est plus valide. Rechargez la page et réessayez.",
+  "@errorCsrf": {
+    "description": "Échec CSRF."
+  },
+  "errorBadRequest": "La demande n'a pas pu être traitée. Réessayez.",
+  "@errorBadRequest": {
+    "description": "Requête invalide."
+  },
+  "errorUnsupportedMediaType": "Ce type de fichier n'est pas pris en charge.",
+  "@errorUnsupportedMediaType": {
+    "description": "Type de média non supporté."
+  },
+  "errorGeneric": "Une erreur est survenue. Réessayez.",
+  "@errorGeneric": {
+    "description": "Message générique."
+  },
+  "errorNetwork": "Pas de connexion. Vérifiez votre réseau et réessayez.",
+  "@errorNetwork": {
+    "description": "Pas de réseau."
+  },
+  "errorTimeout": "Le serveur met trop de temps à répondre. Réessayez.",
+  "@errorTimeout": {
+    "description": "Délai dépassé."
+  },
+  "actionRetry": "Réessayer",
+  "@actionRetry": {
+    "description": "Bouton pour relancer une action échouée."
+  },
+  "offlineBanner": "Hors ligne : affichage des dernières données",
+  "@offlineBanner": {
+    "description": "Bandeau affiché hors connexion."
+  },
+  "priceWithOld": "{price}, ancien prix {oldPrice}",
+  "@priceWithOld": {
+    "description": "Libellé d'accessibilité d'un prix barré.",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "oldPrice": {
+        "type": "String"
+      }
+    }
   }
 }
