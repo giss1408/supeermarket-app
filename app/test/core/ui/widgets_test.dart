@@ -116,9 +116,17 @@ void main() {
     });
   });
 
-  group('no overflow at 320 dp and text scale 2.0', () {
+  group('no overflow at a real 320 dp viewport and text scale 2.0', () {
     final widgets = <String, Widget>{
-      'PriceText': const PriceText(price: '1234567.00', oldPrice: '2345678.00'),
+      'PriceText with old price': const PriceText(
+        price: '1234567.00',
+        oldPrice: '2345678.00',
+      ),
+      'PriceText without old price': const PriceText(price: '500.00'),
+      'PriceText long price': const PriceText(
+        price: '123456789012.00',
+        oldPrice: '123456789012.00',
+      ),
       'EmptyState': EmptyState(
         icon: Icons.shopping_basket,
         title: 'Votre panier est vide pour le moment',
@@ -126,21 +134,60 @@ void main() {
         actionLabel: 'Voir les offres',
         onAction: () {},
       ),
-      'ErrorView': ErrorView(error: const NetworkError(), onRetry: () {}),
+      'ErrorView network': ErrorView(
+        error: const NetworkError(),
+        onRetry: () {},
+      ),
+      'ErrorView timeout': ErrorView(
+        error: const AppTimeoutError(),
+        onRetry: () {},
+      ),
+      'ErrorView conflict': ErrorView(
+        error: const ApiError(code: 'conflict', status: 409, fields: {}),
+        onRetry: () {},
+      ),
+      'ErrorView csrf': ErrorView(
+        error: const ApiError(code: 'csrf_failed', status: 403, fields: {}),
+        onRetry: () {},
+      ),
       'OfflineBanner': const OfflineBanner(),
       'Skeleton': const Skeleton(width: 200),
     };
+
+    Future<void> pumpAt320(WidgetTester tester, Widget w) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        host(
+          w,
+          textScale: 2.0,
+          size: const Size(320, 640),
+          disableAnimations: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
     widgets.forEach((name, w) {
       testWidgets(name, (tester) async {
-        await tester.pumpWidget(
-          host(w,
-              textScale: 2.0,
-              size: const Size(320, 640),
-              disableAnimations: true),
-        );
-        await tester.pumpAndSettle();
+        await pumpAt320(tester, w);
+        expect(tester.getSize(find.byType(Scaffold)).width, 320);
         expect(tester.takeException(), isNull);
       });
+    });
+
+    testWidgets('negative control: the harness detects an overflow', (
+      tester,
+    ) async {
+      await pumpAt320(
+        tester,
+        const Row(children: [SizedBox(width: 400, height: 20)]),
+      );
+      final e = tester.takeException();
+      expect(e, isA<FlutterError>());
+      expect((e! as FlutterError).message, contains('overflowed'));
     });
   });
 }
