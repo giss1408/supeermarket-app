@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import User
+from .models import LoyaltyCard, User
 
 EMAIL_TAKEN = "A user with this email already exists."
 
@@ -55,3 +55,18 @@ class LogoutSerializer(serializers.Serializer):
             RefreshToken(self.validated_data["refresh"]).blacklist()  # type: ignore[arg-type]
         except TokenError as exc:
             raise serializers.ValidationError({"refresh": ["Invalid or expired token."]}) from exc
+
+
+class MeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "email", "name", "role"]
+        read_only_fields = ["id", "email", "role"]
+
+
+class CardSerializer(serializers.ModelSerializer):
+    barcode_value = serializers.CharField(source="number", read_only=True)
+
+    class Meta:
+        model = LoyaltyCard
+        fields = ["number", "barcode_value"]

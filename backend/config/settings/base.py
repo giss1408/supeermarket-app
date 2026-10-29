@@ -92,6 +92,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "common.errors.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultCursorPagination",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_RATES": {"auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min")},
 }
 
 SIMPLE_JWT = {
