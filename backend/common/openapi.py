@@ -52,6 +52,27 @@ def sort_methods(result: dict[str, Any], generator: Any, request: Any, public: A
     return result
 
 
+FORM_CONTENT_TYPES = ("application/x-www-form-urlencoded", "multipart/form-data")
+
+
+def hide_form_content_types(
+    result: dict[str, Any], generator: Any, request: Any, public: Any
+) -> Any:
+    """Postprocessing hook: document JSON only where JSON is accepted.
+
+    DRF's default parsers also accept form bodies; the server still does, but advertising them
+    makes client generators emit multi-content request handling. Operations without a JSON body
+    (the multipart image upload) are left alone.
+    """
+    for item in result.get("paths", {}).values():
+        for method in HTTP_METHODS:
+            content = (item.get(method) or {}).get("requestBody", {}).get("content")
+            if content and "application/json" in content:
+                for media_type in FORM_CONTENT_TYPES:
+                    content.pop(media_type, None)
+    return result
+
+
 class BearerAuthScheme(OpenApiAuthenticationExtension):
     """Publish simplejwt's JWTAuthentication as the ``bearerAuth`` security scheme."""
 

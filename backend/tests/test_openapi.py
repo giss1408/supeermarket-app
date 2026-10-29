@@ -6,7 +6,7 @@ import yaml
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
-from common.openapi import add_error_responses, sort_methods
+from common.openapi import add_error_responses, hide_form_content_types, sort_methods
 
 COMMITTED = Path(__file__).resolve().parent.parent / "openapi.yaml"
 REGENERATE = (
@@ -146,3 +146,51 @@ def test_generation_is_independent_of_hash_seed(seed):
         check=True,
     ).stdout
     assert out == COMMITTED.read_text()
+
+
+def test_shopping_list_detail_items_are_typed_list_items(schema):
+    schemas = schema["components"]["schemas"]
+    items = schemas["ShoppingListDetail"]["properties"]["items"]
+    assert items["type"] == "array"
+    assert items["items"] == {"$ref": "#/components/schemas/ListItem"}
+    assert {"id", "product", "text", "checked"} <= set(schemas["ListItem"]["properties"])
+
+
+FORM_TYPES = ("application/x-www-form-urlencoded", "multipart/form-data")
+
+
+def _body(*types):
+    return {"requestBody": {"content": {t: {"schema": {"type": "object"}} for t in types}}}
+
+
+def test_hide_form_content_types_hook_on_synthetic_schema():
+    json_type = "application/json"
+    result = {
+        "paths": {
+            "/a": {
+                "post": _body(json_type, *FORM_TYPES),
+                "put": _body("multipart/form-data"),
+                "patch": _body(json_type),
+                "get": {"responses": {}},
+                "parameters": [],
+            }
+        }
+    }
+    item = hide_form_content_types(result, None, None, True)["paths"]["/a"]
+    assert list(item["post"]["requestBody"]["content"]) == [json_type]
+    assert list(item["put"]["requestBody"]["content"]) == ["multipart/form-data"]
+    assert list(item["patch"]["requestBody"]["content"]) == [json_type]
+    assert "requestBody" not in item["get"]
+
+
+def test_only_the_upload_lists_form_content_types(schema):
+    for path, method, op in operations(schema):
+        content = op.get("requestBody", {}).get("content", {})
+        if "application/json" in content:
+            assert not set(content) & set(FORM_TYPES), f"{method} {path}"
+    upload = schema["paths"]["/api/v1/staff/uploads/image"]["post"]
+    content = upload["requestBody"]["content"]
+    assert list(content) == ["multipart/form-data"]
+    ref = content["multipart/form-data"]["schema"]["$ref"].rsplit("/", 1)[-1]
+    file_prop = schema["components"]["schemas"][ref]["properties"]["file"]
+    assert file_prop["format"] == "binary"

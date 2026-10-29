@@ -16,12 +16,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
         required: true
       security:
       - {}
@@ -51,12 +45,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TokenObtainPairRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TokenObtainPairRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TokenObtainPairRequest'
         required: true
       responses:
         '200':
@@ -84,12 +72,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TokenRefreshRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
         required: true
       responses:
         '200':
@@ -112,12 +94,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/LogoutRequest'
         required: true
@@ -159,12 +135,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedMeRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedMeRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedMeRequest'
       security:
@@ -471,12 +441,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ShoppingListDetailRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ShoppingListDetailRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ShoppingListDetailRequest'
         required: true
       security:
       - bearerAuth: []
@@ -534,12 +498,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
       security:
       - bearerAuth: []
       responses:
@@ -592,12 +550,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ListItemRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ListItemRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ListItemRequest'
       security:
       - bearerAuth: []
       responses:
@@ -632,12 +584,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedListItemRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedListItemRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedListItemRequest'
       security:
@@ -728,12 +674,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/StaffFlyerRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StaffFlyerRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StaffFlyerRequest'
         required: true
       security:
       - bearerAuth: []
@@ -791,12 +731,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffFlyerRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffFlyerRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedStaffFlyerRequest'
       security:
@@ -932,12 +866,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/StaffOfferRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StaffOfferRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StaffOfferRequest'
         required: true
       security:
       - bearerAuth: []
@@ -995,12 +923,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffOfferRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffOfferRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedStaffOfferRequest'
       security:
@@ -1087,12 +1009,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/StaffProductRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StaffProductRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StaffProductRequest'
         required: true
       security:
       - bearerAuth: []
@@ -1150,12 +1066,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffProductRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffProductRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedStaffProductRequest'
       security:
@@ -1231,12 +1141,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/StaffCategoryRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StaffCategoryRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StaffCategoryRequest'
         required: true
       security:
       - bearerAuth: []
@@ -1294,12 +1198,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffCategoryRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffCategoryRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedStaffCategoryRequest'
       security:
@@ -1391,12 +1289,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/StaffStoreRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StaffStoreRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StaffStoreRequest'
         required: true
       security:
       - bearerAuth: []
@@ -1454,12 +1346,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffStoreRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStaffStoreRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedStaffStoreRequest'
       security:
@@ -2334,8 +2220,7 @@ components:
         items:
           type: array
           items:
-            type: object
-            additionalProperties: {}
+            $ref: '#/components/schemas/ListItem'
           readOnly: true
         created_at:
           type: string

@@ -1,6 +1,7 @@
 import datetime
 from typing import Any
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from catalog.models import Product
@@ -69,6 +70,7 @@ class ShoppingListDetailSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "items", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    @extend_schema_field(ListItemSerializer(many=True))
     def get_items(self, obj: ShoppingList) -> list[dict[str, Any]]:
         items = obj.items.select_related("product").order_by("checked", "created_at", "id")
         return ListItemSerializer(items, many=True, context=self.context).data  # type: ignore[return-value]

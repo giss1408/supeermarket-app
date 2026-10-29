@@ -132,6 +132,7 @@ SPECTACULAR_SETTINGS = {
         "drf_spectacular.hooks.postprocess_schema_enums",
         "common.openapi.add_error_responses",
         "common.openapi.sort_methods",
+        "common.openapi.hide_form_content_types",
     ],
 }
 
