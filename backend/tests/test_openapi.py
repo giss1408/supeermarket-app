@@ -243,3 +243,14 @@ def test_schema_endpoint_is_english_for_a_french_client(db):
     body = res.content.decode()
     assert ENGLISH_HELP in body and CURSOR_HELP in body
     assert body == COMMITTED.read_text()
+
+
+@pytest.mark.parametrize(
+    "name", ["StaffProduct", "StaffProductRequest", "PatchedStaffProductRequest"]
+)
+def test_product_ean_is_a_plain_nullable_string(schema, name):
+    ean = schema["components"]["schemas"][name]["properties"]["ean"]
+    assert "oneOf" not in ean and "anyOf" not in ean
+    assert ean["type"] == "string"
+    assert ean["nullable"] is True
+    assert ean["maxLength"] == 13

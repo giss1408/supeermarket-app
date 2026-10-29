@@ -2260,13 +2260,10 @@ components:
           type: string
           maxLength: 50
         ean:
+          type: string
           nullable: true
-          oneOf:
-          - type: string
-            pattern: ^(\d{8}|\d{13})$
-            maxLength: 13
-          - type: string
-            maxLength: 0
+          maxLength: 13
+          description: 8 or 13 digits; empty string or null for none
         image_name:
           type: string
           writeOnly: true
@@ -2783,13 +2780,10 @@ components:
           type: string
           maxLength: 50
         ean:
+          type: string
           nullable: true
-          oneOf:
-          - type: string
-            pattern: ^(\d{8}|\d{13})$
-            maxLength: 13
-          - type: string
-            maxLength: 0
+          maxLength: 13
+          description: 8 or 13 digits; empty string or null for none
         image:
           type: string
           format: uri
@@ -2815,13 +2809,10 @@ components:
           type: string
           maxLength: 50
         ean:
+          type: string
           nullable: true
-          oneOf:
-          - type: string
-            pattern: ^(\d{8}|\d{13})$
-            maxLength: 13
-          - type: string
-            maxLength: 0
+          maxLength: 13
+          description: 8 or 13 digits; empty string or null for none
         image_name:
           type: string
           writeOnly: true

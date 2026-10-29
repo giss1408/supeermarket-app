@@ -1,6 +1,8 @@
 from typing import Any
 
+from django.core.validators import RegexValidator
 from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from catalog.models import Category, Product
@@ -17,8 +19,41 @@ class StaffCategorySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "sort_order"]
 
 
+EAN_SCHEMA = {
+    "type": "string",
+    "nullable": True,
+    "maxLength": 13,
+    "description": "8 or 13 digits; empty string or null for none",
+}
+
+
+class _OpaqueValidator:
+    """Delegates to a validator; hides its type from schema generation only."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner = inner
+
+    def __call__(self, value: Any) -> None:
+        self.inner(value)
+
+
 class StaffProductSerializer(serializers.ModelSerializer):
     image_name = UploadedImageNameField(source="image")
+
+    def build_standard_field(self, field_name, model_field):
+        field_class, field_kwargs = super().build_standard_field(field_name, model_field)
+        if field_name == "ean":
+            # Schema-only annotation (a plain nullable string for client generators);
+            # the field class and its validation are unchanged. The regex validator is
+            # wrapped so drf-spectacular does not turn pattern + allow_blank into a oneOf.
+            field_kwargs["validators"] = [
+                _OpaqueValidator(v) if isinstance(v, RegexValidator) else v
+                for v in field_kwargs.get("validators", [])
+            ]
+            field_class = extend_schema_field(EAN_SCHEMA)(
+                type("EanField", (field_class,), {"__module__": __name__})
+            )
+        return field_class, field_kwargs
 
     class Meta:
         model = Product
