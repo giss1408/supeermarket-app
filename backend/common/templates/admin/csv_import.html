@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div id="content-main">
+  <p>Columns (header row required): <code>{{ columns }}</code></p>
+  <p>The import is all-or-nothing: if any row is invalid, nothing is imported.</p>
+  {% if errors %}
+  <ul class="errorlist">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".csv" required>
+    <input type="submit" value="Import" class="default">
+  </form>
+</div>
+{% endblock %}
