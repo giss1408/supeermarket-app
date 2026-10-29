@@ -20,11 +20,15 @@ def generate_card_number() -> str:
 class UserManager(BaseUserManager["User"]):
     use_in_migrations = True
 
+    def get_by_natural_key(self, username: str | None) -> "User":
+        # Case-insensitive login; also matches rows stored before emails were lowercased.
+        return self.get(email__iexact=username)
+
     def create_user(self, email: str, password: str | None = None, **extra: Any) -> "User":
         if not email:
             raise ValueError("Email is required")
         with transaction.atomic(using=self._db):
-            user = self.model(email=self.normalize_email(email), **extra)
+            user = self.model(email=self.normalize_email(email).lower(), **extra)
             user.set_password(password)
             user.save(using=self._db)
             if user.role == User.Role.CUSTOMER:

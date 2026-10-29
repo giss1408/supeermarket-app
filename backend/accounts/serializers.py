@@ -25,6 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs: dict[str, Any] = {"email": {"validators": []}}
 
     def validate_email(self, value: str) -> str:
+        value = value.lower()
         if _email_taken(value):
             raise serializers.ValidationError(EMAIL_TAKEN)
         return value
