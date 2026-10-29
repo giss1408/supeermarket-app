@@ -129,6 +129,7 @@ Set these in `.env.prod` (template with comments: `.env.prod.example`).
 | `SECURE_HSTS_SECONDS` | no | `31536000` | `.env.prod.example` ships `3600`: keep it short for the first deploy until HTTPS is verified, then raise it to `31536000`. |
 | `SECURE_HSTS_INCLUDE_SUBDOMAINS` | no | off | Set `1` only if all subdomains are HTTPS-only. |
 | `AUTH_THROTTLE_RATE` | no | `10/min` | |
+| `STAFF_SENSITIVE_THROTTLE_RATE` | no | `5/min` | Per-staff-user limit on creating/updating payment methods; every attempt counts, including wrong passwords. |
 | `NUM_PROXIES` | no | `1` in prod, `0` otherwise | Number of reverse proxies in front of gunicorn (Caddy = 1); the auth throttle uses it to find the real client IP in `X-Forwarded-For`. Set `0` if gunicorn is exposed directly. |
 | `ADMIN_ALLOWED_IPS` | yes (Caddy) | none | Space-separated IPs/CIDRs allowed to reach `/admin/`. Compose refuses to start without it. |
 | `WEB_CONCURRENCY` | no | `3` | gunicorn workers. |

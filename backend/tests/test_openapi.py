@@ -201,3 +201,18 @@ def test_only_the_upload_lists_form_content_types(schema):
     ref = content["multipart/form-data"]["schema"]["$ref"].rsplit("/", 1)[-1]
     file_prop = schema["components"]["schemas"][ref]["properties"]["file"]
     assert file_prop["format"] == "binary"
+
+
+def test_current_password_is_required_write_only_in_requests_and_absent_from_responses(schema):
+    schemas = schema["components"]["schemas"]
+    create = schemas["StaffPaymentMethodRequest"]
+    assert create["properties"]["current_password"]["writeOnly"] is True
+    assert "current_password" in create["required"]
+    patched = schemas["PatchedStaffPaymentMethodRequest"]
+    assert patched["properties"]["current_password"]["writeOnly"] is True
+    assert "current_password" not in schemas["StaffPaymentMethod"]["properties"]
+    assert "current_password" not in schemas["PaymentMethod"]["properties"]
+    assert "is_active" not in schemas["PaymentMethod"]["properties"]
+    item = schema["paths"]["/api/v1/staff/payment-methods/{id}"]
+    assert "delete" not in item
+    assert "put" not in item

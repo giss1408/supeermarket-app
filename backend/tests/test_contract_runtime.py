@@ -10,11 +10,13 @@ from jsonschema import Draft202012Validator
 from rest_framework.test import APIClient
 
 from tests.factories import (
+    PASSWORD,
     CategoryFactory,
     FlyerFactory,
     ListItemFactory,
     OfferFactory,
     OpeningHoursFactory,
+    PaymentMethodFactory,
     ProductFactory,
     ShoppingListFactory,
     StaffFactory,
@@ -225,3 +227,40 @@ def test_staff_endpoints(spec):
         format="multipart",
     )
     assert_conforms(res, spec, "/api/v1/staff/uploads/image", "post", 201)
+
+
+def test_payment_method_endpoints(spec):
+    PaymentMethodFactory(provider="wave", display_name="Wave", instructions="Send the total.")
+    PaymentMethodFactory(provider="mtn_momo", phone_number="+2250100000003", is_active=False)
+    public = APIClient().get("/api/v1/payment-methods")
+    assert_conforms(public, spec, "/api/v1/payment-methods", "get")
+    assert len(public.json()["results"]) == 1
+    client = auth(StaffFactory())
+    res = client.get("/api/v1/staff/payment-methods")
+    assert_conforms(res, spec, "/api/v1/staff/payment-methods", "get")
+    pk = res.json()["results"][0]["id"]
+    assert_conforms(
+        client.get(f"/api/v1/staff/payment-methods/{pk}"),
+        spec,
+        "/api/v1/staff/payment-methods/{id}",
+        "get",
+    )
+    res = client.post(
+        "/api/v1/staff/payment-methods",
+        {
+            "provider": "orange_money",
+            "phone_number": "05 00 00 00 02",
+            "display_name": "Orange",
+            "instructions": "",
+            "is_active": True,
+            "current_password": PASSWORD,
+        },
+        format="json",
+    )
+    assert_conforms(res, spec, "/api/v1/staff/payment-methods", "post", 201)
+    res = client.patch(
+        f"/api/v1/staff/payment-methods/{pk}",
+        {"instructions": "New text", "current_password": PASSWORD},
+        format="json",
+    )
+    assert_conforms(res, spec, "/api/v1/staff/payment-methods/{id}", "patch")

@@ -110,7 +110,11 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "common.errors.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultCursorPagination",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_THROTTLE_RATES": {"auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min")},
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min"),
+        # Password step-up writes (payment methods): every attempt counts, per staff user.
+        "staff_sensitive": os.environ.get("STAFF_SENSITIVE_THROTTLE_RATE", "5/min"),
+    },
     # Reverse proxies in front of the app: 0 = none (REMOTE_ADDR is the client). With N > 0 the
     # throttle keys on the Nth-from-right X-Forwarded-For entry, which a client cannot spoof.
     "NUM_PROXIES": int(os.environ.get("NUM_PROXIES", "0")),

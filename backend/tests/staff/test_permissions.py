@@ -6,7 +6,7 @@ from tests.factories import StaffFactory
 
 pytestmark = pytest.mark.django_db
 
-RESOURCES = ["flyers", "offers", "products", "categories", "stores"]
+RESOURCES = ["flyers", "offers", "products", "categories", "stores", "payment-methods"]
 ROUTES = (
     [(m, f"/api/v1/staff/{r}") for r in RESOURCES for m in ("get", "post")]
     + [(m, f"/api/v1/staff/{r}/1") for r in RESOURCES for m in ("get", "put", "patch", "delete")]

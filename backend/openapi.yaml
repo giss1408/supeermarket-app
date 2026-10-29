@@ -627,6 +627,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/v1/payment-methods:
+    get:
+      operationId: payment_methods_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - payment-methods
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentMethodList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/v1/staff/flyers:
     get:
       operationId: staff_flyers_list
@@ -1237,6 +1264,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/v1/staff/payment-methods:
+    get:
+      operationId: staff_payment_methods_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffPaymentMethodList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_payment_methods_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffPaymentMethodRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffPaymentMethod'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/payment-methods/{id}:
+    get:
+      operationId: staff_payment_methods_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment method.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffPaymentMethod'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_payment_methods_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment method.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffPaymentMethodRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffPaymentMethod'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/v1/staff/stores:
     get:
       operationId: staff_stores_list
@@ -1816,6 +1953,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Offer'
+    PaginatedPaymentMethodList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentMethod'
     PaginatedShoppingListList:
       type: object
       required:
@@ -1892,6 +2048,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StaffOffer'
+    PaginatedStaffPaymentMethodList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffPaymentMethod'
     PaginatedStaffProductList:
       type: object
       required:
@@ -2049,6 +2224,27 @@ components:
           type: string
           format: date
           nullable: true
+    PatchedStaffPaymentMethodRequest:
+      type: object
+      properties:
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        phone_number:
+          type: string
+          minLength: 1
+          maxLength: 50
+        display_name:
+          type: string
+          maxLength: 100
+        instructions:
+          type: string
+          maxLength: 500
+        is_active:
+          type: boolean
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
     PatchedStaffProductRequest:
       type: object
       properties:
@@ -2112,6 +2308,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpeningHoursWriteRequest'
+    PaymentMethod:
+      type: object
+      properties:
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        phone_number:
+          type: string
+          maxLength: 14
+        display_name:
+          type: string
+          maxLength: 100
+        instructions:
+          type: string
+          maxLength: 500
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - phone_number
+      - provider
+      - updated_at
     Product:
       type: object
       properties:
@@ -2159,6 +2377,16 @@ components:
       - id
       - image
       - name
+    ProviderEnum:
+      enum:
+      - wave
+      - orange_money
+      - mtn_momo
+      type: string
+      description: |-
+        * `wave` - Wave
+        * `orange_money` - Orange Money
+        * `mtn_momo` - MTN MoMo
     Register:
       type: object
       properties:
@@ -2485,6 +2713,59 @@ components:
       - flyer
       - price
       - product
+    StaffPaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        phone_number:
+          type: string
+          maxLength: 50
+        display_name:
+          type: string
+          maxLength: 100
+        instructions:
+          type: string
+          maxLength: 500
+        is_active:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - phone_number
+      - provider
+      - updated_at
+    StaffPaymentMethodRequest:
+      type: object
+      properties:
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        phone_number:
+          type: string
+          minLength: 1
+          maxLength: 50
+        display_name:
+          type: string
+          maxLength: 100
+        instructions:
+          type: string
+          maxLength: 500
+        is_active:
+          type: boolean
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - current_password
+      - phone_number
+      - provider
     StaffProduct:
       type: object
       properties:
