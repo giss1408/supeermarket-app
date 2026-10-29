@@ -83,3 +83,20 @@ class OpeningHoursFactory(factory.django.DjangoModelFactory):
     weekday = 0
     opens = datetime.time(8, 0)
     closes = datetime.time(20, 0)
+
+
+class ShoppingListFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "shopping.ShoppingList"
+
+    user = factory.SubFactory(UserFactory)
+    name = factory.Sequence(lambda n: f"List {n}")
+
+
+class ListItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "shopping.ListItem"
+
+    list = factory.SubFactory(ShoppingListFactory)
+    text = factory.Sequence(lambda n: f"Item {n}")
+    quantity = 1
