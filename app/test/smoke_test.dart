@@ -10,7 +10,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Supermarché'), findsWidgets);
-    final context = tester.element(find.byType(Scaffold));
+    final context = tester.element(find.byType(Scaffold).first);
     expect(Localizations.localeOf(context), const Locale('fr'));
   });
 

@@ -79,5 +79,91 @@
         "type": "String"
       }
     }
+  },
+  "tabOffers": "Offres",
+  "@tabOffers": {
+    "description": "Onglet Offres."
+  },
+  "tabLists": "Listes",
+  "@tabLists": {
+    "description": "Onglet Listes de courses."
+  },
+  "tabStores": "Magasins",
+  "@tabStores": {
+    "description": "Onglet Magasins."
+  },
+  "tabAccount": "Compte",
+  "@tabAccount": {
+    "description": "Onglet Compte."
+  },
+  "notFoundTitle": "Page introuvable",
+  "@notFoundTitle": {
+    "description": "Titre de la page introuvable."
+  },
+  "notFoundMessage": "Cette page n'existe pas ou a été déplacée.",
+  "@notFoundMessage": {
+    "description": "Message de la page introuvable."
+  },
+  "notFoundAction": "Retour aux offres",
+  "@notFoundAction": {
+    "description": "Bouton de retour depuis la page introuvable."
+  },
+  "placeholderFlyers": "Catalogues (bientôt disponible)",
+  "@placeholderFlyers": {
+    "description": "Libellé provisoire."
+  },
+  "placeholderOffers": "Offres (bientôt disponible)",
+  "@placeholderOffers": {
+    "description": "Libellé provisoire."
+  },
+  "placeholderLists": "Listes de courses (bientôt disponible)",
+  "@placeholderLists": {
+    "description": "Libellé provisoire."
+  },
+  "placeholderListDetail": "Liste {id} (bientôt disponible)",
+  "@placeholderListDetail": {
+    "description": "Libellé provisoire.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "placeholderStores": "Magasins (bientôt disponible)",
+  "@placeholderStores": {
+    "description": "Libellé provisoire."
+  },
+  "placeholderStoreDetail": "Magasin {id} (bientôt disponible)",
+  "@placeholderStoreDetail": {
+    "description": "Libellé provisoire.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "placeholderAccount": "Compte (bientôt disponible)",
+  "@placeholderAccount": {
+    "description": "Libellé provisoire."
+  },
+  "placeholderPay": "Paiement (bientôt disponible)",
+  "@placeholderPay": {
+    "description": "Libellé provisoire."
+  },
+  "signInTitle": "Connexion",
+  "@signInTitle": {
+    "description": "Titre de l'écran de connexion."
+  },
+  "registerTitle": "Créer un compte",
+  "@registerTitle": {
+    "description": "Titre de l'écran d'inscription."
+  },
+  "signInProvisional": "Se connecter (provisoire)",
+  "@signInProvisional": {
+    "description": "Bouton provisoire de test, remplacé par le vrai formulaire."
+  },
+  "actionClose": "Fermer",
+  "@actionClose": {
+    "description": "Bouton de fermeture."
   }
 }
