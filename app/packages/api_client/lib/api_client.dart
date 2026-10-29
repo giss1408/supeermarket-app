@@ -18,15 +18,15 @@ export 'package:api_client/src/api/payment_methods_api.dart';
 export 'package:api_client/src/api/staff_api.dart';
 export 'package:api_client/src/api/stores_api.dart';
 
-export 'package:api_client/src/model/card.dart';
 export 'package:api_client/src/model/category.dart';
-export 'package:api_client/src/model/error.dart';
+export 'package:api_client/src/model/error_response.dart';
 export 'package:api_client/src/model/flyer_detail.dart';
 export 'package:api_client/src/model/flyer_list.dart';
 export 'package:api_client/src/model/image_upload_result.dart';
 export 'package:api_client/src/model/list_item.dart';
 export 'package:api_client/src/model/list_item_request.dart';
 export 'package:api_client/src/model/logout_request.dart';
+export 'package:api_client/src/model/loyalty_card.dart';
 export 'package:api_client/src/model/me.dart';
 export 'package:api_client/src/model/offer.dart';
 export 'package:api_client/src/model/offer_fields.dart';

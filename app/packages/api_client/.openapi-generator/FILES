@@ -17,15 +17,15 @@ lib/src/auth/basic_auth.dart
 lib/src/auth/bearer_auth.dart
 lib/src/auth/oauth.dart
 lib/src/deserialize.dart
-lib/src/model/card.dart
 lib/src/model/category.dart
-lib/src/model/error.dart
+lib/src/model/error_response.dart
 lib/src/model/flyer_detail.dart
 lib/src/model/flyer_list.dart
 lib/src/model/image_upload_result.dart
 lib/src/model/list_item.dart
 lib/src/model/list_item_request.dart
 lib/src/model/logout_request.dart
+lib/src/model/loyalty_card.dart
 lib/src/model/me.dart
 lib/src/model/offer.dart
 lib/src/model/offer_fields.dart

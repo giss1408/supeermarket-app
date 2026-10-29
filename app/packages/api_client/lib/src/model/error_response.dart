@@ -5,7 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:json_annotation/json_annotation.dart';
 
-part 'error.g.dart';
+part 'error_response.g.dart';
 
 @JsonSerializable(
   checked: true,
@@ -13,9 +13,9 @@ part 'error.g.dart';
   disallowUnrecognizedKeys: false,
   explicitToJson: true,
 )
-class Error {
-  /// Returns a new [Error] instance.
-  Error({
+class ErrorResponse {
+  /// Returns a new [ErrorResponse] instance.
+  ErrorResponse({
     required this.code,
     required this.detail,
     required this.fields,
@@ -45,7 +45,7 @@ class Error {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Error &&
+      other is ErrorResponse &&
           other.code == code &&
           other.detail == detail &&
           other.fields == fields;
@@ -53,9 +53,10 @@ class Error {
   @override
   int get hashCode => code.hashCode + detail.hashCode + fields.hashCode;
 
-  factory Error.fromJson(Map<String, dynamic> json) => _$ErrorFromJson(json);
+  factory ErrorResponse.fromJson(Map<String, dynamic> json) =>
+      _$ErrorResponseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ErrorToJson(this);
+  Map<String, dynamic> toJson() => _$ErrorResponseToJson(this);
 
   @override
   String toString() {

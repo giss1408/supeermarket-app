@@ -9,8 +9,8 @@ import 'dart:convert';
 import 'package:api_client/src/deserialize.dart';
 import 'package:dio/dio.dart';
 
-import 'package:api_client/src/model/card.dart';
-import 'package:api_client/src/model/error.dart';
+import 'package:api_client/src/model/error_response.dart';
+import 'package:api_client/src/model/loyalty_card.dart';
 import 'package:api_client/src/model/me.dart';
 import 'package:api_client/src/model/patched_me_request.dart';
 
@@ -30,9 +30,9 @@ class MeApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [Card] as data
+  /// Returns a [Future] containing a [Response] with a [LoyaltyCard] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Card>> meCardRetrieve({
+  Future<Response<LoyaltyCard>> meCardRetrieve({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -67,13 +67,14 @@ class MeApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    Card? _responseData;
+    LoyaltyCard? _responseData;
 
     try {
       final rawData = _response.data;
       _responseData = rawData == null
           ? null
-          : deserialize<Card, Card>(rawData, 'Card', growable: true);
+          : deserialize<LoyaltyCard, LoyaltyCard>(rawData, 'LoyaltyCard',
+              growable: true);
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -84,7 +85,7 @@ class MeApi {
       );
     }
 
-    return Response<Card>(
+    return Response<LoyaltyCard>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'package:api_client/src/deserialize.dart';
 import 'package:dio/dio.dart';
 
-import 'package:api_client/src/model/error.dart';
+import 'package:api_client/src/model/error_response.dart';
 import 'package:api_client/src/model/image_upload_result.dart';
 import 'package:api_client/src/model/paginated_staff_category_list.dart';
 import 'package:api_client/src/model/paginated_staff_flyer_list_list.dart';

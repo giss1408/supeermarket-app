@@ -1,12 +1,12 @@
-import 'package:api_client/src/model/card.dart';
 import 'package:api_client/src/model/category.dart';
-import 'package:api_client/src/model/error.dart';
+import 'package:api_client/src/model/error_response.dart';
 import 'package:api_client/src/model/flyer_detail.dart';
 import 'package:api_client/src/model/flyer_list.dart';
 import 'package:api_client/src/model/image_upload_result.dart';
 import 'package:api_client/src/model/list_item.dart';
 import 'package:api_client/src/model/list_item_request.dart';
 import 'package:api_client/src/model/logout_request.dart';
+import 'package:api_client/src/model/loyalty_card.dart';
 import 'package:api_client/src/model/me.dart';
 import 'package:api_client/src/model/offer.dart';
 import 'package:api_client/src/model/offer_fields.dart';
@@ -82,12 +82,11 @@ ReturnType deserialize<ReturnType, BaseType>(dynamic value, String targetType,
       return (valueString == 'true' || valueString == '1') as ReturnType;
     case 'double':
       return (value is double ? value : double.parse('$value')) as ReturnType;
-    case 'Card':
-      return Card.fromJson(value as Map<String, dynamic>) as ReturnType;
     case 'Category':
       return Category.fromJson(value as Map<String, dynamic>) as ReturnType;
-    case 'Error':
-      return Error.fromJson(value as Map<String, dynamic>) as ReturnType;
+    case 'ErrorResponse':
+      return ErrorResponse.fromJson(value as Map<String, dynamic>)
+          as ReturnType;
     case 'FlyerDetail':
       return FlyerDetail.fromJson(value as Map<String, dynamic>) as ReturnType;
     case 'FlyerList':
@@ -103,6 +102,8 @@ ReturnType deserialize<ReturnType, BaseType>(dynamic value, String targetType,
     case 'LogoutRequest':
       return LogoutRequest.fromJson(value as Map<String, dynamic>)
           as ReturnType;
+    case 'LoyaltyCard':
+      return LoyaltyCard.fromJson(value as Map<String, dynamic>) as ReturnType;
     case 'Me':
       return Me.fromJson(value as Map<String, dynamic>) as ReturnType;
     case 'Offer':

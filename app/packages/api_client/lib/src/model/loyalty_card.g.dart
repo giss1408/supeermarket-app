@@ -1,20 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'card.dart';
+part of 'loyalty_card.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Card _$CardFromJson(Map<String, dynamic> json) => $checkedCreate(
-      'Card',
+LoyaltyCard _$LoyaltyCardFromJson(Map<String, dynamic> json) => $checkedCreate(
+      'LoyaltyCard',
       json,
       ($checkedConvert) {
         $checkKeys(
           json,
           requiredKeys: const ['number', 'barcode_value'],
         );
-        final val = Card(
+        final val = LoyaltyCard(
           number: $checkedConvert('number', (v) => v as String),
           barcodeValue: $checkedConvert('barcode_value', (v) => v as String),
         );
@@ -23,7 +23,8 @@ Card _$CardFromJson(Map<String, dynamic> json) => $checkedCreate(
       fieldKeyMap: const {'barcodeValue': 'barcode_value'},
     );
 
-Map<String, dynamic> _$CardToJson(Card instance) => <String, dynamic>{
+Map<String, dynamic> _$LoyaltyCardToJson(LoyaltyCard instance) =>
+    <String, dynamic>{
       'number': instance.number,
       'barcode_value': instance.barcodeValue,
     };

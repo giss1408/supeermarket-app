@@ -5,7 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:json_annotation/json_annotation.dart';
 
-part 'card.g.dart';
+part 'loyalty_card.g.dart';
 
 @JsonSerializable(
   checked: true,
@@ -13,9 +13,9 @@ part 'card.g.dart';
   disallowUnrecognizedKeys: false,
   explicitToJson: true,
 )
-class Card {
-  /// Returns a new [Card] instance.
-  Card({
+class LoyaltyCard {
+  /// Returns a new [LoyaltyCard] instance.
+  LoyaltyCard({
     required this.number,
     required this.barcodeValue,
   });
@@ -37,16 +37,17 @@ class Card {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Card &&
+      other is LoyaltyCard &&
           other.number == number &&
           other.barcodeValue == barcodeValue;
 
   @override
   int get hashCode => number.hashCode + barcodeValue.hashCode;
 
-  factory Card.fromJson(Map<String, dynamic> json) => _$CardFromJson(json);
+  factory LoyaltyCard.fromJson(Map<String, dynamic> json) =>
+      _$LoyaltyCardFromJson(json);
 
-  Map<String, dynamic> toJson() => _$CardToJson(this);
+  Map<String, dynamic> toJson() => _$LoyaltyCardToJson(this);
 
   @override
   String toString() {

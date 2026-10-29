@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'package:api_client/src/deserialize.dart';
 import 'package:dio/dio.dart';
 
-import 'package:api_client/src/model/error.dart';
+import 'package:api_client/src/model/error_response.dart';
 import 'package:api_client/src/model/logout_request.dart';
 import 'package:api_client/src/model/register.dart';
 import 'package:api_client/src/model/register_request.dart';
