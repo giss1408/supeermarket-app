@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_interceptor.dart';
+import '../auth/auth_session_guard.dart';
 import '../auth/session_controller.dart';
 import '../auth/token_store.dart';
 import '../config/app_config.dart';
@@ -59,8 +60,9 @@ final dioProvider = Provider<Dio>((ref) {
       bareDio: ref.watch(bareDioProvider),
       tokens: ref.watch(accessTokenProvider),
       store: ref.watch(tokenStoreProvider),
-      onSessionExpired: () =>
-          ref.read(sessionProvider.notifier).expireSession(),
+      guard: ref.watch(authSessionGuardProvider),
+      onSessionExpired: (epoch) =>
+          ref.read(sessionProvider.notifier).expireIfCurrent(epoch),
     ),
   );
   return dio;

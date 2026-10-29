@@ -1,6 +1,7 @@
 import 'package:api_client/api_client.dart';
 import 'package:dio/dio.dart';
 
+import 'auth_session_guard.dart';
 import 'token_store.dart';
 
 /// In-memory holder of the access token. It is never persisted.
@@ -10,6 +11,9 @@ class AccessTokenHolder {
 
 /// `RequestOptions.extra` flag marking a request already retried once.
 const authRetriedKey = 'auth_retried';
+
+/// `RequestOptions.extra` key: the session epoch a request was built under.
+const authEpochKey = 'auth_epoch';
 
 const _authPaths = [
   '/api/v1/auth/login',
@@ -43,6 +47,7 @@ class AuthInterceptor extends Interceptor {
     required this.bareDio,
     required this.tokens,
     required this.store,
+    required this.guard,
     required this.onSessionExpired,
   });
 
@@ -53,14 +58,17 @@ class AuthInterceptor extends Interceptor {
   final Dio bareDio;
   final AccessTokenHolder tokens;
   final TokenStore store;
+  final AuthSessionGuard guard;
 
-  /// Called once when the refresh token is definitively rejected.
-  final Future<void> Function() onSessionExpired;
+  /// Called when the refresh token is definitively rejected while [epoch] is
+  /// still the current session epoch (the callee re-checks synchronously).
+  final Future<void> Function(int epoch) onSessionExpired;
 
   Future<String>? _refreshing;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    options.extra[authEpochKey] = guard.epoch;
     final access = tokens.value;
     if (access != null && !isAuthEndpoint(options)) {
       options.headers['Authorization'] = 'Bearer $access';
@@ -80,11 +88,15 @@ class AuthInterceptor extends Interceptor {
         req.extra[authRetriedKey] == true) {
       return handler.next(err);
     }
+    // A request built under another session must never be replayed with the
+    // current session's token.
+    if (req.extra[authEpochKey] != guard.epoch) return handler.next(err);
     try {
       if (_refreshing == null && await store.readRefresh() == null) {
         // No refresh token: the user is a guest, nothing to refresh.
         return handler.next(err);
       }
+      if (req.extra[authEpochKey] != guard.epoch) return handler.next(err);
       // No await between this check and starting/joining the refresh, so
       // concurrent 401s cannot start two refreshes.
       final sent = _bearerOf(req);
@@ -93,6 +105,7 @@ class AuthInterceptor extends Interceptor {
         await _refreshOnce();
       }
       // else: another request already refreshed; retry with the new token.
+      if (req.extra[authEpochKey] != guard.epoch) return handler.next(err);
       handler.resolve(await _retry(req));
     } on _RefreshFailed catch (f) {
       if (f.expired || f.error == null) return handler.next(err);
@@ -122,12 +135,13 @@ class AuthInterceptor extends Interceptor {
   Future<String> _refreshOnce() {
     final existing = _refreshing;
     if (existing != null) return existing;
-    final future = _doRefresh().whenComplete(() => _refreshing = null);
+    final future =
+        _doRefresh(guard.epoch).whenComplete(() => _refreshing = null);
     _refreshing = future;
     return future;
   }
 
-  Future<String> _doRefresh() async {
+  Future<String> _doRefresh(int epoch0) async {
     final sentRefresh = await store.readRefresh();
     if (sentRefresh == null) throw _RefreshFailed(null, expired: false);
     final TokenRefresh result;
@@ -142,20 +156,23 @@ class AuthInterceptor extends Interceptor {
       final status = e.response?.statusCode;
       final rejected = e.type == DioExceptionType.badResponse &&
           (status == 401 || status == 400);
-      if (rejected) {
-        await onSessionExpired();
+      // Only the session that sent the token may be expired by its
+      // rejection; a stale answer after a sign-out/switch is ignored.
+      if (rejected && guard.epoch == epoch0) {
+        await onSessionExpired(epoch0);
         throw _RefreshFailed(e, expired: true);
       }
-      throw _RefreshFailed(e, expired: false);
+      throw _RefreshFailed(e, expired: rejected);
     }
-    // The user may have signed out / switched while the call was in flight:
-    // never resurrect a cleared session with the rotated token.
-    if (await store.readRefresh() != sentRefresh) {
-      throw _RefreshFailed(null, expired: false);
-    }
-    // Rotated refresh token FIRST, then the access token becomes usable.
-    await store.writeRefresh(result.refresh);
-    tokens.value = result.access;
+    // Write under the lock and only if nothing invalidated the session
+    // meanwhile: rotated refresh token FIRST, then the access token.
+    await guard.exclusive(() async {
+      if (guard.epoch != epoch0 || await store.readRefresh() != sentRefresh) {
+        throw _RefreshFailed(null, expired: false);
+      }
+      await store.writeRefresh(result.refresh);
+      tokens.value = result.access;
+    });
     return result.access;
   }
 }
