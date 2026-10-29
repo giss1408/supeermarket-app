@@ -2,6 +2,9 @@ import 'package:api_client/api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../auth/auth_interceptor.dart';
+import '../auth/session_controller.dart';
+import '../auth/token_store.dart';
 import '../config/app_config.dart';
 
 /// Builds the app's Dio. An empty [baseUrl] (missing `API_BASE_URL`
@@ -31,10 +34,50 @@ Dio createDio({
   );
 }
 
-final dioProvider = Provider<Dio>(
-  (ref) => createDio(baseUrl: AppConfig.apiBaseUrl),
+/// Base URL of the API; overridable in tests.
+final apiBaseUrlProvider = Provider<String>((ref) => AppConfig.apiBaseUrl);
+
+/// Dio WITHOUT interceptors: login, register, logout and refresh calls, so
+/// they can never trigger token handling.
+final bareDioProvider = Provider<Dio>(
+  (ref) => createDio(baseUrl: ref.watch(apiBaseUrlProvider)),
 );
 
+/// In-memory access token shared by the session controller and the
+/// interceptor. Never persisted.
+final accessTokenProvider = Provider<AccessTokenHolder>(
+  (ref) => AccessTokenHolder(),
+);
+
+/// The app's Dio: our [AuthInterceptor] adds the bearer token and refreshes
+/// it on 401.
+final dioProvider = Provider<Dio>((ref) {
+  final dio = createDio(baseUrl: ref.watch(apiBaseUrlProvider));
+  dio.interceptors.add(
+    AuthInterceptor(
+      dio: dio,
+      bareDio: ref.watch(bareDioProvider),
+      tokens: ref.watch(accessTokenProvider),
+      store: ref.watch(tokenStoreProvider),
+      onSessionExpired: () =>
+          ref.read(sessionProvider.notifier).expireSession(),
+    ),
+  );
+  return dio;
+});
+
+// The generated ApiClient installs its own four auth interceptors when no
+// list is given; an explicit empty list keeps token handling in
+// [AuthInterceptor] only.
+const _noInterceptors = <Interceptor>[];
+
 final apiClientProvider = Provider<ApiClient>(
-  (ref) => ApiClient(dio: ref.watch(dioProvider)),
+  (ref) =>
+      ApiClient(dio: ref.watch(dioProvider), interceptors: _noInterceptors),
+);
+
+/// Client on the bare Dio (auth endpoints).
+final bareApiClientProvider = Provider<ApiClient>(
+  (ref) =>
+      ApiClient(dio: ref.watch(bareDioProvider), interceptors: _noInterceptors),
 );

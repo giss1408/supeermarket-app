@@ -2,7 +2,7 @@
   "@@locale": "fr",
   "appName": "Supermarché",
   "@appName": {
-    "description": "Nom affiché de l'application (provisoire)."
+    "description": "Nom affiché de l'application (temporaire)."
   },
   "appTitle": "Supermarché - courses et offres",
   "@appTitle": {
@@ -110,19 +110,19 @@
   },
   "placeholderFlyers": "Catalogues (bientôt disponible)",
   "@placeholderFlyers": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "placeholderOffers": "Offres (bientôt disponible)",
   "@placeholderOffers": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "placeholderLists": "Listes de courses (bientôt disponible)",
   "@placeholderLists": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "placeholderListDetail": "Liste {id} (bientôt disponible)",
   "@placeholderListDetail": {
-    "description": "Libellé provisoire.",
+    "description": "Libellé temporaire.",
     "placeholders": {
       "id": {
         "type": "String"
@@ -131,11 +131,11 @@
   },
   "placeholderStores": "Magasins (bientôt disponible)",
   "@placeholderStores": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "placeholderStoreDetail": "Magasin {id} (bientôt disponible)",
   "@placeholderStoreDetail": {
-    "description": "Libellé provisoire.",
+    "description": "Libellé temporaire.",
     "placeholders": {
       "id": {
         "type": "String"
@@ -144,11 +144,11 @@
   },
   "placeholderAccount": "Compte (bientôt disponible)",
   "@placeholderAccount": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "placeholderPay": "Paiement (bientôt disponible)",
   "@placeholderPay": {
-    "description": "Libellé provisoire."
+    "description": "Libellé temporaire."
   },
   "signInTitle": "Connexion",
   "@signInTitle": {
@@ -158,12 +158,56 @@
   "@registerTitle": {
     "description": "Titre de l'écran d'inscription."
   },
-  "signInProvisional": "Se connecter (provisoire)",
-  "@signInProvisional": {
-    "description": "Bouton provisoire de test, remplacé par le vrai formulaire."
-  },
   "actionClose": "Fermer",
   "@actionClose": {
     "description": "Bouton de fermeture."
+  },
+  "fieldEmail": "Adresse e-mail",
+  "@fieldEmail": {
+    "description": "Champ e-mail."
+  },
+  "fieldPassword": "Mot de passe",
+  "@fieldPassword": {
+    "description": "Champ mot de passe."
+  },
+  "fieldName": "Nom (facultatif)",
+  "@fieldName": {
+    "description": "Champ nom à l'inscription."
+  },
+  "showPassword": "Afficher le mot de passe",
+  "@showPassword": {
+    "description": "Infobulle du bouton afficher."
+  },
+  "hidePassword": "Masquer le mot de passe",
+  "@hidePassword": {
+    "description": "Infobulle du bouton masquer."
+  },
+  "actionSignIn": "Se connecter",
+  "@actionSignIn": {
+    "description": "Bouton de connexion."
+  },
+  "actionRegister": "Créer mon compte",
+  "@actionRegister": {
+    "description": "Bouton d'inscription."
+  },
+  "switchToRegister": "Pas encore de compte ? Créer un compte",
+  "@switchToRegister": {
+    "description": "Lien vers l'inscription."
+  },
+  "switchToSignIn": "Déjà un compte ? Se connecter",
+  "@switchToSignIn": {
+    "description": "Lien vers la connexion."
+  },
+  "errorFieldRequired": "Ce champ est obligatoire.",
+  "@errorFieldRequired": {
+    "description": "Champ vide."
+  },
+  "errorWrongCredentials": "Adresse e-mail ou mot de passe incorrect.",
+  "@errorWrongCredentials": {
+    "description": "Connexion refusée (401)."
+  },
+  "busyLabel": "Veuillez patienter",
+  "@busyLabel": {
+    "description": "Libellé accessible du chargement."
   }
 }

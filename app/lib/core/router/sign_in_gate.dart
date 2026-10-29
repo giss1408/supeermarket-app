@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,10 +43,30 @@ Future<bool> _open(
   GoRouter router,
   String? from,
 ) async {
+  // Switching sign-in <-> register uses pushReplacement, which drops the
+  // completer of the original push: its future would never complete. The
+  // gate therefore also finishes when the auth routes are gone from the
+  // stack, and the session (not a pop result) says whether sign-in worked.
+  final done = Completer<void>();
+  var seenAuthRoute = false;
+  void check() {
+    final path = Uri.tryParse(currentLocation(router))?.path;
+    if (path == Routes.signInPath || path == Routes.registerPath) {
+      seenAuthRoute = true;
+    } else if (seenAuthRoute && !done.isCompleted) {
+      done.complete();
+    }
+  }
+
+  router.routerDelegate.addListener(check);
   try {
-    final result = await router.push<bool>(Routes.signIn(from: from));
-    return result == true && container.read(sessionProvider) is SignedIn;
+    unawaited(router.push<bool>(Routes.signIn(from: from)).then<void>((_) {
+      if (!done.isCompleted) done.complete();
+    }));
+    await done.future;
+    return container.read(sessionProvider) is SignedIn;
   } finally {
+    router.routerDelegate.removeListener(check);
     gate.pending = null;
   }
 }

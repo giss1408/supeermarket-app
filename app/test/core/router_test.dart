@@ -20,11 +20,16 @@ import 'package:supermarket_app/features/payment/ui/pay_screen.dart';
 import 'package:supermarket_app/features/stores/ui/store_detail_screen.dart';
 import 'package:supermarket_app/features/stores/ui/stores_screen.dart';
 
+import '../support/fake_session_controller.dart';
+
 /// Pumps the real app. [ref] is captured from a Consumer so tests can call
 /// `requireSignIn`, which needs a WidgetRef.
 class Harness {
   late WidgetRef ref;
   late ProviderContainer container;
+
+  FakeSessionController get fake =>
+      container.read(sessionProvider.notifier) as FakeSessionController;
 
   GoRouter router(WidgetTester t) =>
       container.read(appRouterProvider); // same instance the app watches
@@ -39,7 +44,10 @@ Future<Harness> pumpApp(
   final h = Harness();
   await tester.pumpWidget(
     ProviderScope(
-      overrides: overrides,
+      overrides: [
+        sessionProvider.overrideWith(FakeSessionController.new),
+        ...overrides,
+      ],
       child: Consumer(
         builder: (context, ref, _) {
           h.ref = ref;
@@ -51,6 +59,15 @@ Future<Harness> pumpApp(
   );
   await tester.pumpAndSettle();
   return h;
+}
+
+/// Fills the real sign-in/register form and submits it (the fake controller
+/// signs in successfully).
+Future<void> submitForm(WidgetTester t) async {
+  await t.enterText(find.byKey(const Key('field_email')), 'u7@example.ci');
+  await t.enterText(find.byKey(const Key('field_password')), 'secret-pass');
+  await t.tap(find.byKey(const Key('auth_submit')));
+  await t.pumpAndSettle();
 }
 
 Future<void> tapTab(WidgetTester tester, String label) async {
@@ -226,12 +243,54 @@ void main() {
       expect(t.widget<SignInScreen>(find.byType(SignInScreen)).from, '/lists');
       expect(h.location(t), '/sign-in?from=%2Flists');
 
-      await t.tap(find.text('Se connecter (provisoire)'));
+      await submitForm(t);
       await t.pumpAndSettle();
       expect(await future, isTrue);
       expect(h.location(t), '/lists');
       expect(find.byType(ListsScreen), findsOneWidget);
       expect(h.container.read(sessionProvider), isA<SignedIn>());
+    });
+
+    testWidgets('switching to register keeps the gate waiting, then true',
+        (t) async {
+      final h = await pumpApp(t);
+      await tapTab(t, 'Listes');
+      final ctx = t.element(find.byType(ListsScreen));
+      var done = false;
+      final future = requireSignIn(ctx, h.ref).whenComplete(() => done = true);
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const Key('auth_switch')));
+      await t.pumpAndSettle();
+      expect(find.byType(RegisterScreen), findsOneWidget);
+      expect(
+          t.widget<RegisterScreen>(find.byType(RegisterScreen)).from, '/lists');
+      expect(done, isFalse);
+      await submitForm(t);
+      expect(await future, isTrue);
+      expect(h.location(t), '/lists');
+    });
+
+    testWidgets('closing the register screen after a switch returns false',
+        (t) async {
+      final h = await pumpApp(t);
+      await tapTab(t, 'Listes');
+      final ctx = t.element(find.byType(ListsScreen));
+      final future = requireSignIn(ctx, h.ref);
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const Key('auth_switch')));
+      await t.pumpAndSettle();
+      await t.tap(find.byTooltip('Fermer'));
+      await t.pumpAndSettle();
+      expect(await future, isFalse);
+      expect(h.container.read(sessionProvider), isA<Guest>());
+      expect(h.location(t), '/lists');
+      // The gate is free again.
+      final again = requireSignIn(ctx, h.ref);
+      await t.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      await t.tap(find.byTooltip('Fermer'));
+      await t.pumpAndSettle();
+      expect(await again, isFalse);
     });
 
     testWidgets('closing the dialog returns false and stays Guest', (t) async {
@@ -249,7 +308,7 @@ void main() {
 
     testWidgets('signed in returns true without navigation', (t) async {
       final h = await pumpApp(t);
-      h.container.read(sessionProvider.notifier).debugSignIn();
+      h.fake.force(const SignedIn(FakeSessionController.user));
       final ctx = t.element(find.byType(OffersHomeScreen));
       expect(await requireSignIn(ctx, h.ref), isTrue);
       await t.pumpAndSettle();
@@ -361,7 +420,7 @@ void main() {
       show.value = false; // dispose the originating Consumer
       await t.pump();
       expect(find.text('origin'), findsNothing);
-      await t.tap(find.text('Se connecter (provisoire)'));
+      await submitForm(t);
       await t.pumpAndSettle();
       expect(await future, isTrue);
       expect(t.takeException(), isNull);
@@ -381,13 +440,13 @@ void main() {
         t.widget<SignInScreen>(find.byType(SignInScreen)).from,
         '/lists',
       );
-      await t.tap(find.text('Se connecter (provisoire)'));
+      await submitForm(t);
       await t.pumpAndSettle();
       expect(await f1, isTrue);
       expect(await f2, isTrue);
       expect(find.byType(SignInScreen), findsNothing);
       // A new call works again after completion (guest again).
-      h.container.read(sessionProvider.notifier).debugSignOut();
+      h.fake.force(const Guest());
       final f3 = requireSignIn(ctx, h.ref);
       await t.pumpAndSettle();
       expect(find.byType(SignInScreen), findsOneWidget);
@@ -422,7 +481,7 @@ void main() {
       await t.pumpAndSettle();
       expect(find.byType(RegisterScreen), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
-      await t.tap(find.text('Se connecter (provisoire)'));
+      await submitForm(t);
       await t.pumpAndSettle();
       expect(await f, isTrue);
       expect(find.byType(RegisterScreen), findsNothing);
