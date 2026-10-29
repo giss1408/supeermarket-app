@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 import dj_database_url
 
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     "stores",
     "shopping",
     "staff",
+    "uploads",
 ]
 
 MIDDLEWARE = [
@@ -91,6 +93,11 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+STORAGES: dict[str, dict[str, Any]] = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

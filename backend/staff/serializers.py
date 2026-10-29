@@ -6,6 +6,7 @@ from rest_framework import serializers
 from catalog.models import Category, Product
 from offers.models import Flyer, Offer
 from stores.models import OpeningHours, Store
+from uploads.fields import UploadedImageNameField
 
 MAX_ID = 2**31 - 1
 
@@ -17,10 +18,12 @@ class StaffCategorySerializer(serializers.ModelSerializer):
 
 
 class StaffProductSerializer(serializers.ModelSerializer):
+    image_name = UploadedImageNameField(source="image")
+
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "category", "unit", "ean", "image"]
-        read_only_fields = ["image"]  # image writes arrive with the upload task
+        fields = ["id", "name", "description", "category", "unit", "ean", "image", "image_name"]
+        read_only_fields = ["image"]
 
 
 class OfferFieldsSerializer(serializers.ModelSerializer):
@@ -96,10 +99,20 @@ class StaffFlyerSerializer(serializers.ModelSerializer):
     """Create accepts nested ``offers``; PATCH rejects them (use /staff/offers)."""
 
     offers = OfferFieldsSerializer(many=True, required=False)
+    cover_image_name = UploadedImageNameField(source="cover_image")
 
     class Meta:
         model = Flyer
-        fields = ["id", "title", "valid_from", "valid_to", "status", "cover_image", "offers"]
+        fields = [
+            "id",
+            "title",
+            "valid_from",
+            "valid_to",
+            "status",
+            "cover_image",
+            "cover_image_name",
+            "offers",
+        ]
         read_only_fields = ["status", "cover_image"]
 
     def validate_offers(self, value):
