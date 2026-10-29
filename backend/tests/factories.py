@@ -100,3 +100,25 @@ class ListItemFactory(factory.django.DjangoModelFactory):
     list = factory.SubFactory(ShoppingListFactory)
     text = factory.Sequence(lambda n: f"Item {n}")
     quantity = 1
+
+
+class PaymentMethodFactory(factory.django.DjangoModelFactory):
+    """Provider is unique, so pass it explicitly (default wave) or use ``create_all``."""
+
+    class Meta:
+        model = "payments.PaymentMethod"
+
+    provider = "wave"
+    phone_number = "+2250700000001"
+    display_name = ""
+    instructions = ""
+    is_active = True
+
+    @classmethod
+    def create_all(cls, **kwargs):
+        numbers = {
+            "wave": "+2250700000001",
+            "orange_money": "+2250500000002",
+            "mtn_momo": "+2250100000003",
+        }
+        return [cls.create(provider=p, **{"phone_number": n, **kwargs}) for p, n in numbers.items()]
