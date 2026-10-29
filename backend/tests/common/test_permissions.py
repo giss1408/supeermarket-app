@@ -1,5 +1,6 @@
 from unittest import mock
 
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.test import APIRequestFactory
 
 from common.permissions import IsOwner, IsStaff, ReadOnly
@@ -44,3 +45,14 @@ def test_read_only():
     assert ReadOnly().has_permission(req("options"), None)
     assert not ReadOnly().has_permission(req("post"), None)
     assert not ReadOnly().has_permission(req("delete"), None)
+
+
+def test_is_owner_denies_anonymous_on_null_owner():
+    request = factory.get("/")
+    request.user = AnonymousUser()
+    assert not IsOwner().has_object_permission(request, None, mock.Mock(user_id=None))
+
+
+def test_is_owner_allows_authenticated_matching_user():
+    request = req(id=5, is_authenticated=True)
+    assert IsOwner().has_object_permission(request, None, mock.Mock(user_id=5))

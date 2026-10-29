@@ -16,7 +16,8 @@ class IsOwner(BasePermission):
     """Object-level: the object's ``user_id`` equals the requesting user's id."""
 
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
-        return bool(obj.user_id == request.user.id)
+        user = request.user
+        return bool(user and user.is_authenticated and obj.user_id == user.id)
 
 
 class ReadOnly(BasePermission):
