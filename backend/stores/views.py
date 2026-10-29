@@ -1,7 +1,17 @@
 from typing import Any
 
 from django.db.models import FloatField, Prefetch, Q, QuerySet, Value
-from django.db.models.functions import ASin, Cast, Cos, Least, Power, Radians, Sin, Sqrt
+from django.db.models.functions import (
+    ASin,
+    Cast,
+    Cos,
+    Greatest,
+    Least,
+    Power,
+    Radians,
+    Sin,
+    Sqrt,
+)
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
@@ -29,8 +39,9 @@ def annotate_distance(qs: QuerySet[Store], lat: float, lng: float) -> QuerySet[S
     dlat = lat2 - lat1
     dlng = Radians(_float("longitude")) - Radians(Value(lng))
     a = Power(Sin(dlat / 2), 2) + Cos(lat1) * Cos(lat2) * Power(Sin(dlng / 2), 2)
-    # Least() guards against a hair over 1.0 from float rounding (sqrt/asin domain).
-    distance = 2 * EARTH_RADIUS_KM * ASin(Sqrt(Least(a, Value(1.0))))
+    # Clamp to [0, 1]: float rounding (or a row with an out-of-range latitude) must never push
+    # the argument outside the sqrt/asin domain and fail the whole list.
+    distance = 2 * EARTH_RADIUS_KM * ASin(Sqrt(Greatest(Least(a, Value(1.0)), Value(0.0))))
     return qs.annotate(distance_km=Cast(distance, FloatField()))
 
 

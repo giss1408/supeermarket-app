@@ -64,17 +64,20 @@ def validate_and_resize(file: UploadedFile, max_edge: int = 1600) -> ContentFile
         raise _reject("Upload a valid JPEG, PNG or WebP image.") from None
 
     assert fmt is not None
-    img.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)  # never upscales
-
-    out = io.BytesIO()
-    if fmt == "JPEG":
-        _flatten_for_jpeg(img).save(out, "JPEG", quality=QUALITY)
-    elif fmt == "PNG":
-        if img.mode not in ("1", "L", "LA", "P", "RGB", "RGBA"):
-            img = img.convert("RGBA" if "A" in img.getbands() else "RGB")
-        img.save(out, "PNG", optimize=True)
-    else:
-        if img.mode not in ("RGB", "RGBA"):
-            img = img.convert("RGBA" if img.has_transparency_data else "RGB")
-        img.save(out, "WEBP", quality=QUALITY)
+    try:
+        img.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)  # never upscales
+        out = io.BytesIO()
+        if fmt == "JPEG":
+            _flatten_for_jpeg(img).save(out, "JPEG", quality=QUALITY)
+        elif fmt == "PNG":
+            if img.mode not in ("1", "L", "LA", "P", "RGB", "RGBA"):
+                img = img.convert("RGBA" if "A" in img.getbands() else "RGB")
+            img.save(out, "PNG", optimize=True)
+        else:
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGBA" if img.has_transparency_data else "RGB")
+            img.save(out, "WEBP", quality=QUALITY)
+    except (OSError, SyntaxError, ValueError, KeyError, EOFError):
+        # Exotic modes (e.g. I;16) that Pillow cannot convert or encode are a client error.
+        raise _reject("Upload a valid JPEG, PNG or WebP image.") from None
     return ContentFile(out.getvalue(), name=f"image.{ALLOWED_FORMATS[fmt]}")

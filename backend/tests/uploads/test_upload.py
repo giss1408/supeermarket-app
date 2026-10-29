@@ -241,3 +241,25 @@ def test_validate_and_resize_custom_max_edge():
     data = make_image("PNG", size=(300, 100))
     out = validate_and_resize(SimpleUploadedFile("a.png", data, "image/png"), max_edge=150)
     assert Image.open(io.BytesIO(out.read())).size == (150, 50)
+
+
+def test_16_bit_grayscale_png_never_500(staff_client):
+    buf = io.BytesIO()
+    Image.new("I;16", (20, 10)).save(buf, "PNG")
+    resp = post(staff_client, buf.getvalue())
+    assert resp.status_code in (201, 400)
+    if resp.status_code == 201:
+        assert stored(resp.json()["name"]).size == (20, 10)
+    else:
+        assert_file_error(resp)
+
+
+@pytest.mark.parametrize("error", [ValueError, OSError, KeyError])
+def test_encode_failure_is_400_not_500(staff_client, monkeypatch, error):
+    def boom(*args, **kwargs):
+        raise error("cannot encode")
+
+    monkeypatch.setattr(Image.Image, "convert", boom)
+    buf = io.BytesIO()
+    Image.new("I;16", (20, 10)).save(buf, "PNG")
+    assert_file_error(post(staff_client, buf.getvalue()))

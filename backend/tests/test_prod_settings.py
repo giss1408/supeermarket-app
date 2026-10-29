@@ -50,9 +50,10 @@ def load(names: list[str], env: dict[str, str | None] | None = None) -> dict[str
 def assert_improperly_configured(env: dict[str, str | None], variable: str) -> None:
     result = run_py("from config.settings import prod", env)
     assert result.returncode != 0
-    assert "ImproperlyConfigured" in result.stderr
-    assert "KeyError" not in result.stderr
-    assert variable in result.stderr
+    lines = [line for line in result.stderr.strip().splitlines() if line.strip()]
+    final = lines[-1]  # the exception line itself, not a traceback frame or source line
+    assert final.startswith("django.core.exceptions.ImproperlyConfigured:"), final
+    assert variable in final
 
 
 def test_prod_settings_require_secret_key_and_database_url() -> None:

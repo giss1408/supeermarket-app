@@ -170,3 +170,32 @@ def test_store_detail_distance_with_coordinates(client):
     resp = client.get(f"/api/v1/stores/{near.id}?lat=50.7374&lng=7.0982")
     assert resp.data["distance_km"] == pytest.approx(0.28, abs=0.05)
     assert client.get(f"/api/v1/stores/{near.id}?lat=50.7").status_code == 400
+
+
+def test_out_of_range_latitude_row_does_not_break_distance_list(client):
+    from stores.models import Store
+
+    Store.objects.bulk_create(  # bypasses the model validators
+        [
+            Store(
+                name="Bad",
+                address="x",
+                city="y",
+                postcode="1",
+                latitude=Decimal("91"),
+                longitude=Decimal("7"),
+            ),
+            Store(
+                name="Antipode",
+                address="x",
+                city="y",
+                postcode="1",
+                latitude=Decimal("-50.7374"),
+                longitude=Decimal("-172.9018"),
+            ),
+        ]
+    )
+    StoreFactory(name="Good")
+    resp = client.get("/api/v1/stores?lat=50.7374&lng=7.0982")
+    assert resp.status_code == 200
+    assert len(resp.json()["results"]) == 3

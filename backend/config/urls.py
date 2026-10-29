@@ -8,7 +8,6 @@ from rest_framework.permissions import AllowAny
 
 import common.openapi  # noqa: F401  (registers the bearerAuth scheme extension)
 
-
 handler400 = "common.handlers.handler400"
 handler403 = "common.handlers.handler403"
 handler404 = "common.handlers.handler404"

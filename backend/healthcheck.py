@@ -9,10 +9,22 @@ import os
 import sys
 import urllib.request
 
-host = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")[0].strip() or "localhost"
-request = urllib.request.Request("http://127.0.0.1:8000/healthz", headers={"Host": host})
-try:
-    with urllib.request.urlopen(request, timeout=3) as response:
-        sys.exit(0 if response.status == 200 else 1)
-except Exception:
-    sys.exit(1)
+
+def first_host(allowed_hosts: str) -> str:
+    """First ALLOWED_HOSTS entry as a usable Host header (leading '.' wildcard stripped)."""
+    entry = allowed_hosts.split(",")[0].strip().lstrip(".")
+    return entry or "localhost"
+
+
+def main() -> int:
+    host = first_host(os.environ.get("ALLOWED_HOSTS", "localhost"))
+    request = urllib.request.Request("http://127.0.0.1:8000/healthz", headers={"Host": host})
+    try:
+        with urllib.request.urlopen(request, timeout=3) as response:
+            return 0 if response.status == 200 else 1
+    except Exception:
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
