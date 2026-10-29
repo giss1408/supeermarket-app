@@ -1,0 +1,61 @@
+{
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 4,
+            "name": "Supermarché Plateau",
+            "address": "Avenue Franchet d'Esperey",
+            "city": "Abidjan",
+            "postcode": "01",
+            "latitude": "5.322000",
+            "longitude": "-4.021000",
+            "phone": "+2252720000104",
+            "distance_km": 4.45
+        },
+        {
+            "id": 1,
+            "name": "Supermarché Cocody Angré",
+            "address": "Boulevard des Martyrs, Angré 8e tranche",
+            "city": "Abidjan",
+            "postcode": "01",
+            "latitude": "5.401500",
+            "longitude": "-3.987000",
+            "phone": "+2252722000101",
+            "distance_km": 5.18
+        },
+        {
+            "id": 2,
+            "name": "Supermarché Marcory Zone 4",
+            "address": "Rue du Canal, Zone 4",
+            "city": "Abidjan",
+            "postcode": "01",
+            "latitude": "5.298000",
+            "longitude": "-3.998000",
+            "phone": "+2252721000102",
+            "distance_km": 6.99
+        },
+        {
+            "id": 3,
+            "name": "Supermarché Yopougon Siporex",
+            "address": "Avenue principale de Siporex",
+            "city": "Abidjan",
+            "postcode": "01",
+            "latitude": "5.336000",
+            "longitude": "-4.085000",
+            "phone": "+2252723000103",
+            "distance_km": 8.9
+        },
+        {
+            "id": 5,
+            "name": "Supermarché Bouaké Centre",
+            "address": "Avenue Houphouët-Boigny",
+            "city": "Bouaké",
+            "postcode": "01",
+            "latitude": "7.690000",
+            "longitude": "-5.030000",
+            "phone": "+2252731000105",
+            "distance_km": 282.6
+        }
+    ]
+}

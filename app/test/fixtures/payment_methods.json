@@ -1,0 +1,27 @@
+{
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "provider": "mtn_momo",
+            "phone_number": "+2250500000003",
+            "display_name": "MTN MoMo",
+            "instructions": "Envoyez le montant au numéro MTN MoMo ci-dessus, puis présentez le SMS reçu.",
+            "updated_at": "2026-10-29T20:10:13.725480Z"
+        },
+        {
+            "provider": "orange_money",
+            "phone_number": "+2250700000002",
+            "display_name": "Orange Money",
+            "instructions": "Envoyez le montant au numéro Orange Money ci-dessus, puis présentez le SMS reçu.",
+            "updated_at": "2026-10-29T20:10:13.711316Z"
+        },
+        {
+            "provider": "wave",
+            "phone_number": "+2250100000001",
+            "display_name": "Wave",
+            "instructions": "Envoyez le montant au numéro Wave ci-dessus, puis présentez la confirmation en caisse.",
+            "updated_at": "2026-10-29T20:10:13.693225Z"
+        }
+    ]
+}

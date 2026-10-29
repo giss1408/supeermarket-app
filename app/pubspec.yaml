@@ -51,6 +51,8 @@ dependencies:
   screen_brightness: 2.1.1
   wakelock_plus: 1.2.8
   uuid: 4.6.0
+  api_client:
+    path: packages/api_client
 
 dev_dependencies:
   flutter_test:

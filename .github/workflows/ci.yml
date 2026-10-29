@@ -81,6 +81,9 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: API client is up to date with backend/openapi.yaml
+        working-directory: .
+        run: app/tool/check_api_drift.sh
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart format --set-exit-if-changed .
       - run: flutter analyze

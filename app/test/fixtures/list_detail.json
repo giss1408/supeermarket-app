@@ -1,0 +1,31 @@
+{
+    "id": 1,
+    "name": "Courses",
+    "items": [
+        {
+            "id": 1,
+            "product": {
+                "id": 1,
+                "name": "Bananes plantain",
+                "unit": "1 kg",
+                "image": null
+            },
+            "text": "",
+            "quantity": 2,
+            "checked": false,
+            "created_at": "2026-10-29T20:10:28.896887Z",
+            "updated_at": "2026-10-29T20:10:28.896904Z"
+        },
+        {
+            "id": 2,
+            "product": null,
+            "text": "Pain frais",
+            "quantity": 1,
+            "checked": false,
+            "created_at": "2026-10-29T20:10:36.655428Z",
+            "updated_at": "2026-10-29T20:10:36.655459Z"
+        }
+    ],
+    "created_at": "2026-10-29T20:10:28.813115Z",
+    "updated_at": "2026-10-29T20:10:36.661847Z"
+}

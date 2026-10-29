@@ -1,0 +1,258 @@
+{
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "flyer": 1,
+            "price": "750.00",
+            "old_price": "1000.00",
+            "badge_text": "-25%",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 1,
+                "name": "Bananes plantain",
+                "description": "",
+                "image": null,
+                "unit": "1 kg",
+                "category": {
+                    "id": 1,
+                    "name": "Fruits et légumes",
+                    "slug": "fruits-legumes"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "flyer": 1,
+            "price": "1000.00",
+            "old_price": null,
+            "badge_text": "",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 2,
+                "name": "Mangues",
+                "description": "",
+                "image": null,
+                "unit": "1 kg",
+                "category": {
+                    "id": 1,
+                    "name": "Fruits et légumes",
+                    "slug": "fruits-legumes"
+                }
+            }
+        },
+        {
+            "id": 3,
+            "flyer": 1,
+            "price": "1100.00",
+            "old_price": "1300.00",
+            "badge_text": "Offre de la semaine",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 5,
+                "name": "Lait entier",
+                "description": "",
+                "image": null,
+                "unit": "1 L",
+                "category": {
+                    "id": 2,
+                    "name": "Produits laitiers et œufs",
+                    "slug": "produits-laitiers-oeufs"
+                }
+            }
+        },
+        {
+            "id": 4,
+            "flyer": 1,
+            "price": "2500.00",
+            "old_price": null,
+            "badge_text": "",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 6,
+                "name": "Œufs frais",
+                "description": "",
+                "image": null,
+                "unit": "30 unités",
+                "category": {
+                    "id": 2,
+                    "name": "Produits laitiers et œufs",
+                    "slug": "produits-laitiers-oeufs"
+                }
+            }
+        },
+        {
+            "id": 5,
+            "flyer": 1,
+            "price": "800.00",
+            "old_price": "1000.00",
+            "badge_text": "-20%",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 9,
+                "name": "Pain de mie",
+                "description": "",
+                "image": null,
+                "unit": "500 g",
+                "category": {
+                    "id": 3,
+                    "name": "Boulangerie",
+                    "slug": "boulangerie"
+                }
+            }
+        },
+        {
+            "id": 6,
+            "flyer": 1,
+            "price": "1000.00",
+            "old_price": null,
+            "badge_text": "Nouveau",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 10,
+                "name": "Croissants",
+                "description": "",
+                "image": null,
+                "unit": "4 unités",
+                "category": {
+                    "id": 3,
+                    "name": "Boulangerie",
+                    "slug": "boulangerie"
+                }
+            }
+        },
+        {
+            "id": 7,
+            "flyer": 1,
+            "price": "3500.00",
+            "old_price": "4500.00",
+            "badge_text": "Économisez 1000 F",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 13,
+                "name": "Poulet entier",
+                "description": "",
+                "image": null,
+                "unit": "1 kg",
+                "category": {
+                    "id": 4,
+                    "name": "Viandes et poissons",
+                    "slug": "viandes-poissons"
+                }
+            }
+        },
+        {
+            "id": 8,
+            "flyer": 1,
+            "price": "4500.00",
+            "old_price": null,
+            "badge_text": "",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 15,
+                "name": "Poisson capitaine",
+                "description": "",
+                "image": null,
+                "unit": "1 kg",
+                "category": {
+                    "id": 4,
+                    "name": "Viandes et poissons",
+                    "slug": "viandes-poissons"
+                }
+            }
+        },
+        {
+            "id": 9,
+            "flyer": 1,
+            "price": "5500.00",
+            "old_price": "7500.00",
+            "badge_text": "-27%",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 17,
+                "name": "Riz parfumé",
+                "description": "",
+                "image": null,
+                "unit": "5 kg",
+                "category": {
+                    "id": 5,
+                    "name": "Épicerie",
+                    "slug": "epicerie"
+                }
+            }
+        },
+        {
+            "id": 10,
+            "flyer": 1,
+            "price": "1800.00",
+            "old_price": "2300.00",
+            "badge_text": "Meilleur prix",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 18,
+                "name": "Huile de palme",
+                "description": "",
+                "image": null,
+                "unit": "1 L",
+                "category": {
+                    "id": 5,
+                    "name": "Épicerie",
+                    "slug": "epicerie"
+                }
+            }
+        },
+        {
+            "id": 11,
+            "flyer": 1,
+            "price": "1500.00",
+            "old_price": null,
+            "badge_text": "",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 21,
+                "name": "Eau minérale",
+                "description": "",
+                "image": null,
+                "unit": "paquet de 6 x 1,5 L",
+                "category": {
+                    "id": 6,
+                    "name": "Boissons",
+                    "slug": "boissons"
+                }
+            }
+        },
+        {
+            "id": 12,
+            "flyer": 1,
+            "price": "2000.00",
+            "old_price": "2500.00",
+            "badge_text": "-20%",
+            "valid_from": null,
+            "valid_to": null,
+            "product": {
+                "id": 23,
+                "name": "Café moulu",
+                "description": "",
+                "image": null,
+                "unit": "250 g",
+                "category": {
+                    "id": 6,
+                    "name": "Boissons",
+                    "slug": "boissons"
+                }
+            }
+        }
+    ]
+}

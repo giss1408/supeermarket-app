@@ -1,0 +1,4 @@
+{
+    "refresh": "refresh-token-fixture",
+    "access": "access-token-fixture"
+}

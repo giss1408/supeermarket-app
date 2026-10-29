@@ -1,0 +1,36 @@
+{
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "name": "Fruits et légumes",
+            "slug": "fruits-legumes"
+        },
+        {
+            "id": 2,
+            "name": "Produits laitiers et œufs",
+            "slug": "produits-laitiers-oeufs"
+        },
+        {
+            "id": 3,
+            "name": "Boulangerie",
+            "slug": "boulangerie"
+        },
+        {
+            "id": 4,
+            "name": "Viandes et poissons",
+            "slug": "viandes-poissons"
+        },
+        {
+            "id": 5,
+            "name": "Épicerie",
+            "slug": "epicerie"
+        },
+        {
+            "id": 6,
+            "name": "Boissons",
+            "slug": "boissons"
+        }
+    ]
+}

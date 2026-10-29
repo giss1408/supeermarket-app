@@ -1,0 +1,11 @@
+{
+    "code": "validation_error",
+    "detail": "Invalid input.",
+    "fields": {
+        "password": [
+            "Ce mot de passe est trop court. Il doit contenir au minimum 8 caractères.",
+            "Ce mot de passe est trop courant.",
+            "Ce mot de passe est entièrement numérique."
+        ]
+    }
+}

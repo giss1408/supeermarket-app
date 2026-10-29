@@ -1,0 +1,14 @@
+{
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "title": "Prospectus de la semaine",
+            "valid_from": "2026-10-29",
+            "valid_to": "2026-11-04",
+            "cover_image": null,
+            "offer_count": 12
+        }
+    ]
+}

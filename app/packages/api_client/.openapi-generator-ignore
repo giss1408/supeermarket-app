@@ -1,0 +1,9 @@
+# Files the generator must not emit (kept out via this file, not deleted by hand).
+README.md
+doc/**
+docs/**
+test/**
+.gitignore
+.travis.yml
+git_push.sh
+pubspec.yaml

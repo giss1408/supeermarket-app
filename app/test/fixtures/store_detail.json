@@ -1,0 +1,43 @@
+{
+    "id": 5,
+    "name": "Supermarché Bouaké Centre",
+    "address": "Avenue Houphouët-Boigny",
+    "city": "Bouaké",
+    "postcode": "01",
+    "latitude": "7.690000",
+    "longitude": "-5.030000",
+    "phone": "+2252731000105",
+    "distance_km": null,
+    "opening_hours": [
+        {
+            "weekday": 0,
+            "opens": "07:00",
+            "closes": "21:00"
+        },
+        {
+            "weekday": 1,
+            "opens": "07:00",
+            "closes": "21:00"
+        },
+        {
+            "weekday": 2,
+            "opens": "07:00",
+            "closes": "21:00"
+        },
+        {
+            "weekday": 3,
+            "opens": "07:00",
+            "closes": "21:00"
+        },
+        {
+            "weekday": 4,
+            "opens": "07:00",
+            "closes": "21:00"
+        },
+        {
+            "weekday": 5,
+            "opens": "08:00",
+            "closes": "18:00"
+        }
+    ]
+}
