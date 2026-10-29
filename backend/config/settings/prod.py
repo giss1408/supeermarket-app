@@ -56,6 +56,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
 
+# Caddy is the single trusted proxy in front of gunicorn; without this every client would share
+# the proxy's IP (and one auth throttle bucket). Set 0 if gunicorn is exposed directly.
+REST_FRAMEWORK = {  # noqa: F405
+    **REST_FRAMEWORK,  # noqa: F405
+    "NUM_PROXIES": int(os.environ.get("NUM_PROXIES", "1")),  # noqa: F405
+}
+
 # Shared cache so the auth throttle limit holds across gunicorn workers.
 # Create the table with `python manage.py createcachetable` after `migrate`.
 CACHES = {

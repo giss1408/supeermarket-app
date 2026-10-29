@@ -114,6 +114,13 @@ def test_prod_debug_false_and_secure_cookies() -> None:
     assert tuned["SECURE_HSTS_INCLUDE_SUBDOMAINS"] is True
 
 
+def test_prod_num_proxies_defaults_to_one_and_is_configurable() -> None:
+    assert load(["REST_FRAMEWORK"])["REST_FRAMEWORK"]["NUM_PROXIES"] == 1
+    tuned = load(["REST_FRAMEWORK"], {"NUM_PROXIES": "0"})
+    assert tuned["REST_FRAMEWORK"]["NUM_PROXIES"] == 0
+    assert tuned["REST_FRAMEWORK"]["EXCEPTION_HANDLER"] == "common.errors.custom_exception_handler"
+
+
 def test_prod_does_not_use_dev_database_default() -> None:
     db = load(["DATABASES"])["DATABASES"]["default"]
     assert db["HOST"] == "db.example.com"

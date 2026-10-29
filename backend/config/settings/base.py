@@ -110,6 +110,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultCursorPagination",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {"auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min")},
+    # Reverse proxies in front of the app: 0 = none (REMOTE_ADDR is the client). With N > 0 the
+    # throttle keys on the Nth-from-right X-Forwarded-For entry, which a client cannot spoof.
+    "NUM_PROXIES": int(os.environ.get("NUM_PROXIES", "0")),
 }
 
 SIMPLE_JWT = {
