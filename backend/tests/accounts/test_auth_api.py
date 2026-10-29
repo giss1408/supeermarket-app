@@ -1,7 +1,14 @@
 import re
+from datetime import timedelta
 
 import pytest
+from django.test import override_settings
+from django.urls import path
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.test import APIClient
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
 
 from accounts.models import LoyaltyCard, User
 from tests.factories import PASSWORD, UserFactory
@@ -84,11 +91,37 @@ def test_login_wrong_password_returns_401_standard_error_shape(client):
     assert set(body) == {"code", "detail", "fields"}
 
 
+class _Protected(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({})
+
+
+urlpatterns = [path("protected", _Protected.as_view())]
+
+
+@override_settings(ROOT_URLCONF=__name__)
 def test_invalid_access_token_standard_error_shape(client):
     client.credentials(HTTP_AUTHORIZATION="Bearer garbage")
-    r = client.post(LOGOUT, {"refresh": "x"}, format="json")
+    r = client.get("/protected")
     assert r.status_code == 401
     assert set(r.json()) == {"code", "detail", "fields"}
+
+
+@pytest.mark.parametrize("bearer", ["garbage", "expired"])
+def test_logout_works_with_bad_access_token(client, bearer):
+    user = UserFactory()
+    tokens = _login(client, user)
+    if bearer == "expired":
+        token = AccessToken(tokens["access"])
+        token.set_exp(lifetime=-timedelta(minutes=1))
+        bearer = str(token)
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {bearer}")
+    r = client.post(LOGOUT, {"refresh": tokens["refresh"]}, format="json")
+    assert r.status_code == 204
+    client.credentials()
+    assert client.post(REFRESH, {"refresh": tokens["refresh"]}, format="json").status_code == 401
 
 
 def test_refresh_rotates_and_old_token_rejected(client):

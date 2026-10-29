@@ -14,6 +14,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 class LogoutView(APIView):
+    authentication_classes: list[type] = []
     permission_classes = [AllowAny]
     serializer_class = LogoutSerializer
 
