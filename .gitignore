@@ -12,3 +12,14 @@ staticfiles/
 .coverage
 .env.prod
 *.egg-info/
+
+# Flutter app (build_runner output is generated locally and in CI, not committed;
+# app/packages/api_client/** generated code IS committed)
+app/lib/**/*.g.dart
+app/test/**/*.g.dart
+app/lib/**/*.freezed.dart
+app/build/
+app/.dart_tool/
+app/ios/Pods/
+app/android/local.properties
+app/android/.gradle/

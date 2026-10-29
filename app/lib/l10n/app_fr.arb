@@ -1,0 +1,11 @@
+{
+  "@@locale": "fr",
+  "appName": "Supermarché",
+  "@appName": {
+    "description": "Nom affiché de l'application (provisoire)."
+  },
+  "appTitle": "Supermarché - courses et offres",
+  "@appTitle": {
+    "description": "Titre de l'application pour le système."
+  }
+}
