@@ -581,3 +581,64 @@ def test_flyer_locks_are_taken_in_ascending_id_order(staff_client):
     ]
     assert locks
     assert all('ORDER BY "offers_flyer"."id"' in sql for sql in locks)
+
+
+# ---------- final-wave staff integrity fixes ----------
+
+
+def test_patch_without_flyer_does_not_write_stale_flyer(staff_client, monkeypatch):
+    a, b = FlyerFactory(), FlyerFactory()
+    x = OfferFactory(flyer=a, price=Decimal("5.00"))
+    _after_get_object(monkeypatch, lambda o: Offer.objects.filter(pk=o.pk).update(flyer=b))
+    resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"price": "3.50"}, format="json")
+    assert resp.status_code == 200
+    assert resp.json()["flyer"] == b.id
+    x.refresh_from_db()
+    assert x.flyer_id == b.id
+    assert x.price == Decimal("3.50")
+
+
+def test_patch_without_flyer_updates_only_given_fields(staff_client):
+    x = OfferFactory(badge_text="Old", sort_order=4)
+    resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"badge_text": "New"}, format="json")
+    assert resp.status_code == 200
+    x.refresh_from_db()
+    assert (x.badge_text, x.sort_order) == ("New", 4)
+
+
+def test_delete_published_flyer_is_refused(staff_client):
+    pub = FlyerFactory(status="published")
+    offer = OfferFactory(flyer=pub)
+    resp = staff_client.delete(f"{BASE}/flyers/{pub.id}")
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "validation_error"
+    assert "unpublish" in body["fields"]["status"][0].lower()
+    assert Flyer.objects.filter(pk=pub.id).exists()
+    assert Offer.objects.filter(pk=offer.pk).exists()
+
+
+def test_delete_draft_flyer_after_unpublish_cascades_offers(staff_client):
+    flyer = FlyerFactory(status="draft")
+    offer = OfferFactory(flyer=flyer)
+    assert staff_client.delete(f"{BASE}/flyers/{flyer.id}").status_code == 204
+    assert not Offer.objects.filter(pk=offer.pk).exists()
+
+
+def test_move_to_flyer_deleted_after_validation_is_400(staff_client, monkeypatch):
+    from staff.views import OfferViewSet
+
+    a, target = FlyerFactory(), FlyerFactory()
+    x = OfferFactory(flyer=a)
+    original = OfferViewSet.perform_update
+
+    def wrapper(self, serializer):
+        Flyer.objects.filter(pk=target.pk)._raw_delete("default")  # deleted after validation
+        return original(self, serializer)
+
+    monkeypatch.setattr(OfferViewSet, "perform_update", wrapper)
+    resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"flyer": target.id}, format="json")
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["fields"] == {"flyer": ["Flyer does not exist."]}
+    assert Offer.objects.get(pk=x.pk).flyer_id == a.id

@@ -132,6 +132,9 @@ class OfferViewSet(StaffViewSet):
             flyers = {
                 f.pk: f for f in Flyer.objects.filter(pk__in=ids).order_by("pk").select_for_update()
             }
+            if new_flyer_id is not None and new_flyer_id not in flyers:
+                # The target was deleted between validation and the lock.
+                raise serializers.ValidationError({"flyer": ["Flyer does not exist."]})
             old = flyers[offer.flyer_id]
             if new_flyer_id == offer.flyer_id:
                 yield  # already there: not a move
@@ -153,7 +156,14 @@ class OfferViewSet(StaffViewSet):
             with self._guard_last_offer(offer, new_flyer.pk):
                 serializer.save()
         else:
-            serializer.save()
+            # Write only the given fields: a full save() would restore the stale in-memory
+            # flyer_id and undo a concurrent move.
+            data = serializer.validated_data
+            for name, value in data.items():
+                setattr(offer, name, value)
+            if data:
+                offer.save(update_fields=list(data))
+            offer.refresh_from_db(fields=["flyer"])
 
 
 @extend_schema_view(
@@ -185,6 +195,13 @@ class FlyerViewSet(StaffViewSet):
         except DjangoValidationError as exc:
             raise serializers.ValidationError(exc.messages) from None
         return Response(self.get_serializer(flyer).data)
+
+    def perform_destroy(self, instance: Flyer) -> None:
+        if instance.status == Flyer.Status.PUBLISHED:
+            raise serializers.ValidationError(
+                {"status": ["Cannot delete a published flyer; unpublish it first."]}
+            )
+        super().perform_destroy(instance)
 
     @action(detail=True, methods=["post"])
     def publish(self, request: Request, pk: str | None = None) -> Response:
