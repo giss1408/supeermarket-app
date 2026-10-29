@@ -1,6 +1,8 @@
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DateRangeField, RangeOperators
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Func, Q, Value
 
 
 class Flyer(models.Model):
@@ -21,6 +23,23 @@ class Flyer(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=Q(valid_from__lte=F("valid_to")), name="flyer_valid_from_lte_valid_to"
+            ),
+            # Published flyers may not overlap; '[]' makes both end days inclusive.
+            ExclusionConstraint(
+                name="flyer_published_no_overlap",
+                expressions=[
+                    (
+                        Func(
+                            F("valid_from"),
+                            F("valid_to"),
+                            Value("[]"),
+                            function="daterange",
+                            output_field=DateRangeField(),
+                        ),
+                        RangeOperators.OVERLAPS,
+                    )
+                ],
+                condition=Q(status="published"),
             ),
         ]
 

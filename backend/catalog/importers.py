@@ -11,11 +11,15 @@ from .models import Category, Product
 COLUMNS = ["name", "category_slug", "unit", "ean", "description"]
 
 
-def _build(row: dict[str, str]) -> Product:
+def _build(row: dict[str, str], seen_eans: set[str]) -> Product:
     try:
         category = Category.objects.get(slug=row["category_slug"])
     except Category.DoesNotExist:
         raise LookupError(f"unknown category_slug '{row['category_slug']}'") from None
+    if row["ean"]:
+        if row["ean"] in seen_eans:
+            raise ValueError(f"duplicate EAN '{row['ean']}' in file")
+        seen_eans.add(row["ean"])
     return Product(
         name=row["name"],
         category=category,
@@ -26,4 +30,5 @@ def _build(row: dict[str, str]) -> Product:
 
 
 def import_products_csv(text: str) -> int:
-    return import_rows(text, COLUMNS, _build)
+    seen_eans: set[str] = set()
+    return import_rows(text, COLUMNS, lambda row: _build(row, seen_eans))

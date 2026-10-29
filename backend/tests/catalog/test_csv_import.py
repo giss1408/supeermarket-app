@@ -27,3 +27,12 @@ def test_product_csv_import_bad_row_imports_nothing():
     assert Product.objects.count() == 0
     assert any("Row 3" in e for e in exc.value.errors)
     assert any("Row 4" in e for e in exc.value.errors)
+
+
+def test_product_csv_duplicate_ean_in_file_imports_nothing():
+    CategoryFactory(slug="fruit")
+    data = HEADER + "A,fruit,,12345678,\nB,fruit,,12345678,\n"
+    with pytest.raises(CsvImportError) as exc:
+        import_products_csv(data)
+    assert Product.objects.count() == 0
+    assert any("Row 3" in e and "duplicate EAN" in e for e in exc.value.errors)

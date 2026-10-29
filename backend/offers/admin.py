@@ -17,6 +17,13 @@ class FlyerAdmin(admin.ModelAdmin):
     list_filter = ["status"]
     search_fields = ["title"]
     readonly_fields = ["status", "created_at", "updated_at"]
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = list(super().get_readonly_fields(request, obj))
+        if obj is not None and obj.status == Flyer.Status.PUBLISHED:
+            fields += ["valid_from", "valid_to"]
+        return fields
+
     inlines = [OfferInline]
     actions = ["publish_selected", "unpublish_selected"]
 
