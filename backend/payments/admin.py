@@ -12,6 +12,10 @@ from .validators import normalize_ci_phone
 
 
 class PaymentMethodForm(forms.ModelForm):
+    # Wider than the model's 14: input variants (spaces, 00225...) are normalised first,
+    # the model's max_length is enforced on the normalised value.
+    phone_number = forms.CharField(max_length=40)
+
     class Meta:
         model = PaymentMethod
         fields = ["provider", "phone_number", "display_name", "instructions", "is_active"]
@@ -60,6 +64,10 @@ class PaymentMethodChangeAdmin(admin.ModelAdmin):
         "new_phone_number",
         "old_is_active",
         "new_is_active",
+        "old_display_name",
+        "new_display_name",
+        "old_instructions",
+        "new_instructions",
     ]
     list_filter = ["provider", "changed_at"]
     search_fields = ["changed_by_email", "old_phone_number", "new_phone_number"]

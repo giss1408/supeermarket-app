@@ -42,6 +42,10 @@ class PaymentMethodChange(models.Model):
     new_phone_number = models.CharField(max_length=14, blank=True, null=True)  # noqa: DJ001
     old_is_active = models.BooleanField(null=True)
     new_is_active = models.BooleanField(null=True)
+    old_display_name = models.CharField(max_length=100, blank=True, null=True)  # noqa: DJ001
+    new_display_name = models.CharField(max_length=100, blank=True, null=True)  # noqa: DJ001
+    old_instructions = models.CharField(max_length=500, blank=True, null=True)  # noqa: DJ001
+    new_instructions = models.CharField(max_length=500, blank=True, null=True)  # noqa: DJ001
 
     class Meta:
         ordering = ["-changed_at", "-id"]

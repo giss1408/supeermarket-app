@@ -107,3 +107,44 @@ def test_change_admin_is_read_only(client, admin_user):
     delete_url = reverse("admin:payments_paymentmethodchange_delete", args=[c.pk])
     assert client.post(delete_url, {"post": "yes"}).status_code == 403
     assert PaymentMethodChange.objects.filter(pk=c.pk).exists()
+
+
+@pytest.mark.parametrize(
+    "raw",
+    ["+225 07 01 02 03 04", "00225 0701020304", "07 01 02 03 04", "+2250701020304"],
+)
+def test_admin_accepts_phone_variants(client, admin_user, raw):
+    resp = client.post(
+        reverse("admin:payments_paymentmethod_add"),
+        {"provider": "wave", "phone_number": raw, "is_active": "on"},
+    )
+    assert resp.status_code == 302
+    assert PaymentMethod.objects.get().phone_number == "+2250701020304"
+
+
+@pytest.mark.parametrize("raw", ["x" * 41, "07010203", "0701O20304"])
+def test_admin_rejects_bad_phone_with_field_error(client, admin_user, raw):
+    resp = client.post(
+        reverse("admin:payments_paymentmethod_add"),
+        {"provider": "wave", "phone_number": raw, "is_active": "on"},
+    )
+    assert resp.status_code == 200
+    assert "phone_number" in resp.context["adminform"].form.errors
+    assert not PaymentMethod.objects.exists()
+
+
+def test_admin_widget_has_no_maxlength_14(client, admin_user):
+    html = client.get(reverse("admin:payments_paymentmethod_add")).content.decode()
+    assert 'maxlength="14"' not in html
+
+
+def test_change_admin_shows_text_columns(client, admin_user):
+    from payments import services
+
+    m = PaymentMethodFactory()
+    services.update_method(m, user=admin_user, instructions="Other number")
+    c = PaymentMethodChange.objects.get()
+    page = client.get(reverse("admin:payments_paymentmethodchange_change", args=[c.pk]))
+    assert "Other number" in page.content.decode()
+    ma = __import__("django.contrib.admin", fromlist=["site"]).site._registry[PaymentMethodChange]
+    assert "new_instructions" in ma.list_display
