@@ -90,7 +90,7 @@ GoRouter buildAppRouter({List<RouteBase> offersRoutes = const []}) {
         builder: (context, state) => const PayScreen(),
       ),
       GoRoute(
-        path: '/sign-in',
+        path: Routes.signInPath,
         pageBuilder: (context, state) => MaterialPage<bool>(
           fullscreenDialog: true,
           key: state.pageKey,
@@ -100,7 +100,7 @@ GoRouter buildAppRouter({List<RouteBase> offersRoutes = const []}) {
         ),
       ),
       GoRoute(
-        path: '/register',
+        path: Routes.registerPath,
         pageBuilder: (context, state) => MaterialPage<bool>(
           fullscreenDialog: true,
           key: state.pageKey,

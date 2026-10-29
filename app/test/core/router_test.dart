@@ -10,6 +10,7 @@ import 'package:supermarket_app/core/router/routes.dart';
 import 'package:supermarket_app/core/router/sign_in_gate.dart';
 import 'package:supermarket_app/core/ui/not_found_page.dart';
 import 'package:supermarket_app/features/account/ui/account_screen.dart';
+import 'package:supermarket_app/features/account/ui/register_screen.dart';
 import 'package:supermarket_app/features/account/ui/sign_in_screen.dart';
 import 'package:supermarket_app/features/lists/ui/list_detail_screen.dart';
 import 'package:supermarket_app/features/lists/ui/lists_screen.dart';
@@ -257,10 +258,54 @@ void main() {
     });
   });
 
-  test('sanitizeFrom', () {
-    expect(sanitizeFrom('/lists'), '/lists');
-    expect(sanitizeFrom('/stores/3?x=1'), '/stores/3?x=1');
-    for (final bad in ['//evil.com', 'https://evil.com', 'evil', '', null]) {
+  test('sanitizeFrom accepts known locations', () {
+    for (final ok in [
+      '/lists',
+      '/lists/3f2c1b7e-9a54',
+      '/stores/3?x=1',
+      '/offers/flyers',
+      '/pay',
+      '/account',
+    ]) {
+      expect(sanitizeFrom(ok), ok);
+    }
+  });
+
+  test('sanitizeFrom rejects hostile or unknown values', () {
+    for (final bad in <String?>[
+      null,
+      '',
+      'evil',
+      '//evil.com',
+      '///x',
+      '/\\evil.com',
+      '/\\\\evil.com',
+      '/a\\b',
+      '/lists\\x',
+      'https://evil.com',
+      'https:evil',
+      'javascript:alert(1)',
+      ' /lists',
+      '/lists ',
+      '/lists\n',
+      '/\t/evil.com',
+      '/lists\u0000',
+      '/%2F%2Fevil.com',
+      '/%2fevil.com',
+      '/%5Cevil.com',
+      '/lists/%0A',
+      '/lists/../x',
+      '/lists/./x',
+      '/lists/..',
+      '/..',
+      '/${'a' * 3000}',
+      '/unknown',
+      '/signin',
+      '/sign-in',
+      '/sign-in?from=/lists',
+      '/register',
+      '/register?from=/lists',
+    ]) {
       expect(sanitizeFrom(bad), isNull, reason: '$bad');
     }
   });
@@ -279,6 +324,134 @@ void main() {
     expect(Routes.signIn(from: '/lists'), '/sign-in?from=%2Flists');
     expect(Routes.register(from: '/stores/3?x=1'),
         '/register?from=%2Fstores%2F3%3Fx%3D1');
+  });
+
+  group('sign-in gate hardening', () {
+    testWidgets('no throw when the origin is unmounted mid-dialog', (t) async {
+      final show = ValueNotifier<bool>(true);
+      addTearDown(show.dispose);
+      late BuildContext originCtx;
+      late WidgetRef originRef;
+      final testRouter = buildAppRouter(offersRoutes: [
+        GoRoute(
+          path: 'origin',
+          builder: (context, state) => Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: show,
+              builder: (_, visible, __) => visible
+                  ? Consumer(builder: (c, ref, _) {
+                      originCtx = c;
+                      originRef = ref;
+                      return const Text('origin');
+                    })
+                  : const SizedBox(),
+            ),
+          ),
+        ),
+      ]);
+      addTearDown(testRouter.dispose);
+      final h = await pumpApp(t, overrides: [
+        appRouterProvider.overrideWithValue(testRouter),
+      ]);
+      testRouter.go('/offers/origin');
+      await t.pumpAndSettle();
+      final future = requireSignIn(originCtx, originRef);
+      await t.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      show.value = false; // dispose the originating Consumer
+      await t.pump();
+      expect(find.text('origin'), findsNothing);
+      await t.tap(find.text('Se connecter (provisoire)'));
+      await t.pumpAndSettle();
+      expect(await future, isTrue);
+      expect(t.takeException(), isNull);
+      expect(h.container.read(sessionProvider), isA<SignedIn>());
+    });
+
+    testWidgets('overlapping calls push exactly one sign-in route', (t) async {
+      final h = await pumpApp(t);
+      await tapTab(t, 'Listes');
+      final ctx = t.element(find.byType(ListsScreen));
+      final f1 = requireSignIn(ctx, h.ref);
+      final f2 = requireSignIn(ctx, h.ref);
+      expect(identical(f1, f2), isTrue);
+      await t.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(
+        t.widget<SignInScreen>(find.byType(SignInScreen)).from,
+        '/lists',
+      );
+      await t.tap(find.text('Se connecter (provisoire)'));
+      await t.pumpAndSettle();
+      expect(await f1, isTrue);
+      expect(await f2, isTrue);
+      expect(find.byType(SignInScreen), findsNothing);
+      // A new call works again after completion (guest again).
+      h.container.read(sessionProvider.notifier).debugSignOut();
+      final f3 = requireSignIn(ctx, h.ref);
+      await t.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      await t.tap(find.byTooltip('Fermer'));
+      await t.pumpAndSettle();
+      expect(await f3, isFalse);
+    });
+  });
+
+  group('router-level from sanitizing and register', () {
+    for (final entry in {
+      Routes.signInPath: SignInScreen,
+      Routes.registerPath: RegisterScreen,
+    }.entries) {
+      testWidgets('${entry.key} sanitizes from', (t) async {
+        final h = await pumpApp(t);
+        h.router(t).go('${entry.key}?from=%2F%2Fevil.com');
+        await t.pumpAndSettle();
+        expect(find.byType(entry.value), findsOneWidget);
+        expect(find.byType(NavigationBar), findsNothing);
+        expect(_fromOf(t, entry.value), isNull);
+        h.router(t).go('${entry.key}?from=%2Flists');
+        await t.pumpAndSettle();
+        expect(_fromOf(t, entry.value), '/lists');
+      });
+    }
+
+    testWidgets('register is a dialog popping true / false', (t) async {
+      final h = await pumpApp(t);
+      final router = h.router(t);
+      var f = router.push<bool>(Routes.register(from: '/lists'));
+      await t.pumpAndSettle();
+      expect(find.byType(RegisterScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      await t.tap(find.text('Se connecter (provisoire)'));
+      await t.pumpAndSettle();
+      expect(await f, isTrue);
+      expect(find.byType(RegisterScreen), findsNothing);
+      f = router.push<bool>(Routes.register());
+      await t.pumpAndSettle();
+      await t.tap(find.byTooltip('Fermer'));
+      await t.pumpAndSettle();
+      expect(await f, isFalse);
+    });
+
+    testWidgets('list ids are encoded and decoded', (t) async {
+      final h = await pumpApp(t);
+      const id = 'a/b?c#d e';
+      final path = Routes.listDetail(id);
+      expect(path, '/lists/a%2Fb%3Fc%23d%20e');
+      h.router(t).go(path);
+      await t.pumpAndSettle();
+      expect(
+        t.widget<ListDetailScreen>(find.byType(ListDetailScreen)).listId,
+        id,
+      );
+    });
+
+    test('from encoding', () {
+      expect(Routes.signIn(from: '/lists/3?x=1'),
+          '/sign-in?from=%2Flists%2F3%3Fx%3D1');
+      expect(Routes.register(from: '/lists/3?x=1'),
+          '/register?from=%2Flists%2F3%3Fx%3D1');
+    });
   });
 
   group('320dp at text scale 2.0', () {
@@ -306,4 +479,9 @@ void main() {
       expect(t.takeException(), isNull);
     });
   });
+}
+
+String? _fromOf(WidgetTester t, Type type) {
+  final w = t.widget(find.byType(type));
+  return w is SignInScreen ? w.from : (w as RegisterScreen).from;
 }
