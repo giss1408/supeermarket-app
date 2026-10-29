@@ -1,0 +1,2896 @@
+openapi: 3.0.3
+info:
+  title: Supermarket API
+  version: 1.0.0
+  description: 'REST API of the supermarket app. Authenticate with a JWT access token
+    sent as ''Authorization: Bearer <token>''. Every error response uses the standard
+    shape {code, detail, fields}.'
+paths:
+  /api/v1/auth/register:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/auth/refresh:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/me:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: me_partial_update
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMeRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: me_destroy
+      tags:
+      - me
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/me/card:
+    get:
+      operationId: me_card_retrieve
+      tags:
+      - me
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/categories:
+    get:
+      operationId: categories_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - categories
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/flyers:
+    get:
+      operationId: flyers_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - flyers
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFlyerListList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/flyers/current:
+    get:
+      operationId: flyers_current_retrieve
+      tags:
+      - flyers
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlyerDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/flyers/{id}:
+    get:
+      operationId: flyers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - flyers
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlyerDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/offers:
+    get:
+      operationId: offers_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          minLength: 1
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: flyer
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+      tags:
+      - offers
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOfferList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/stores:
+    get:
+      operationId: stores_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+      - in: query
+        name: lng
+        schema:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+      tags:
+      - stores
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStoreList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/stores/{id}:
+    get:
+      operationId: stores_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - stores
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/lists:
+    get:
+      operationId: lists_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: updated_since
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - lists
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShoppingListList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: lists_create
+      tags:
+      - lists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShoppingListDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShoppingListDetailRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/lists/{id}:
+    get:
+      operationId: lists_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: lists_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListDetailRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDetail'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: lists_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/lists/{list_id}/items:
+    post:
+      operationId: lists_items_create
+      parameters:
+      - in: path
+        name: list_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ListItemRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListItem'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/lists/{list_id}/items/{item_id}:
+    patch:
+      operationId: lists_items_partial_update
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: list_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedListItemRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListItem'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: lists_items_destroy
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: list_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lists
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/flyers:
+    get:
+      operationId: staff_flyers_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          enum:
+          - draft
+          - published
+          type: string
+          minLength: 1
+        description: |-
+          * `draft` - Draft
+          * `published` - Published
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffFlyerListList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_flyers_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffFlyerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffFlyerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffFlyerRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffFlyer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/flyers/{id}:
+    get:
+      operationId: staff_flyers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flyer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffFlyer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_flyers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flyer.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffFlyerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffFlyerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffFlyerRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffFlyer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: staff_flyers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flyer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/flyers/{id}/publish:
+    post:
+      operationId: staff_flyers_publish_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flyer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffFlyer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/flyers/{id}/unpublish:
+    post:
+      operationId: staff_flyers_unpublish_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this flyer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffFlyer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/offers:
+    get:
+      operationId: staff_offers_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: flyer
+        schema:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffOfferList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_offers_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffOfferRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffOfferRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffOfferRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOffer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/offers/{id}:
+    get:
+      operationId: staff_offers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this offer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOffer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_offers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this offer.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffOfferRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffOfferRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffOfferRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOffer'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: staff_offers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this offer.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/products:
+    get:
+      operationId: staff_products_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffProductList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_products_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffProductRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProduct'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/products/{id}:
+    get:
+      operationId: staff_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProduct'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffProductRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProduct'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: staff_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/categories:
+    get:
+      operationId: staff_categories_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffCategoryList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_categories_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffCategoryRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCategory'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/categories/{id}:
+    get:
+      operationId: staff_categories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCategory'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_categories_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCategoryRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCategory'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: staff_categories_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/stores:
+    get:
+      operationId: staff_stores_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: is_active
+        schema:
+          enum:
+          - 'true'
+          - 'false'
+          type: string
+          minLength: 1
+        description: |-
+          * `true` - true
+          * `false` - false
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffStoreList'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: staff_stores_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffStoreRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffStore'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/stores/{id}:
+    get:
+      operationId: staff_stores_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffStore'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: staff_stores_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffStoreRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffStore'
+          description: ''
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: staff_stores_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - staff
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/staff/uploads/image:
+    post:
+      operationId: staff_uploads_image_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUploadRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUploadResult'
+          description: ''
+        '400':
+          description: Invalid file
+        default:
+          description: Error in the standard shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Card:
+      type: object
+      properties:
+        number:
+          type: string
+          maxLength: 13
+        barcode_value:
+          type: string
+          readOnly: true
+      required:
+      - barcode_value
+      - number
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    FlyerDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        cover_image:
+          type: string
+          format: uri
+          nullable: true
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+          readOnly: true
+      required:
+      - id
+      - offers
+      - title
+      - valid_from
+      - valid_to
+    FlyerList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        cover_image:
+          type: string
+          format: uri
+          nullable: true
+        offer_count:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - offer_count
+      - title
+      - valid_from
+      - valid_to
+    ImageUploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: JPEG, PNG or WebP image, max 5 MB.
+      required:
+      - file
+    ImageUploadResult:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        name:
+          type: string
+      required:
+      - name
+      - url
+    ListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+          nullable: true
+        text:
+          type: string
+          maxLength: 200
+        quantity:
+          type: integer
+          maximum: 999
+          minimum: 1
+        checked:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - updated_at
+    ListItemRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+          nullable: true
+        text:
+          type: string
+          maxLength: 200
+        quantity:
+          type: integer
+          maximum: 999
+          minimum: 1
+        checked:
+          type: boolean
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Me:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+      required:
+      - email
+      - id
+      - role
+    Offer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        flyer:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          readOnly: true
+      required:
+      - flyer
+      - id
+      - price
+      - product
+    OfferFields:
+      type: object
+      description: Offer fields without the flyer; validates everything the DB constraints
+        enforce.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - id
+      - price
+      - product
+    OfferFieldsRequest:
+      type: object
+      description: Offer fields without the flyer; validates everything the DB constraints
+        enforce.
+      properties:
+        product:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - price
+      - product
+    OpeningHours:
+      type: object
+      properties:
+        weekday:
+          type: integer
+          maximum: 6
+          minimum: 0
+        opens:
+          type: string
+          format: time
+        closes:
+          type: string
+          format: time
+      required:
+      - closes
+      - opens
+      - weekday
+    OpeningHoursWrite:
+      type: object
+      properties:
+        weekday:
+          type: integer
+          maximum: 6
+          minimum: 0
+        opens:
+          type: string
+          format: time
+        closes:
+          type: string
+          format: time
+      required:
+      - closes
+      - opens
+      - weekday
+    OpeningHoursWriteRequest:
+      type: object
+      properties:
+        weekday:
+          type: integer
+          maximum: 6
+          minimum: 0
+        opens:
+          type: string
+          format: time
+        closes:
+          type: string
+          format: time
+      required:
+      - closes
+      - opens
+      - weekday
+    PaginatedCategoryList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedFlyerListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlyerList'
+    PaginatedOfferList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+    PaginatedShoppingListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingList'
+    PaginatedStaffCategoryList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffCategory'
+    PaginatedStaffFlyerListList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffFlyerList'
+    PaginatedStaffOfferList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffOffer'
+    PaginatedStaffProductList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffProduct'
+    PaginatedStaffStoreList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffStore'
+    PaginatedStoreList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Store'
+    PatchedListItemRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+          nullable: true
+        text:
+          type: string
+          maxLength: 200
+        quantity:
+          type: integer
+          maximum: 999
+          minimum: 1
+        checked:
+          type: boolean
+    PatchedMeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+    PatchedShoppingListDetailRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedStaffCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+    PatchedStaffFlyerRequest:
+      type: object
+      description: Create accepts nested ``offers``; PATCH rejects them (use /staff/offers).
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        cover_image_name:
+          type: string
+          writeOnly: true
+          nullable: true
+          minLength: 1
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferFieldsRequest'
+    PatchedStaffOfferRequest:
+      type: object
+      description: Offer fields without the flyer; validates everything the DB constraints
+        enforce.
+      properties:
+        flyer:
+          type: integer
+        product:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+    PatchedStaffProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        category:
+          type: integer
+        unit:
+          type: string
+          maxLength: 50
+        ean:
+          nullable: true
+          oneOf:
+          - type: string
+            pattern: ^(\d{8}|\d{13})$
+            maxLength: 13
+          - type: string
+            maxLength: 0
+        image_name:
+          type: string
+          writeOnly: true
+          nullable: true
+          minLength: 1
+    PatchedStaffStoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        address:
+          type: string
+          minLength: 1
+          maxLength: 255
+        city:
+          type: string
+          minLength: 1
+          maxLength: 120
+        postcode:
+          type: string
+          minLength: 1
+          maxLength: 20
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        phone:
+          type: string
+          maxLength: 50
+        is_active:
+          type: boolean
+        opening_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHoursWriteRequest'
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        unit:
+          type: string
+          maxLength: 50
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+      required:
+      - category
+      - id
+      - name
+    Register:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+      required:
+      - email
+      - id
+      - role
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - password
+    RoleEnum:
+      enum:
+      - customer
+      - staff
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `staff` - Staff
+    ShoppingList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        item_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - item_count
+      - name
+      - updated_at
+    ShoppingListDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - items
+      - name
+      - updated_at
+    ShoppingListDetailRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - name
+    StaffCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - id
+      - name
+      - slug
+    StaffCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - name
+      - slug
+    StaffFlyer:
+      type: object
+      description: Create accepts nested ``offers``; PATCH rejects them (use /staff/offers).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        cover_image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferFields'
+      required:
+      - cover_image
+      - id
+      - status
+      - title
+      - valid_from
+      - valid_to
+    StaffFlyerList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        cover_image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        offer_count:
+          type: integer
+          readOnly: true
+      required:
+      - cover_image
+      - id
+      - offer_count
+      - status
+      - title
+      - valid_from
+      - valid_to
+    StaffFlyerRequest:
+      type: object
+      description: Create accepts nested ``offers``; PATCH rejects them (use /staff/offers).
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+        cover_image_name:
+          type: string
+          writeOnly: true
+          nullable: true
+          minLength: 1
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferFieldsRequest'
+      required:
+      - title
+      - valid_from
+      - valid_to
+    StaffOffer:
+      type: object
+      description: Offer fields without the flyer; validates everything the DB constraints
+        enforce.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        flyer:
+          type: integer
+        product:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - flyer
+      - id
+      - price
+      - product
+    StaffOfferRequest:
+      type: object
+      description: Offer fields without the flyer; validates everything the DB constraints
+        enforce.
+      properties:
+        flyer:
+          type: integer
+        product:
+          type: integer
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        old_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        badge_text:
+          type: string
+          maxLength: 60
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - flyer
+      - price
+      - product
+    StaffProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        category:
+          type: integer
+        unit:
+          type: string
+          maxLength: 50
+        ean:
+          nullable: true
+          oneOf:
+          - type: string
+            pattern: ^(\d{8}|\d{13})$
+            maxLength: 13
+          - type: string
+            maxLength: 0
+        image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+      required:
+      - category
+      - id
+      - image
+      - name
+    StaffProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        category:
+          type: integer
+        unit:
+          type: string
+          maxLength: 50
+        ean:
+          nullable: true
+          oneOf:
+          - type: string
+            pattern: ^(\d{8}|\d{13})$
+            maxLength: 13
+          - type: string
+            maxLength: 0
+        image_name:
+          type: string
+          writeOnly: true
+          nullable: true
+          minLength: 1
+      required:
+      - category
+      - name
+    StaffStore:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 120
+        postcode:
+          type: string
+          maxLength: 20
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        phone:
+          type: string
+          maxLength: 50
+        is_active:
+          type: boolean
+        opening_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHoursWrite'
+      required:
+      - address
+      - city
+      - id
+      - latitude
+      - longitude
+      - name
+      - postcode
+    StaffStoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        address:
+          type: string
+          minLength: 1
+          maxLength: 255
+        city:
+          type: string
+          minLength: 1
+          maxLength: 120
+        postcode:
+          type: string
+          minLength: 1
+          maxLength: 20
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        phone:
+          type: string
+          maxLength: 50
+        is_active:
+          type: boolean
+        opening_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHoursWriteRequest'
+      required:
+      - address
+      - city
+      - latitude
+      - longitude
+      - name
+      - postcode
+    StatusEnum:
+      enum:
+      - draft
+      - published
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 120
+        postcode:
+          type: string
+          maxLength: 20
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        phone:
+          type: string
+          maxLength: 50
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+      required:
+      - address
+      - city
+      - distance_km
+      - id
+      - latitude
+      - longitude
+      - name
+      - postcode
+    StoreDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 120
+        postcode:
+          type: string
+          maxLength: 20
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        phone:
+          type: string
+          maxLength: 50
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        opening_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHours'
+          readOnly: true
+      required:
+      - address
+      - city
+      - distance_km
+      - id
+      - latitude
+      - longitude
+      - name
+      - opening_hours
+      - postcode
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Error:
+      type: object
+      description: Standard error shape returned by every endpoint on failure.
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+      - code
+      - detail
+      - fields
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

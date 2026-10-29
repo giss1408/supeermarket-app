@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar, cast
 
 from django.http import Http404
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -43,6 +44,7 @@ class LogoutView(AuthThrottleMixin, APIView):
     permission_classes = [AllowAny]
     serializer_class = LogoutSerializer
 
+    @extend_schema(request=LogoutSerializer, responses={204: None})
     def post(self, request: Request) -> Response:
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

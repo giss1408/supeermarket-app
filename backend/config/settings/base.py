@@ -116,4 +116,23 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Supermarket API",
+    "DESCRIPTION": (
+        "REST API of the supermarket app. Authenticate with a JWT access token sent as "
+        "'Authorization: Bearer <token>'. Every error response uses the standard shape "
+        "{code, detail, fields}."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": r"/api/v1",
+    "SORT_OPERATIONS": False,
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "common.openapi.add_error_responses",
+        "common.openapi.sort_methods",
+    ],
+}
+
 CURRENCY = os.environ.get("CURRENCY", "EUR")

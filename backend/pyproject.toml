@@ -24,6 +24,7 @@ dependencies = [
 dev = [
     "pytest==9.2.0",
     "pytest-django==4.14.0",
+    "pytest-cov==7.1.0",
     "factory_boy==3.3.3",
     "ruff==0.17.3",
     "mypy==2.4.1",
@@ -35,6 +36,10 @@ dev = [
 DJANGO_SETTINGS_MODULE = "config.settings.dev"
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["*/migrations/*", "tests/*", ".venv/*", "manage.py", "config/wsgi.py"]
 
 [tool.ruff]
 line-length = 100

@@ -3,6 +3,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import HttpRequest, JsonResponse
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView
+from rest_framework.permissions import AllowAny
+
+import common.openapi  # noqa: F401  (registers the bearerAuth scheme extension)
 
 
 def healthz(request: HttpRequest) -> JsonResponse:
@@ -10,6 +14,11 @@ def healthz(request: HttpRequest) -> JsonResponse:
 
 
 urlpatterns = [
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(authentication_classes=[], permission_classes=[AllowAny]),
+        name="schema",
+    ),
     path("healthz", healthz),
     path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("catalog.urls")),

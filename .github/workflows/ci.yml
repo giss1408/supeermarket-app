@@ -35,7 +35,17 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy .
-      - run: pytest
+      - run: pytest --cov
+      - name: Coverage gate (accounts)
+        run: coverage report --include="accounts/*" --fail-under=85
+      - name: Coverage gate (offers)
+        run: coverage report --include="offers/*" --fail-under=85
+      - name: Coverage gate (shopping)
+        run: coverage report --include="shopping/*" --fail-under=85
+      - name: OpenAPI contract is up to date
+        run: |
+          python manage.py spectacular --file openapi.yaml --validate --fail-on-warn
+          git diff --exit-code -- openapi.yaml
 
   docker:
     runs-on: ubuntu-latest

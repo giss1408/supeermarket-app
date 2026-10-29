@@ -2,6 +2,7 @@ from typing import Any
 
 from django.db.models import FloatField, Prefetch, Q, QuerySet, Value
 from django.db.models.functions import ASin, Cast, Cos, Least, Power, Radians, Sin, Sqrt
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from common.pagination import DefaultCursorPagination
@@ -45,6 +46,7 @@ class _StoreQueryMixin:
         return cached
 
 
+@extend_schema(parameters=[StoreQuerySerializer])
 class StoreListView(_StoreQueryMixin, PublicReadMixin, ListAPIView):
     serializer_class = StoreSerializer
     pagination_class = StorePagination

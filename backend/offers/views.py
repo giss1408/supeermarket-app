@@ -1,5 +1,6 @@
 from django.db.models import Count, Prefetch, Q, QuerySet
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 
 from common.views import PublicReadMixin
@@ -48,6 +49,7 @@ class CurrentFlyerView(PublicReadMixin, RetrieveAPIView):
         return get_object_or_404(qs[:1])
 
 
+@extend_schema(parameters=[OfferQuerySerializer])
 class OfferListView(PublicReadMixin, ListAPIView):
     serializer_class = OfferSerializer
     ordering = ("sort_order", "id")

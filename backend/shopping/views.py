@@ -1,5 +1,6 @@
 from django.db.models import Count, QuerySet
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -22,6 +23,7 @@ class OwnedListMixin(APIView):
         return ShoppingList.objects.filter(user=self.request.user)  # type: ignore[misc]
 
 
+@extend_schema_view(get=extend_schema(parameters=[UpdatedSinceSerializer]))
 class ShoppingListCollectionView(OwnedListMixin, generics.ListCreateAPIView):
     pagination_class = DefaultCursorPagination
     ordering = ("-updated_at", "-id")

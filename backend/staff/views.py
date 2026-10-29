@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, ProtectedError, QuerySet
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, NotFound
@@ -38,7 +39,8 @@ class Conflict(APIException):
 
 
 class StaffViewSet(ModelViewSet):
-    """Staff-only CRUD; no PUT, role checked on every request."""
+    # Staff-only CRUD; no PUT, role checked on every request. (A comment, not a docstring:
+    # spectacular would copy a docstring into every staff operation's description.)
 
     permission_classes = [IsStaff]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
@@ -65,6 +67,7 @@ class CategoryViewSet(StaffViewSet):
     ordering = ("sort_order", "id")
 
 
+@extend_schema_view(list=extend_schema(parameters=[ProductFilterSerializer]))
 class ProductViewSet(StaffViewSet):
     serializer_class = StaffProductSerializer
     filter_serializer_class = ProductFilterSerializer
@@ -80,6 +83,7 @@ class ProductViewSet(StaffViewSet):
         return qs
 
 
+@extend_schema_view(list=extend_schema(parameters=[StoreFilterSerializer]))
 class StoreViewSet(StaffViewSet):
     serializer_class = StaffStoreSerializer
     filter_serializer_class = StoreFilterSerializer
@@ -95,6 +99,7 @@ class StoreViewSet(StaffViewSet):
         return qs
 
 
+@extend_schema_view(list=extend_schema(parameters=[OfferFilterSerializer]))
 class OfferViewSet(StaffViewSet):
     serializer_class = StaffOfferSerializer
     filter_serializer_class = OfferFilterSerializer
@@ -151,6 +156,11 @@ class OfferViewSet(StaffViewSet):
             serializer.save()
 
 
+@extend_schema_view(
+    list=extend_schema(parameters=[FlyerFilterSerializer]),
+    publish=extend_schema(request=None),
+    unpublish=extend_schema(request=None),
+)
 class FlyerViewSet(StaffViewSet):
     filter_serializer_class = FlyerFilterSerializer
     ordering = ("-valid_from", "-id")
