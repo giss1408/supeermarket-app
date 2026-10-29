@@ -510,15 +510,74 @@ def test_move_and_delete_lock_old_flyer_row(staff_client):
     )
 
 
-def test_stale_count_cannot_defeat_the_check(staff_client):
-    """Simulate the race: the offer count seen before the lock is stale (2), but the locked
-    re-count (1) must win, so the move is refused even though a pre-check would pass."""
-    pub = FlyerFactory(status="published")
-    a = OfferFactory(flyer=pub)
-    b = OfferFactory(flyer=pub)
-    other = FlyerFactory()
-    # A competing request removed `b` after our request loaded its state.
-    Offer.objects.filter(pk=b.pk)._raw_delete(Offer.objects.db)
-    resp = staff_client.patch(f"{BASE}/offers/{a.id}", {"flyer": other.id}, format="json")
+def _after_get_object(monkeypatch, hook):
+    """Run ``hook(offer)`` right after the view loads the offer, before any lock is taken."""
+    from staff.views import OfferViewSet
+
+    original = OfferViewSet.get_object
+
+    def wrapper(self):
+        obj = original(self)
+        hook(obj)
+        return obj
+
+    monkeypatch.setattr(OfferViewSet, "get_object", wrapper)
+
+
+@pytest.mark.parametrize("method", ["patch", "delete"])
+def test_guard_uses_current_flyer_when_offer_moved_after_load(staff_client, monkeypatch, method):
+    a = FlyerFactory(status="published", valid_from=D(2026, 1, 1), valid_to=D(2026, 1, 7))
+    b = FlyerFactory(status="published", valid_from=D(2026, 2, 1), valid_to=D(2026, 2, 7))
+    c = FlyerFactory()
+    x = OfferFactory(flyer=a)
+    OfferFactory(flyer=a)
+    OfferFactory(flyer=a)  # A keeps 2 offers after X leaves, so a guard on stale A would allow
+    _after_get_object(
+        monkeypatch, lambda o: Offer.objects.filter(pk=o.pk).update(flyer=b)
+    )  # concurrent request moved X to B, where it is the only offer
+    if method == "patch":
+        resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"flyer": c.id}, format="json")
+    else:
+        resp = staff_client.delete(f"{BASE}/offers/{x.id}")
     assert resp.status_code == 400
-    assert Offer.objects.get(pk=a.pk).flyer_id == pub.id
+    assert Offer.objects.get(pk=x.pk).flyer_id == b.id
+
+
+def test_move_writes_no_stale_flyer_when_offer_moved_after_load(staff_client, monkeypatch):
+    a, b, c = FlyerFactory(), FlyerFactory(), FlyerFactory()
+    x = OfferFactory(flyer=a)
+    _after_get_object(monkeypatch, lambda o: Offer.objects.filter(pk=o.pk).update(flyer=b))
+    resp = staff_client.patch(
+        f"{BASE}/offers/{x.id}", {"flyer": c.id, "badge_text": "Hot"}, format="json"
+    )
+    assert resp.status_code == 200
+    assert resp.json()["flyer"] == c.id
+    assert Offer.objects.get(pk=x.pk).flyer_id == c.id
+
+
+@pytest.mark.parametrize("method", ["patch", "delete"])
+def test_offer_deleted_after_load_gives_404(staff_client, monkeypatch, method):
+    flyer, other = FlyerFactory(), FlyerFactory()
+    x = OfferFactory(flyer=flyer)
+    _after_get_object(monkeypatch, lambda o: Offer.objects.filter(pk=o.pk)._raw_delete("default"))
+    if method == "patch":
+        resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"flyer": other.id}, format="json")
+    else:
+        resp = staff_client.delete(f"{BASE}/offers/{x.id}")
+    assert resp.status_code == 404
+    assert resp.json()["code"] == "not_found"
+
+
+def test_flyer_locks_are_taken_in_ascending_id_order(staff_client):
+    low, high = FlyerFactory(), FlyerFactory()
+    x = OfferFactory(flyer=high)
+    with CaptureQueriesContext(connection) as ctx:
+        resp = staff_client.patch(f"{BASE}/offers/{x.id}", {"flyer": low.id}, format="json")
+    assert resp.status_code == 200
+    locks = [
+        q["sql"]
+        for q in ctx.captured_queries
+        if "FOR UPDATE" in q["sql"] and "offers_flyer" in q["sql"]
+    ]
+    assert locks
+    assert all('ORDER BY "offers_flyer"."id"' in sql for sql in locks)

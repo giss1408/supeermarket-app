@@ -6,7 +6,7 @@ from django.db import transaction
 from django.db.models import Count, Prefetch, ProtectedError, QuerySet
 from rest_framework import serializers, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -116,9 +116,21 @@ class OfferViewSet(StaffViewSet):
         opposite moves cannot deadlock, then re-counts the old flyer's offers under the lock.
         """
         with transaction.atomic():
-            ids = sorted({offer.flyer_id, *([new_flyer_id] if new_flyer_id else [])})
-            flyers = {f.pk: f for f in Flyer.objects.select_for_update().filter(pk__in=ids)}
+            # Re-read the offer under lock: it may have moved or been deleted since it was loaded.
+            try:
+                current = Offer.objects.select_for_update().only("flyer_id").get(pk=offer.pk)
+            except Offer.DoesNotExist:
+                raise NotFound from None
+            offer.flyer_id = current.flyer_id
+            ids = {offer.flyer_id, *([new_flyer_id] if new_flyer_id else [])}
+            # Evaluated and ordered so rows are locked in ascending id order (no deadlocks).
+            flyers = {
+                f.pk: f for f in Flyer.objects.filter(pk__in=ids).order_by("pk").select_for_update()
+            }
             old = flyers[offer.flyer_id]
+            if new_flyer_id == offer.flyer_id:
+                yield  # already there: not a move
+                return
             if old.status == Flyer.Status.PUBLISHED and old.offers.count() <= 1:
                 raise serializers.ValidationError(
                     {"flyer": "Cannot remove the last offer of a published flyer; unpublish first."}
@@ -132,7 +144,7 @@ class OfferViewSet(StaffViewSet):
     def perform_update(self, serializer: serializers.BaseSerializer) -> None:
         offer: Offer = serializer.instance  # type: ignore[assignment]
         new_flyer = serializer.validated_data.get("flyer")
-        if new_flyer is not None and new_flyer.pk != offer.flyer_id:
+        if new_flyer is not None:
             with self._guard_last_offer(offer, new_flyer.pk):
                 serializer.save()
         else:
