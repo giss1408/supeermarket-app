@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supermarket-backend"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "Django==5.2.18",
+    "djangorestframework==3.18.3",
+    "djangorestframework-simplejwt==5.5.1",
+    "drf-spectacular==0.30.0",
+    "django-storages==1.14.6",
+    "boto3==1.43.121",
+    "Pillow==13.0.0",
+    "argon2-cffi==25.1.0",
+    "psycopg[binary]==3.3.6",
+    "dj-database-url==3.1.2",
+    "gunicorn==26.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+    "pytest-django==4.14.0",
+    "factory_boy==3.3.3",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
+    "django-stubs==6.1.2",
+    "djangorestframework-stubs==3.18.1",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.dev"
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = [".venv", "*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+
+[tool.mypy]
+python_version = "3.13"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+check_untyped_defs = false
+exclude = ["\\.venv/"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.dev"
+
+[tool.setuptools]
+py-modules = []
