@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "offers",
     "stores",
     "shopping",
+    "staff",
 ]
 
 MIDDLEWARE = [
