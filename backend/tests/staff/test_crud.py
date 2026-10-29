@@ -2,6 +2,8 @@ import datetime
 from decimal import Decimal
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from catalog.models import Category, Product
 from common.pagination import DefaultCursorPagination
@@ -207,7 +209,7 @@ def test_remove_last_offer_of_published_flyer_returns_400(staff_client):
     other = FlyerFactory()
     resp = staff_client.delete(f"{BASE}/offers/{last.id}")
     assert resp.status_code == 400
-    assert "unpublish" in resp.json()["fields"]["non_field_errors"][0].lower()
+    assert "unpublish" in resp.json()["fields"]["flyer"][0].lower()
     resp = staff_client.patch(f"{BASE}/offers/{last.id}", {"flyer": other.id}, format="json")
     assert resp.status_code == 400
     assert "unpublish" in resp.json()["fields"]["flyer"][0].lower()
@@ -463,3 +465,60 @@ def test_flyer_detail_with_offers_query_count(staff_client, django_assert_max_nu
         resp = staff_client.get(f"{BASE}/flyers/{flyer.id}")
     assert resp.status_code == 200
     assert len(resp.json()["offers"]) == 6
+
+
+def test_delete_and_move_last_offer_errors_share_the_same_key(staff_client):
+    pub = FlyerFactory(status="published")
+    last = OfferFactory(flyer=pub)
+    other = FlyerFactory()
+    deleted = staff_client.delete(f"{BASE}/offers/{last.id}").json()
+    moved = staff_client.patch(
+        f"{BASE}/offers/{last.id}", {"flyer": other.id}, format="json"
+    ).json()
+    assert set(deleted["fields"]) == set(moved["fields"]) == {"flyer"}
+
+
+def test_move_last_offer_off_draft_flyer_ok(staff_client):
+    draft = FlyerFactory(status="draft")
+    offer = OfferFactory(flyer=draft)
+    other = FlyerFactory()
+    resp = staff_client.patch(f"{BASE}/offers/{offer.id}", {"flyer": other.id}, format="json")
+    assert resp.status_code == 200
+    offer.refresh_from_db()
+    assert offer.flyer_id == other.id
+
+
+def test_move_and_delete_lock_old_flyer_row(staff_client):
+    """The authoritative last-offer check runs under SELECT ... FOR UPDATE on the flyer."""
+    pub = FlyerFactory(status="published")
+    a, b = OfferFactory(flyer=pub), OfferFactory(flyer=pub)
+    other = FlyerFactory()
+    with CaptureQueriesContext(connection) as ctx:
+        assert (
+            staff_client.patch(
+                f"{BASE}/offers/{a.id}", {"flyer": other.id}, format="json"
+            ).status_code
+            == 200
+        )
+    assert any(
+        "FOR UPDATE" in q["sql"] and "offers_flyer" in q["sql"] for q in ctx.captured_queries
+    )
+    with CaptureQueriesContext(connection) as ctx:
+        assert staff_client.delete(f"{BASE}/offers/{b.id}").status_code == 400
+    assert any(
+        "FOR UPDATE" in q["sql"] and "offers_flyer" in q["sql"] for q in ctx.captured_queries
+    )
+
+
+def test_stale_count_cannot_defeat_the_check(staff_client):
+    """Simulate the race: the offer count seen before the lock is stale (2), but the locked
+    re-count (1) must win, so the move is refused even though a pre-check would pass."""
+    pub = FlyerFactory(status="published")
+    a = OfferFactory(flyer=pub)
+    b = OfferFactory(flyer=pub)
+    other = FlyerFactory()
+    # A competing request removed `b` after our request loaded its state.
+    Offer.objects.filter(pk=b.pk)._raw_delete(Offer.objects.db)
+    resp = staff_client.patch(f"{BASE}/offers/{a.id}", {"flyer": other.id}, format="json")
+    assert resp.status_code == 400
+    assert Offer.objects.get(pk=a.pk).flyer_id == pub.id

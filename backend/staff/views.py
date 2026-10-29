@@ -1,3 +1,6 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, ProtectedError, QuerySet
@@ -104,14 +107,36 @@ class OfferViewSet(StaffViewSet):
             qs = qs.filter(flyer_id=data["flyer"])
         return qs
 
-    def perform_destroy(self, instance: Offer) -> None:
+    @staticmethod
+    @contextmanager
+    def _guard_last_offer(offer: Offer, new_flyer_id: int | None = None) -> Iterator[None]:
+        """Run the enclosed write under row locks, refusing to empty a published flyer.
+
+        Locks the old flyer (and the target flyer when moving) in ascending id order so two
+        opposite moves cannot deadlock, then re-counts the old flyer's offers under the lock.
+        """
         with transaction.atomic():
-            flyer = Flyer.objects.select_for_update().get(pk=instance.flyer_id)
-            if flyer.status == Flyer.Status.PUBLISHED and flyer.offers.count() <= 1:
+            ids = sorted({offer.flyer_id, *([new_flyer_id] if new_flyer_id else [])})
+            flyers = {f.pk: f for f in Flyer.objects.select_for_update().filter(pk__in=ids)}
+            old = flyers[offer.flyer_id]
+            if old.status == Flyer.Status.PUBLISHED and old.offers.count() <= 1:
                 raise serializers.ValidationError(
-                    "Cannot remove the last offer of a published flyer; unpublish it first."
+                    {"flyer": "Cannot remove the last offer of a published flyer; unpublish first."}
                 )
+            yield
+
+    def perform_destroy(self, instance: Offer) -> None:
+        with self._guard_last_offer(instance):
             instance.delete()
+
+    def perform_update(self, serializer: serializers.BaseSerializer) -> None:
+        offer: Offer = serializer.instance  # type: ignore[assignment]
+        new_flyer = serializer.validated_data.get("flyer")
+        if new_flyer is not None and new_flyer.pk != offer.flyer_id:
+            with self._guard_last_offer(offer, new_flyer.pk):
+                serializer.save()
+        else:
+            serializer.save()
 
 
 class FlyerViewSet(StaffViewSet):

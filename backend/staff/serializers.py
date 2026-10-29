@@ -74,21 +74,6 @@ class StaffOfferSerializer(OfferFieldsSerializer):
     class Meta(OfferFieldsSerializer.Meta):
         fields = ["id", "flyer", *OfferFieldsSerializer.Meta.fields[1:]]
 
-    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        attrs = super().validate(attrs)
-        new_flyer = attrs.get("flyer")
-        if self.instance is not None and new_flyer is not None:
-            old = self.instance.flyer
-            if (
-                new_flyer.pk != old.pk
-                and old.status == Flyer.Status.PUBLISHED
-                and old.offers.count() <= 1
-            ):
-                raise serializers.ValidationError(
-                    {"flyer": "Cannot move the last offer of a published flyer; unpublish first."}
-                )
-        return attrs
-
 
 class StaffFlyerListSerializer(serializers.ModelSerializer):
     offer_count = serializers.IntegerField(read_only=True)
