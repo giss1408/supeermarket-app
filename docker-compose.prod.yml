@@ -1,0 +1,103 @@
+# Production stack. Usage (from the repo root):
+#   cp .env.prod.example .env.prod   # then fill in every value
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# --env-file feeds the ${...} values below (DOMAIN, ACME_EMAIL, POSTGRES_*); the app containers
+# also read .env.prod directly through env_file.
+# Add `--profile with-db` to also run a local Postgres (single-VPS setups).
+# The default expectation is a managed Postgres reachable through DATABASE_URL.
+
+x-app: &app
+  build:
+    context: ./backend
+  image: supermarket-backend:latest
+  env_file: .env.prod
+
+services:
+  migrate:
+    <<: *app
+    command: sh -c "python manage.py migrate --noinput && python manage.py createcachetable"
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false  # only present with --profile with-db
+
+  web:
+    <<: *app
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      # Local-disk media. Only used when AWS_STORAGE_BUCKET_NAME is not set.
+      - media:/app/media
+    healthcheck:
+      # Sends the first ALLOWED_HOSTS entry as Host (see backend/healthcheck.py).
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    # Only these two values are passed in (interpolated from --env-file .env.prod), so the
+    # proxy container never sees SECRET_KEY or database credentials.
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env.prod and run compose with --env-file .env.prod}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env.prod and run compose with --env-file .env.prod}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      # Shared with web; only needed if the /media/* block in the Caddyfile is enabled.
+      - media:/srv/media:ro
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # Purges expired JWT blacklist rows once a day so the token tables do not grow forever.
+  # Alternative: drop this service and run the same command from host cron:
+  #   0 3 * * * docker compose -f /path/docker-compose.prod.yml run --rm web python manage.py flushexpiredtokens
+  maintenance:
+    <<: *app
+    command:
+      - sh
+      - -c
+      - |
+        trap 'exit 0' TERM INT
+        while true; do
+          python manage.py flushexpiredtokens || echo "flushexpiredtokens failed"
+          sleep 86400 & wait $$!
+        done
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Optional single-VPS database. Set DATABASE_URL=postgres://USER:PASSWORD@db:5432/NAME in .env.prod.
+  db:
+    image: postgres:16
+    profiles: ["with-db"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  media:
+  caddy_data:
+  caddy_config:
+  pgdata:

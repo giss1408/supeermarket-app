@@ -1,0 +1,33 @@
+# Caddy reverse proxy: automatic HTTPS (Let's Encrypt) for $DOMAIN, in front of gunicorn.
+# DOMAIN and ACME_EMAIL come from .env.prod (see .env.prod.example).
+#
+# Caddy sets X-Forwarded-Proto (and X-Forwarded-For / X-Forwarded-Host) on proxied requests
+# automatically, which is what Django's SECURE_PROXY_SSL_HEADER relies on. No extra header
+# configuration is needed.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Bound the request body before it reaches Django. The app limits an image file to 5 MB;
+	# 6 MB leaves room for the multipart envelope. Larger bodies get 413 from Caddy.
+	request_body {
+		max_size 6MB
+	}
+
+	# Security headers (HSTS, nosniff, X-Frame-Options, Referrer-Policy) are set by Django in
+	# production settings, so they are intentionally not repeated here.
+	header -Server
+
+	# Enable ONLY when uploads are stored on local disk (AWS_STORAGE_BUCKET_NAME unset). Django
+	# does not serve media in production; the `media` volume is mounted at /srv/media in the
+	# caddy container. With S3 configured, leave this commented out.
+	# handle_path /media/* {
+	# 	root * /srv/media
+	# 	file_server
+	# }
+
+	reverse_proxy web:8000
+}

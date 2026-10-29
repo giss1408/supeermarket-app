@@ -7,7 +7,9 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "insecure-dev-only-key-change-me-0123456789abcdef")
+# Dev-only fallback; production settings reject it.
+DEV_SECRET_KEY = "insecure-dev-only-key-change-me-0123456789abcdef"
+SECRET_KEY = os.environ.get("SECRET_KEY", DEV_SECRET_KEY)
 DEBUG = False
 ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost").split(",") if h.strip()

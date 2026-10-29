@@ -10,3 +10,4 @@ media/
 staticfiles/
 .DS_Store
 .coverage
+.env.prod

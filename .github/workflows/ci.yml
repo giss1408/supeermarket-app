@@ -42,6 +42,13 @@ jobs:
         run: coverage report --include="offers/*" --fail-under=85
       - name: Coverage gate (shopping)
         run: coverage report --include="shopping/*" --fail-under=85
+      - name: Deploy check with production settings
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
+          SECRET_KEY: ci-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJ
+          DATABASE_URL: postgres://app:app@localhost:5432/app
+          ALLOWED_HOSTS: api.example.com
+        run: python manage.py check --deploy --fail-level WARNING
       - name: OpenAPI contract is up to date
         run: |
           python manage.py spectacular --file openapi.yaml --validate --fail-on-warn
@@ -51,4 +58,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build backend/
+      - name: Build the production image
+        run: docker build -t supermarket-backend backend/
+      - name: Image runs as non-root and has no dev tooling
+        run: |
+          test "$(docker run --rm supermarket-backend id -u)" != "0"
+          if docker run --rm supermarket-backend python -c "import pytest"; then
+            echo "pytest is present in the production image" >&2
+            exit 1
+          fi
