@@ -3,6 +3,7 @@ import os
 import re
 import struct
 import warnings
+import zlib
 
 import pytest
 from django.core.files.base import ContentFile
@@ -139,14 +140,35 @@ def test_rgba_png_to_jpeg_not_applicable_png_keeps_alpha(staff_client):
     assert stored(resp.json()["name"]).mode == "RGBA"
 
 
-def test_pixel_bomb_rejected(staff_client):
-    # PNG header declaring 10000x10000 (100 MP); no pixel data needed to be rejected.
-    data = make_image("PNG", size=(10, 10))
-    data = data[:16] + struct.pack(">II", 10000, 10000) + data[24:]
+def png_declaring(width: int, height: int) -> bytes:
+    """Minimal PNG with a VALID IHDR CRC declaring the size; no pixel data (IDAT is empty)."""
+
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        crc = zlib.crc32(kind + body)
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", crc)
+
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr) + chunk(b"IDAT", b"") + chunk(b"IEND", b"")
+
+
+def file_message(resp) -> str:
+    return " ".join(resp.json()["fields"]["file"])
+
+
+@pytest.mark.parametrize("size", [(8000, 6000), (10000, 10000)])  # 48 MP gate, 100 MP Pillow bomb
+def test_pixel_bomb_rejected(staff_client, size):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        resp = post(staff_client, data)
+        resp = post(staff_client, png_declaring(*size))
     assert_file_error(resp)
+    assert "dimensions are too large" in file_message(resp)
+
+
+def test_dimensions_just_under_pixel_limit_pass_the_gate(staff_client):
+    # 36 MP declared, no pixel data: not rejected as too large (fails later as corrupt).
+    resp = post(staff_client, png_declaring(6000, 6000))
+    assert_file_error(resp)
+    assert "too large" not in file_message(resp)
 
 
 def test_decompression_bomb_error_is_400(monkeypatch):
