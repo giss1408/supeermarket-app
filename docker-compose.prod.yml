@@ -17,6 +17,8 @@ services:
     <<: *app
     command: sh -c "python manage.py migrate --noinput && python manage.py createcachetable"
     restart: "no"
+    healthcheck:
+      disable: true  # inherited image HEALTHCHECK (web's /healthz) does not apply here
     depends_on:
       db:
         condition: service_healthy
@@ -42,11 +44,12 @@ services:
   caddy:
     image: caddy:2
     restart: unless-stopped
-    # Only these two values are passed in (interpolated from --env-file .env.prod), so the
+    # Only these three values are passed in (interpolated from --env-file .env.prod), so the
     # proxy container never sees SECRET_KEY or database credentials.
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in .env.prod and run compose with --env-file .env.prod}
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env.prod and run compose with --env-file .env.prod}
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:?set ADMIN_ALLOWED_IPS in .env.prod (space-separated IPs/CIDRs allowed to reach /admin/)}
     ports:
       - "80:80"
       - "443:443"
@@ -62,7 +65,7 @@ services:
 
   # Purges expired JWT blacklist rows once a day so the token tables do not grow forever.
   # Alternative: drop this service and run the same command from host cron:
-  #   0 3 * * * docker compose -f /path/docker-compose.prod.yml run --rm web python manage.py flushexpiredtokens
+  #   0 3 * * * cd /path/to/repo && docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm web python manage.py flushexpiredtokens
   maintenance:
     <<: *app
     command:
@@ -75,6 +78,8 @@ services:
           sleep 86400 & wait $$!
         done
     restart: unless-stopped
+    healthcheck:
+      disable: true  # inherited image HEALTHCHECK (web's /healthz) does not apply here
     depends_on:
       migrate:
         condition: service_completed_successfully

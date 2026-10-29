@@ -5,7 +5,6 @@ Monorepo. The Django + DRF + PostgreSQL backend lives in `backend/`.
 ## Backend quickstart
 
 ```bash
-cp .env.example .env
 docker compose up -d db mailpit
 cd backend
 python3.13 -m venv .venv && . .venv/bin/activate
@@ -14,6 +13,11 @@ export DATABASE_URL=postgres://app:app@localhost:5434/app
 python manage.py migrate
 pytest
 ```
+
+Nothing loads a `.env` file: `.env.example` only documents the variables. Export what you need
+(the defaults already match the compose database on port 5434) or use `docker compose`, which
+sets them for the `web` service. The dev compose file publishes the database and Mailpit ports on
+`127.0.0.1` only.
 
 Or run everything in containers: `docker compose up -d db && docker compose run --rm web pytest`.
 
@@ -34,7 +38,19 @@ python manage.py spectacular --file openapi.yaml --validate --fail-on-warn
 Drift is caught twice: `tests/test_openapi.py::test_committed_openapi_matches_generated` and a CI
 step that regenerates the file and runs `git diff --exit-code`. Both fail if you forget to commit
 the regenerated file. Every operation documents the standard error shape (`Error`: `code`,
-`detail`, `fields`) as its `default` response.
+`detail`, `fields`) as its `default` response. The same shape is returned for errors raised
+outside the API views: unknown URLs (404), unhandled exceptions (500, never leaking exception
+text), 400/403 and CSRF failures (`csrf_failed`) all answer JSON. Only `/admin/` keeps Django's
+HTML error pages.
+
+Client notes:
+
+- Cursor pagination over mutable sort keys (shopping lists are ordered by `-updated_at`) can skip
+  or repeat rows when data changes between page requests. Sync clients should use `updated_since`.
+- Send `updated_since` in UTC with a `Z` suffix (`2026-11-02T10:00:00Z`). A literal `+00:00` must
+  be URL-encoded (`%2B00:00`), otherwise `+` is read as a space.
+- No CORS package is installed on purpose: the only client is a mobile app, which is not subject
+  to browser CORS rules. Do not add `CORS_ALLOW_ALL`.
 
 Generate a Dart client (not part of this repo), for example:
 
@@ -90,7 +106,8 @@ managed container platform later.
 
 ### Prerequisites
 
-- A server with Docker and Docker Compose v2, ports 80 and 443 open.
+- A server with Docker and Docker Compose 2.20 or newer (`depends_on.required` is used), ports 80
+  and 443 open.
 - A DNS record for your domain pointing at the server (Caddy needs it to obtain the certificate).
 - A Postgres database: a managed instance (recommended, give its URL in `DATABASE_URL`) or the
   bundled `with-db` profile.
@@ -109,9 +126,11 @@ Set these in `.env.prod` (template with comments: `.env.prod.example`).
 | `DOMAIN`, `ACME_EMAIL` | yes (Caddy) | none | Public host name and Let's Encrypt contact. |
 | `CURRENCY` | no | `EUR` | |
 | `SECURE_SSL_REDIRECT` | no | `1` | `/healthz` is always exempt. |
-| `SECURE_HSTS_SECONDS` | no | `31536000` | |
+| `SECURE_HSTS_SECONDS` | no | `31536000` | `.env.prod.example` ships `3600`: keep it short for the first deploy until HTTPS is verified, then raise it to `31536000`. |
 | `SECURE_HSTS_INCLUDE_SUBDOMAINS` | no | off | Set `1` only if all subdomains are HTTPS-only. |
 | `AUTH_THROTTLE_RATE` | no | `10/min` | |
+| `NUM_PROXIES` | no | `1` in prod, `0` otherwise | Number of reverse proxies in front of gunicorn (Caddy = 1); the auth throttle uses it to find the real client IP in `X-Forwarded-For`. Set `0` if gunicorn is exposed directly. |
+| `ADMIN_ALLOWED_IPS` | yes (Caddy) | none | Space-separated IPs/CIDRs allowed to reach `/admin/`. Compose refuses to start without it. |
 | `WEB_CONCURRENCY` | no | `3` | gunicorn workers. |
 | `LOG_LEVEL` | no | `INFO` | Logs go to stdout/stderr. |
 | `SENTRY_DSN` | no | empty | Sentry is initialized only if set. |
@@ -125,6 +144,11 @@ Set these in `.env.prod` (template with comments: `.env.prod.example`).
 
 All commands run from the repository root. `--env-file .env.prod` feeds the Caddy and Postgres
 values; the app containers also read `.env.prod` directly.
+
+Create `.env.prod` before running any `docker compose -f docker-compose.prod.yml ... config`
+or `up`; compose fails on the missing `env_file` and on required `${...}` values otherwise.
+Use a short `SECURE_HSTS_SECONDS` (for example `3600`) for the first deploy and raise it to
+`31536000` once HTTPS works, because browsers remember HSTS.
 
 ```bash
 cp .env.prod.example .env.prod          # then edit every value; generate SECRET_KEY as the file says
@@ -140,6 +164,14 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm web pyth
 ```
 
 Then sign in at `https://<domain>/admin/` to promote further staff.
+
+### Securing /admin
+
+Caddy only forwards `/admin/*` to clients whose IP is in `ADMIN_ALLOWED_IPS` (space-separated
+IPs or CIDRs, for example your office or VPN range); everyone else gets `403 Forbidden`. The
+variable is mandatory so the choice is deliberate (`0.0.0.0/0 ::/0` allows everyone and is not
+recommended). Also use strong, unique staff passwords and consider reaching the admin only through
+a VPN. There is no two-factor authentication in v1. The API under `/api/v1/` is not affected.
 
 ### Media storage
 

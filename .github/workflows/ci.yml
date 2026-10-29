@@ -45,7 +45,7 @@ jobs:
       - name: Deploy check with production settings
         env:
           DJANGO_SETTINGS_MODULE: config.settings.prod
-          SECRET_KEY: ci-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJ
+          SECRET_KEY: ci-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJK
           DATABASE_URL: postgres://app:app@localhost:5432/app
           ALLOWED_HOSTS: api.example.com
         run: python manage.py check --deploy --fail-level WARNING

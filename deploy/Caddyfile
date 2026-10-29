@@ -1,5 +1,5 @@
 # Caddy reverse proxy: automatic HTTPS (Let's Encrypt) for $DOMAIN, in front of gunicorn.
-# DOMAIN and ACME_EMAIL come from .env.prod (see .env.prod.example).
+# DOMAIN, ACME_EMAIL and ADMIN_ALLOWED_IPS come from .env.prod (see .env.prod.example).
 #
 # Caddy sets X-Forwarded-Proto (and X-Forwarded-For / X-Forwarded-Host) on proxied requests
 # automatically, which is what Django's SECURE_PROXY_SSL_HEADER relies on. No extra header
@@ -28,6 +28,15 @@
 	# 	root * /srv/media
 	# 	file_server
 	# }
+
+	# Admin IP allowlist. ADMIN_ALLOWED_IPS is a space-separated list of IPs/CIDRs from .env.prod
+	# (required by docker-compose.prod.yml). Caddy is the edge proxy, so remote_ip is the real
+	# client address and cannot be spoofed through X-Forwarded-For.
+	@admin_blocked {
+		path /admin/*
+		not remote_ip {$ADMIN_ALLOWED_IPS}
+	}
+	respond @admin_blocked "Forbidden" 403
 
 	reverse_proxy web:8000
 }
