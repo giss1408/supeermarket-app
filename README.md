@@ -68,10 +68,14 @@ Requirements:
 - Flutter 3.24.2 (stable) on `PATH`.
 - iOS: Xcode and CocoaPods. Deployment target iOS 14.0.
 - Android: Android SDK (`ANDROID_HOME`), minSdk 24.
-- Android builds need JDK 17 or 21 for Gradle (newer JDKs such as 24 are rejected). Point
-  `JAVA_HOME` at one, per command or in your shell profile, for example the runtime bundled with
-  Android Studio (`<Android Studio>/Contents/jbr/Contents/Home` on macOS) or any installed JDK 17/21:
+- Android builds need JDK 17. The Gradle wrapper is 8.3, which supports Java 17 up to 20; newer
+  JDKs (21, 24, ...) fail (for example "Unsupported class file major version 65") until Gradle
+  and the Android Gradle Plugin are upgraded together with Flutter. Point `JAVA_HOME` at a JDK 17,
+  per command or in your shell profile. One way to get one is the runtime bundled with Android
+  Studio (the `jbr` folder inside the Android Studio application bundle):
   `JAVA_HOME=/path/to/jdk17 flutter build apk --debug --dart-define-from-file=env/dev.json`.
+- The SDK pins (`sdk: 3.5.2`, Flutter 3.24.2 in `app/pubspec.yaml`) are exact, so use exactly
+  Flutter 3.24.2.
 
 Run (backend on port 8000 of your machine):
 
