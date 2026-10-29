@@ -55,20 +55,20 @@ def test_schema_has_bearer_auth_scheme(schema):
     assert "jwtAuth" not in schema["components"]["securitySchemes"]
 
 
-def test_every_operation_has_default_error_response_referencing_Error(schema):
+def test_every_operation_has_default_error_response_referencing_ErrorResponse(schema):
     seen = 0
     for path, method, op in operations(schema):
         default = op["responses"].get("default")
         assert default is not None, f"{method} {path}"
         assert default["content"]["application/json"]["schema"] == {
-            "$ref": "#/components/schemas/Error"
+            "$ref": "#/components/schemas/ErrorResponse"
         }
         seen += 1
     assert seen > 30
 
 
 def test_error_component_shape(schema):
-    error = schema["components"]["schemas"]["Error"]
+    error = schema["components"]["schemas"]["ErrorResponse"]
     assert error["type"] == "object"
     assert set(error["required"]) == {"code", "detail", "fields"}
     assert error["properties"]["code"]["type"] == "string"
@@ -114,14 +114,14 @@ def test_add_error_responses_hook_on_synthetic_schema():
         "components": {"schemas": {}},
     }
     out = add_error_responses(copy.deepcopy(result), None, None, True)
-    ref = {"$ref": "#/components/schemas/Error"}
+    ref = {"$ref": "#/components/schemas/ErrorResponse"}
     assert out["paths"]["/a"]["get"]["responses"]["default"] == {
         "description": "Error in the standard shape",
         "content": {"application/json": {"schema": ref}},
     }
     assert out["paths"]["/a"]["post"]["responses"]["default"] == {"description": "custom"}
     assert out["paths"]["/a"]["parameters"] == []
-    assert out["components"]["schemas"]["Error"]["required"] == ["code", "detail", "fields"]
+    assert out["components"]["schemas"]["ErrorResponse"]["required"] == ["code", "detail", "fields"]
 
 
 def test_sort_methods_hook_orders_methods_canonically():

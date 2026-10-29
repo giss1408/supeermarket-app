@@ -31,7 +31,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/auth/login:
     post:
       operationId: auth_login_create
@@ -58,7 +58,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/auth/refresh:
     post:
       operationId: auth_refresh_create
@@ -85,7 +85,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/auth/logout:
     post:
       operationId: auth_logout_create
@@ -107,7 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/me:
     get:
       operationId: me_retrieve
@@ -127,7 +127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: me_partial_update
       tags:
@@ -151,7 +151,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: me_destroy
       tags:
@@ -166,7 +166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/me/card:
     get:
       operationId: me_card_retrieve
@@ -179,14 +179,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Card'
+                $ref: '#/components/schemas/LoyaltyCard'
           description: ''
         default:
           description: Error in the standard shape
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/categories:
     get:
       operationId: categories_list
@@ -213,7 +213,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/flyers:
     get:
       operationId: flyers_list
@@ -240,7 +240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/flyers/current:
     get:
       operationId: flyers_current_retrieve
@@ -260,7 +260,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/flyers/{id}:
     get:
       operationId: flyers_retrieve
@@ -286,7 +286,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/offers:
     get:
       operationId: offers_list
@@ -327,7 +327,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/stores:
     get:
       operationId: stores_list
@@ -373,7 +373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/stores/{id}:
     get:
       operationId: stores_retrieve
@@ -399,7 +399,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/lists:
     get:
       operationId: lists_list
@@ -431,7 +431,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: lists_create
       tags:
@@ -456,7 +456,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/lists/{id}:
     get:
       operationId: lists_retrieve
@@ -482,7 +482,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: lists_partial_update
       parameters:
@@ -512,7 +512,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: lists_destroy
       parameters:
@@ -533,7 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/lists/{list_id}/items:
     post:
       operationId: lists_items_create
@@ -564,7 +564,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/lists/{list_id}/items/{item_id}:
     patch:
       operationId: lists_items_partial_update
@@ -600,7 +600,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: lists_items_destroy
       parameters:
@@ -626,7 +626,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/payment-methods:
     get:
       operationId: payment_methods_list
@@ -653,7 +653,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/flyers:
     get:
       operationId: staff_flyers_list
@@ -691,7 +691,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_flyers_create
       tags:
@@ -716,7 +716,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/flyers/{id}:
     get:
       operationId: staff_flyers_retrieve
@@ -743,7 +743,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_flyers_partial_update
       parameters:
@@ -774,7 +774,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: staff_flyers_destroy
       parameters:
@@ -796,7 +796,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/flyers/{id}/publish:
     post:
       operationId: staff_flyers_publish_create
@@ -823,7 +823,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/flyers/{id}/unpublish:
     post:
       operationId: staff_flyers_unpublish_create
@@ -850,7 +850,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/offers:
     get:
       operationId: staff_offers_list
@@ -883,7 +883,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_offers_create
       tags:
@@ -908,7 +908,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/offers/{id}:
     get:
       operationId: staff_offers_retrieve
@@ -935,7 +935,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_offers_partial_update
       parameters:
@@ -966,7 +966,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: staff_offers_destroy
       parameters:
@@ -988,7 +988,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/products:
     get:
       operationId: staff_products_list
@@ -1026,7 +1026,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_products_create
       tags:
@@ -1051,7 +1051,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/products/{id}:
     get:
       operationId: staff_products_retrieve
@@ -1078,7 +1078,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_products_partial_update
       parameters:
@@ -1109,7 +1109,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: staff_products_destroy
       parameters:
@@ -1131,7 +1131,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/categories:
     get:
       operationId: staff_categories_list
@@ -1158,7 +1158,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_categories_create
       tags:
@@ -1183,7 +1183,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/categories/{id}:
     get:
       operationId: staff_categories_retrieve
@@ -1210,7 +1210,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_categories_partial_update
       parameters:
@@ -1241,7 +1241,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: staff_categories_destroy
       parameters:
@@ -1263,7 +1263,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/payment-methods:
     get:
       operationId: staff_payment_methods_list
@@ -1290,7 +1290,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_payment_methods_create
       tags:
@@ -1315,7 +1315,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/payment-methods/{id}:
     get:
       operationId: staff_payment_methods_retrieve
@@ -1342,7 +1342,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_payment_methods_partial_update
       parameters:
@@ -1373,7 +1373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/stores:
     get:
       operationId: staff_stores_list
@@ -1416,7 +1416,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: staff_stores_create
       tags:
@@ -1441,7 +1441,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/stores/{id}:
     get:
       operationId: staff_stores_retrieve
@@ -1468,7 +1468,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       operationId: staff_stores_partial_update
       parameters:
@@ -1499,7 +1499,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: staff_stores_destroy
       parameters:
@@ -1521,7 +1521,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/staff/uploads/image:
     post:
       operationId: staff_uploads_image_create
@@ -1549,21 +1549,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
-    Card:
-      type: object
-      properties:
-        number:
-          type: string
-          maxLength: 13
-        barcode_value:
-          type: string
-          readOnly: true
-      required:
-      - barcode_value
-      - number
     Category:
       type: object
       properties:
@@ -1715,6 +1703,18 @@ components:
           minLength: 1
       required:
       - refresh
+    LoyaltyCard:
+      type: object
+      properties:
+        number:
+          type: string
+          maxLength: 13
+        barcode_value:
+          type: string
+          readOnly: true
+      required:
+      - barcode_value
+      - number
     Me:
       type: object
       properties:
@@ -3052,7 +3052,7 @@ components:
           minLength: 1
       required:
       - refresh
-    Error:
+    ErrorResponse:
       type: object
       description: Standard error shape returned by every endpoint on failure.
       properties:

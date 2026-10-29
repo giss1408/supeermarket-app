@@ -114,7 +114,7 @@ def auth(user) -> APIClient:
 
 
 def test_validator_reports_undeclared_and_missing_properties(spec):
-    schema = to_jsonschema({"$ref": "#/components/schemas/Card"}, spec, "response")
+    schema = to_jsonschema({"$ref": "#/components/schemas/LoyaltyCard"}, spec, "response")
     v = Draft202012Validator(schema)
     assert not list(v.iter_errors({"number": "1", "barcode_value": "1"}))
     assert list(v.iter_errors({"number": "1", "barcode_value": "1", "extra": 1}))

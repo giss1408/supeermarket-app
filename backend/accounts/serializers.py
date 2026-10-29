@@ -2,6 +2,7 @@ from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
 from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -65,6 +66,7 @@ class MeSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "email", "role"]
 
 
+@extend_schema_serializer(component_name="LoyaltyCard")
 class CardSerializer(serializers.ModelSerializer):
     barcode_value = serializers.CharField(source="number", read_only=True)
 

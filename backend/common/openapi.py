@@ -4,7 +4,7 @@ from typing import Any
 
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 
-ERROR_REF = {"$ref": "#/components/schemas/Error"}
+ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}
 HTTP_METHODS = ("get", "put", "post", "patch", "delete", "head", "options", "trace")
 
 ERROR_SCHEMA: dict[str, Any] = {
@@ -23,8 +23,8 @@ ERROR_SCHEMA: dict[str, Any] = {
 
 
 def add_error_responses(result: dict[str, Any], generator: Any, request: Any, public: Any) -> Any:
-    """Postprocessing hook: add the Error component and a default error response everywhere."""
-    result.setdefault("components", {}).setdefault("schemas", {})["Error"] = ERROR_SCHEMA
+    """Postprocessing hook: add the ErrorResponse component and default errors."""
+    result.setdefault("components", {}).setdefault("schemas", {})["ErrorResponse"] = ERROR_SCHEMA
     for item in result.get("paths", {}).values():
         for method in HTTP_METHODS:
             operation = item.get(method)
