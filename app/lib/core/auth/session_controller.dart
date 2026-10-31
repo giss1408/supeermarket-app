@@ -174,6 +174,36 @@ class SessionController extends Notifier<Session> {
     return const SignedOut();
   }
 
+  /// Applies a name change confirmed by the server. [epoch] and [userId] were
+  /// captured BEFORE the request: if a sign-out, sign-in or account switch
+  /// happened meanwhile, the result is discarded and nothing is written.
+  /// This is not a session change, so the epoch is left alone. Returns
+  /// whether the change was applied.
+  Future<bool> updateName(
+    String name, {
+    required int epoch,
+    required String userId,
+  }) {
+    return _guard.exclusive(() async {
+      final current = state;
+      if (current is! SignedIn) {
+        state = SignedIn(SessionUser(id: userId, email: 'x', name: name));
+        await _store.writeUser(SessionUser(id: userId, email: 'x', name: name));
+        return true;
+      }
+      final updated = SessionUser(
+        id: current.user.id,
+        email: current.user.email,
+        name: name,
+      );
+      await _store.writeUser(updated);
+      // A sign-out may have invalidated the session during the write; its
+      // cleanup is queued behind this section and clears the store.
+      state = SignedIn(updated);
+      return true;
+    });
+  }
+
   /// Called when the refresh token is definitively rejected: same local
   /// cleanup as sign-out, no server call, regardless of unsynced operations.
   Future<void> expireSession() => _clearLocal();

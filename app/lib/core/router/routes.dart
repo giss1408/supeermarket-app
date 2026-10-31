@@ -9,6 +9,7 @@ abstract final class Routes {
   static String storeDetail(int id) => '/stores/$id';
   static const account = '/account';
   static const pay = '/pay';
+  static const card = '/card';
   static const signInPath = '/sign-in';
   static const registerPath = '/register';
 

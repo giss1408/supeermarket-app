@@ -690,5 +690,139 @@
   "syncError": "Synchronisation impossible, réessai plus tard",
   "@syncError": {
     "description": "Pastille : échec de synchronisation."
+  },
+  "actionCancel": "Annuler",
+  "@actionCancel": {
+    "description": "Bouton d'annulation générique."
+  },
+  "accountGuestPrompt": "Connectez-vous pour retrouver votre carte de fidélité et vos listes sur tous vos appareils.",
+  "@accountGuestPrompt": {
+    "description": "Compte invité : invitation à se connecter."
+  },
+  "accountCardTile": "Ma carte de fidélité",
+  "@accountCardTile": {
+    "description": "Compte : ouvrir la carte."
+  },
+  "accountEditName": "Modifier mon nom",
+  "@accountEditName": {
+    "description": "Compte : modifier le nom."
+  },
+  "accountSignOut": "Se déconnecter",
+  "@accountSignOut": {
+    "description": "Compte : déconnexion."
+  },
+  "accountDeleteAccount": "Supprimer mon compte",
+  "@accountDeleteAccount": {
+    "description": "Compte : suppression du compte."
+  },
+  "editNameTitle": "Modifier mon nom",
+  "@editNameTitle": {
+    "description": "Titre de la feuille de modification du nom."
+  },
+  "editNameLabel": "Nom",
+  "@editNameLabel": {
+    "description": "Champ du nom."
+  },
+  "editNameSave": "Enregistrer",
+  "@editNameSave": {
+    "description": "Bouton d'enregistrement du nom."
+  },
+  "editNameBlank": "Saisissez votre nom.",
+  "@editNameBlank": {
+    "description": "Erreur : nom vide."
+  },
+  "editNameTooLong": "Le nom ne doit pas dépasser 150 caractères.",
+  "@editNameTooLong": {
+    "description": "Erreur : nom trop long."
+  },
+  "unsyncedTitle": "{count, plural, =1{1 modification n'a pas encore été envoyée} other{{count} modifications n'ont pas encore été envoyées}}",
+  "@unsyncedTitle": {
+    "description": "Titre de l'avertissement de déconnexion.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unsyncedBody": "Si vous vous déconnectez maintenant, ces modifications seront perdues.",
+  "@unsyncedBody": {
+    "description": "Corps de l'avertissement de déconnexion."
+  },
+  "unsyncedSyncFirst": "Synchroniser d'abord",
+  "@unsyncedSyncFirst": {
+    "description": "Action : synchroniser avant de se déconnecter."
+  },
+  "unsyncedDiscard": "Abandonner les modifications",
+  "@unsyncedDiscard": {
+    "description": "Action : abandonner les modifications."
+  },
+  "unsyncedDiscardConfirmTitle": "Abandonner les modifications ?",
+  "@unsyncedDiscardConfirmTitle": {
+    "description": "Titre de la confirmation d'abandon."
+  },
+  "unsyncedDiscardConfirmBody": "Les modifications non envoyées seront définitivement perdues.",
+  "@unsyncedDiscardConfirmBody": {
+    "description": "Corps de la confirmation d'abandon."
+  },
+  "unsyncedDiscardConfirm": "Abandonner et me déconnecter",
+  "@unsyncedDiscardConfirm": {
+    "description": "Bouton de confirmation d'abandon."
+  },
+  "unsyncedSyncing": "Synchronisation en cours…",
+  "@unsyncedSyncing": {
+    "description": "Progression de la synchronisation avant déconnexion."
+  },
+  "unsyncedStillOffline": "Vous êtes hors ligne : impossible d'envoyer vos modifications. Vous n'avez pas été déconnecté.",
+  "@unsyncedStillOffline": {
+    "description": "Hors ligne pendant la synchronisation."
+  },
+  "deleteAccountTitle": "Supprimer mon compte ?",
+  "@deleteAccountTitle": {
+    "description": "Titre de la suppression du compte."
+  },
+  "deleteAccountBody": "Votre compte, votre carte de fidélité et vos listes seront supprimés définitivement. Les modifications non envoyées seront perdues. Cette action est irréversible.",
+  "@deleteAccountBody": {
+    "description": "Corps de la suppression du compte."
+  },
+  "deleteAccountConfirm": "Supprimer définitivement",
+  "@deleteAccountConfirm": {
+    "description": "Bouton de confirmation de suppression."
+  },
+  "deleteAccountProgress": "Suppression du compte…",
+  "@deleteAccountProgress": {
+    "description": "Progression de la suppression."
+  },
+  "deleteAccountDone": "Votre compte a été supprimé",
+  "@deleteAccountDone": {
+    "description": "Confirmation de suppression."
+  },
+  "cardTitle": "Ma carte de fidélité",
+  "@cardTitle": {
+    "description": "Titre de l'écran de la carte."
+  },
+  "cardBarcode": "Code-barres",
+  "@cardBarcode": {
+    "description": "Bascule : code-barres."
+  },
+  "cardQr": "QR code",
+  "@cardQr": {
+    "description": "Bascule : QR code."
+  },
+  "cardHint": "Présentez ce code à la caisse",
+  "@cardHint": {
+    "description": "Aide de l'écran de la carte."
+  },
+  "cardSignInPrompt": "Connectez-vous pour afficher votre carte de fidélité.",
+  "@cardSignInPrompt": {
+    "description": "Carte : invité."
+  },
+  "cardNumberSemantics": "Numéro de carte : {digits}",
+  "@cardNumberSemantics": {
+    "description": "Libellé d'accessibilité du numéro.",
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      }
+    }
   }
 }

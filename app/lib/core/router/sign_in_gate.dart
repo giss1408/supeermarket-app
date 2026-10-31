@@ -71,7 +71,7 @@ Future<bool> _open(
   }
 }
 
-const _allowedRoots = {'offers', 'lists', 'stores', 'account', 'pay'};
+const _allowedRoots = {'offers', 'lists', 'stores', 'account', 'pay', 'card'};
 final _encodedBad =
     RegExp(r'%(0[0-9a-f]|1[0-9a-f]|7f|5c)', caseSensitive: false);
 

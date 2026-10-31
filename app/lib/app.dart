@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/auth/session_controller.dart';
 import 'core/config/app_config.dart';
+import 'features/card/data/card_repository.dart';
 import 'core/router/app_router.dart';
 import 'core/sync/sync_coordinator.dart';
 import 'core/theme/app_theme.dart';
@@ -26,6 +27,8 @@ class _SupermarketAppState extends ConsumerState<SupermarketApp> {
     // Offline-first list sync: starts after the first frame is requested and
     // reacts to sign-in, connectivity and app resume by itself.
     Future<void>(() => ref.read(syncCoordinatorProvider).start());
+    // Loyalty card cache: refreshed after sign-in and at start (best effort).
+    Future<void>(() => ref.read(cardAutoRefreshProvider));
   }
 
   @override

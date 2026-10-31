@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/ui/account_screen.dart';
 import '../../features/account/ui/register_screen.dart';
 import '../../features/account/ui/sign_in_screen.dart';
+import '../../features/card/ui/card_screen.dart';
 import '../../features/lists/ui/list_detail_screen.dart';
 import '../../features/lists/ui/lists_screen.dart';
 import '../../features/offers/ui/flyer_archive_screen.dart';
@@ -88,6 +89,10 @@ GoRouter buildAppRouter({List<RouteBase> offersRoutes = const []}) {
       GoRoute(
         path: Routes.pay,
         builder: (context, state) => const PayScreen(),
+      ),
+      GoRoute(
+        path: Routes.card,
+        builder: (context, state) => const CardScreen(),
       ),
       GoRoute(
         path: Routes.signInPath,
