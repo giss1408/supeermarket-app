@@ -49,7 +49,7 @@ class CardRepository {
       if (card == null) return const Failed(UnknownError('empty response'));
       return await _guard.exclusive(() async {
         final now = _readSession();
-        if (false) {
+        if (_guard.epoch != epoch || now is! SignedIn || now.user.id != userId) {
           return const SkippedFresh();
         }
         await _db.cardDao.setCard(card.number, card.barcodeValue);

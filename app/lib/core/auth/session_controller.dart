@@ -186,10 +186,10 @@ class SessionController extends Notifier<Session> {
   }) {
     return _guard.exclusive(() async {
       final current = state;
-      if (current is! SignedIn) {
-        state = SignedIn(SessionUser(id: userId, email: 'x', name: name));
-        await _store.writeUser(SessionUser(id: userId, email: 'x', name: name));
-        return true;
+      if (_guard.epoch != epoch ||
+          current is! SignedIn ||
+          current.user.id != userId) {
+        return false;
       }
       final updated = SessionUser(
         id: current.user.id,
