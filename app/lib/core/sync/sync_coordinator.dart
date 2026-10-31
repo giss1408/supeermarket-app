@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../auth/auth_session_guard.dart';
 import '../auth/session.dart';
 import '../auth/session_controller.dart';
 import '../db/app_database.dart';
@@ -60,6 +61,7 @@ class SyncCoordinator with WidgetsBindingObserver {
     required Session Function() readSession,
     required void Function(SyncRejection) onRejection,
     void Function(SyncStatus)? onStatus,
+    int Function()? readEpoch,
     this.observeLifecycle = true,
   })  : _db = db,
         _clock = clock,
@@ -67,12 +69,14 @@ class SyncCoordinator with WidgetsBindingObserver {
         _onRejection = onRejection,
         _connectivity = connectivity,
         _readSession = readSession,
-        _onStatus = onStatus;
+        _onStatus = onStatus,
+        _readEpoch = readEpoch;
 
   final AppDatabase _db;
   final ConnectivityMonitor _connectivity;
   final Session Function() _readSession;
   final void Function(SyncStatus)? _onStatus;
+  final int Function()? _readEpoch;
   final bool observeLifecycle;
   final Clock _clock;
   final ListsApi Function() _apiFactory;
@@ -182,7 +186,12 @@ class SyncCoordinator with WidgetsBindingObserver {
     final session = _readSession();
     if (session is! SignedIn) return;
     final userId = session.user.id;
+    // A sign-out invalidates the epoch synchronously, before its wipe; the
+    // session state only flips after the wipe. Checking the epoch stops
+    // writes queued behind the wipe from repopulating the emptied database.
+    final epoch0 = _readEpoch?.call();
     bool active() {
+      if (_readEpoch != null && _readEpoch() != epoch0) return false;
       final s = _readSession();
       return s is SignedIn && s.user.id == userId;
     }
@@ -203,9 +212,11 @@ class SyncCoordinator with WidgetsBindingObserver {
         final outcome = await _pusher.push(isActive: active);
         if (!active() || outcome == PushOutcome.aborted) return;
         if (outcome == PushOutcome.unauthorized) {
-          _set(const SyncFailed(
-            ApiError(code: 'not_authenticated', status: 401, fields: {}),
-          ));
+          // The refresh may have failed transiently: keep retrying with
+          // backoff (a truly rejected token expires the session instead).
+          _scheduleRetry(
+            const ApiError(code: 'not_authenticated', status: 401, fields: {}),
+          );
           return;
         }
         if (outcome == PushOutcome.retryLater) {
@@ -265,6 +276,7 @@ final syncCoordinatorProvider = Provider<SyncCoordinator>((ref) {
     clock: ref.watch(clockProvider),
     connectivity: ref.watch(connectivityMonitorProvider),
     readSession: () => ref.read(sessionProvider),
+    readEpoch: () => ref.read(authSessionGuardProvider).epoch,
     onRejection: (r) {
       if (!sink.isClosed) sink.add(r);
     },
