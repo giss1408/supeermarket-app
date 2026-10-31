@@ -289,4 +289,21 @@ void main() {
     expect(find.text('Itinéraire', skipOffstage: false), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  storesTest('a store without hour rows shows no open/closed badge',
+      (tester) async {
+    final h = H();
+    await tester.runAsync(() async {
+      await h.repo.refresh();
+      final plateau = await (h.db.select(h.db.stores)
+            ..where((t) => t.id.equals(4)))
+          .getSingle();
+      await h.db.storesDao.upsertStoreWithHours(plateau, const []);
+    });
+    await tester.pumpWidget(h.app());
+    await settle(tester);
+    // Four stores with hours (open at 08:00), Plateau (4) has none.
+    expect(find.text('Ouvert', skipOffstage: false), findsNWidgets(4));
+    expect(find.text('Fermé', skipOffstage: false), findsNothing);
+  });
 }

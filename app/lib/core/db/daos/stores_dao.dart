@@ -18,17 +18,26 @@ class StoreWithHours {
 class StoresDao extends DatabaseAccessor<AppDatabase> with _$StoresDaoMixin {
   StoresDao(super.db);
 
+  /// Replaces the store list in one transaction. Stores missing from
+  /// [storeRows] are deleted with their hours. Hours are replaced only for
+  /// [hoursRefreshedFor] (default: every store); the cached hours of other
+  /// stores (whose detail fetch failed) are kept.
   Future<void> replaceStores(
     List<StoreRow> storeRows,
-    List<OpeningHoursRow> hourRows,
-  ) =>
+    List<OpeningHoursRow> hourRows, {
+    Set<int>? hoursRefreshedFor,
+  }) =>
       transaction(() async {
-        await delete(openingHours).go();
-        await delete(stores).go();
-        await batch((b) {
-          b.insertAll(stores, storeRows);
-          b.insertAll(openingHours, hourRows);
-        });
+        final ids = {for (final s in storeRows) s.id};
+        final refreshed = hoursRefreshedFor ?? ids;
+        await (delete(openingHours)..where((t) => t.storeId.isNotIn(ids))).go();
+        await (delete(stores)..where((t) => t.id.isNotIn(ids))).go();
+        await (delete(openingHours)..where((t) => t.storeId.isIn(refreshed)))
+            .go();
+        for (final s in storeRows) {
+          await into(stores).insertOnConflictUpdate(s);
+        }
+        await batch((b) => b.insertAll(openingHours, hourRows));
       });
 
   /// Inserts or updates one store and replaces ITS opening hours only.

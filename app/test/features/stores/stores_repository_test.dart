@@ -90,4 +90,36 @@ void main() {
     final hours = await h.db.select(h.db.openingHours).get();
     expect(hours, hasLength(6));
   });
+
+  test('a failed detail keeps cached hours; dropped stores are removed',
+      () async {
+    final h = StoresRepoHarness();
+    await h.repo.refresh();
+    // Store 4 gets new hours, store 3 keeps its old ones, store 2 vanishes.
+    h.http.on('GET', '/stores/4', (_, __) {
+      final d = Map<String, dynamic>.from(fixture('store_detail') as Map);
+      d['id'] = 4;
+      d['opening_hours'] = [
+        {'weekday': 0, 'opens': '09:00', 'closes': '12:00'},
+      ];
+      return FakeResponse(200, d);
+    });
+    h.http.reply('GET', '/stores/3', 500, errorBody('server_error'));
+    final list = Map<String, dynamic>.from(fixture('stores_list') as Map);
+    list['results'] = [
+      for (final s in list['results'] as List)
+        if ((s as Map)['id'] != 2) s,
+    ];
+    h.http.reply('GET', '/stores', 200, list);
+
+    expect(await h.repo.refresh(force: true), isA<Refreshed>());
+
+    final hours = await h.db.select(h.db.openingHours).get();
+    expect(hours.where((r) => r.storeId == 3), hasLength(6));
+    expect(hours.where((r) => r.storeId == 4).map((r) => r.opens), ['09:00']);
+    expect(hours.where((r) => r.storeId == 2), isEmpty);
+    final ids = (await h.db.select(h.db.stores).get()).map((s) => s.id);
+    expect(ids, isNot(contains(2)));
+    expect(ids, hasLength(4));
+  });
 }

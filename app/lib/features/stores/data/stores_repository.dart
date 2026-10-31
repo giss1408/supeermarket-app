@@ -70,9 +70,14 @@ class StoresRepository {
         for (final s in list)
           if (_mapStore(s.id, s) case final row?) row,
       ];
-      final hourRows = await _fetchHours([for (final r in storeRows) r.id]);
+      final (hourRows, refreshedIds) =
+          await _fetchHours([for (final r in storeRows) r.id]);
 
-      await _dao.replaceStores(storeRows, hourRows);
+      await _dao.replaceStores(
+        storeRows,
+        hourRows,
+        hoursRefreshedFor: refreshedIds,
+      );
       await _db.syncMetaDao.set(
         storesFetchedAt,
         _clock().toUtc().toIso8601String(),
@@ -86,9 +91,11 @@ class StoresRepository {
   }
 
   /// Detail requests, [_detailConcurrency] at a time. A failed detail only
-  /// means that store has no hours yet.
-  Future<List<OpeningHoursRow>> _fetchHours(List<int> ids) async {
+  /// keeps that store's cached hours (the ids returned are the stores whose
+  /// hours were actually fetched).
+  Future<(List<OpeningHoursRow>, Set<int>)> _fetchHours(List<int> ids) async {
     final out = <OpeningHoursRow>[];
+    final ok = <int>{};
     final queue = List.of(ids);
     Future<void> worker() async {
       while (queue.isNotEmpty) {
@@ -96,6 +103,7 @@ class StoresRepository {
         try {
           final d = (await _api.storesRetrieve(id: id)).data!;
           out.addAll(_mapHours(id, d.openingHours));
+          ok.add(id);
         } on Object {
           // Ignored on purpose; see above.
         }
@@ -103,7 +111,7 @@ class StoresRepository {
     }
 
     await Future.wait([for (var i = 0; i < _detailConcurrency; i++) worker()]);
-    return out;
+    return (out, ok);
   }
 
   /// Fetches one store's detail and replaces that store's hours (and row).
