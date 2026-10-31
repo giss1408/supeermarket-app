@@ -52,4 +52,50 @@ class OutboxDao {
   Future<void> resetInFlightToPending() =>
       (_db.update(_db.outboxOps)..where((t) => t.state.equals('inFlight')))
           .write(const OutboxOpsCompanion(state: Value('pending')));
+
+  Future<OutboxOpRow?> byId(int id) =>
+      (_db.select(_db.outboxOps)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
+
+  Future<void> updatePayload(int id, String payloadJson) =>
+      (_db.update(_db.outboxOps)..where((t) => t.id.equals(id)))
+          .write(OutboxOpsCompanion(payloadJson: Value(payloadJson)));
+
+  /// Ops of a list (its own and its items'), oldest first.
+  Future<List<OutboxOpRow>> opsOfList(String listLocalId) =>
+      (_db.select(_db.outboxOps)
+            ..where((t) => t.listLocalId.equals(listLocalId))
+            ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+          .get();
+
+  Future<List<OutboxOpRow>> opsOfItem(String itemLocalId) =>
+      (_db.select(_db.outboxOps)
+            ..where((t) => t.itemLocalId.equals(itemLocalId))
+            ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+          .get();
+
+  Future<List<OutboxOpRow>> inFlight() => (_db.select(_db.outboxOps)
+        ..where((t) => t.state.equals('inFlight'))
+        ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+      .get();
+
+  /// Deletes every op of a list (and of its items); `pendingOnly` keeps ops
+  /// that may be mid-send.
+  Future<void> deleteByList(String listLocalId, {bool pendingOnly = false}) =>
+      (_db.delete(_db.outboxOps)
+            ..where((t) =>
+                t.listLocalId.equals(listLocalId) &
+                (pendingOnly
+                    ? t.state.equals('pending')
+                    : const Constant(true))))
+          .go();
+
+  Future<void> deleteByItem(String itemLocalId, {bool pendingOnly = false}) =>
+      (_db.delete(_db.outboxOps)
+            ..where((t) =>
+                t.itemLocalId.equals(itemLocalId) &
+                (pendingOnly
+                    ? t.state.equals('pending')
+                    : const Constant(true))))
+          .go();
 }

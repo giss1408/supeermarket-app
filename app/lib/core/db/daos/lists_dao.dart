@@ -67,4 +67,49 @@ class ListsDao extends DatabaseAccessor<AppDatabase> with _$ListsDaoMixin {
   Future<List<ListItemRow>> itemsOf(String listLocalId) =>
       (select(listItems)..where((t) => t.listLocalId.equals(listLocalId)))
           .get();
+
+  Future<ShoppingListRow?> listByLocalId(String localId) => (select(
+        shoppingLists,
+      )..where((t) => t.localId.equals(localId)))
+          .getSingleOrNull();
+
+  Future<ListItemRow?> itemByLocalId(String localId) =>
+      (select(listItems)..where((t) => t.localId.equals(localId)))
+          .getSingleOrNull();
+
+  /// Stores the server identity of a list (create result or adoption).
+  Future<void> setListServerIds(
+    String localId, {
+    required int remoteId,
+    required String? serverUpdatedAt,
+  }) =>
+      (update(shoppingLists)..where((t) => t.localId.equals(localId))).write(
+        ShoppingListsCompanion(
+          remoteId: Value(remoteId),
+          serverUpdatedAt: Value(serverUpdatedAt),
+        ),
+      );
+
+  Future<void> setItemRemoteId(String localId, int remoteId) =>
+      (update(listItems)..where((t) => t.localId.equals(localId)))
+          .write(ListItemsCompanion(remoteId: Value(remoteId)));
+
+  Future<void> setListDirty(String localId, {required bool dirty}) =>
+      (update(shoppingLists)..where((t) => t.localId.equals(localId)))
+          .write(ShoppingListsCompanion(dirty: Value(dirty)));
+
+  Future<void> setItemDirty(String localId, {required bool dirty}) =>
+      (update(listItems)..where((t) => t.localId.equals(localId)))
+          .write(ListItemsCompanion(dirty: Value(dirty)));
+
+  Future<void> setListServerUpdatedAt(String localId, String? value) =>
+      (update(shoppingLists)..where((t) => t.localId.equals(localId)))
+          .write(ShoppingListsCompanion(serverUpdatedAt: Value(value)));
+
+  Future<void> setListDeletedLocally(
+    String localId, {
+    required bool deleted,
+  }) =>
+      (update(shoppingLists)..where((t) => t.localId.equals(localId)))
+          .write(ShoppingListsCompanion(deletedLocally: Value(deleted)));
 }

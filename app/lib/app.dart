@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/auth/session_controller.dart';
 import 'core/config/app_config.dart';
 import 'core/router/app_router.dart';
+import 'core/sync/sync_coordinator.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/brand.dart';
 
@@ -22,6 +23,9 @@ class _SupermarketAppState extends ConsumerState<SupermarketApp> {
     // Restore the session without blocking the first frame; the app shows
     // content (as a guest) meanwhile. restore() never throws.
     Future<void>(() => ref.read(sessionProvider.notifier).restore());
+    // Offline-first list sync: starts after the first frame is requested and
+    // reacts to sign-in, connectivity and app resume by itself.
+    Future<void>(() => ref.read(syncCoordinatorProvider).start());
   }
 
   @override
