@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/errors/app_error.dart';
 import '../../../core/errors/error_mapper.dart';
+import '../../../core/router/sign_in_gate.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/ui/date_format_fr.dart';
 import '../../../core/ui/empty_state.dart';
@@ -16,6 +17,7 @@ import '../../../core/ui/offline_banner.dart';
 import '../../../core/ui/skeleton.dart';
 import '../../../core/util/clock.dart';
 import '../../../core/sync/refresh_outcome.dart';
+import '../../lists/ui/add_to_list_sheet.dart';
 import '../state/offers_controller.dart';
 import '../state/offers_providers.dart';
 import 'offer_card.dart';
@@ -70,6 +72,12 @@ class _OffersHomeScreenState extends ConsumerState<OffersHomeScreen> {
 
   Future<void> _pull() =>
       ref.read(offersRefreshProvider.notifier).refresh(force: true);
+
+  Future<void> _addToList(OfferWithProduct item) async {
+    final ok = await requireSignIn(context, ref);
+    if (!ok || !mounted) return;
+    await AddToListSheet.show(context, item);
+  }
 
   void _retry() =>
       ref.read(offersRefreshProvider.notifier).refresh(force: true);
@@ -299,7 +307,11 @@ class _OffersHomeScreenState extends ConsumerState<OffersHomeScreen> {
             items.length,
             (context, i) => OfferCard(
               item: items[i],
-              onTap: () => OfferDetailSheet.show(context, items[i]),
+              onTap: () => OfferDetailSheet.show(
+                context,
+                items[i],
+                onAddToList: () => _addToList(items[i]),
+              ),
             ),
           ),
         ];

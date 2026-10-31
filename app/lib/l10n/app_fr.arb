@@ -116,19 +116,6 @@
   "@placeholderOffers": {
     "description": "Libellé temporaire."
   },
-  "placeholderLists": "Listes de courses (bientôt disponible)",
-  "@placeholderLists": {
-    "description": "Libellé temporaire."
-  },
-  "placeholderListDetail": "Liste {id} (bientôt disponible)",
-  "@placeholderListDetail": {
-    "description": "Libellé temporaire.",
-    "placeholders": {
-      "id": {
-        "type": "String"
-      }
-    }
-  },
   "placeholderStores": "Magasins (bientôt disponible)",
   "@placeholderStores": {
     "description": "Libellé temporaire."
@@ -531,5 +518,177 @@
   "accountPay": "Payer par mobile money",
   "@accountPay": {
     "description": "Bouton du compte : aller au paiement."
+  },
+  "listsNewList": "Nouvelle liste",
+  "@listsNewList": {
+    "description": "Action : créer une liste."
+  },
+  "listsGuestPrompt": "Connectez-vous pour créer vos listes",
+  "@listsGuestPrompt": {
+    "description": "Invite de connexion pour les invités sur l'onglet Listes."
+  },
+  "listsEmptyTitle": "Aucune liste pour le moment. Créez votre première liste.",
+  "@listsEmptyTitle": {
+    "description": "État vide de l'onglet Listes."
+  },
+  "listNameCreateTitle": "Nouvelle liste",
+  "@listNameCreateTitle": {
+    "description": "Titre du dialogue de création."
+  },
+  "listNameRenameTitle": "Renommer la liste",
+  "@listNameRenameTitle": {
+    "description": "Titre du dialogue de renommage."
+  },
+  "listNameLabel": "Nom de la liste",
+  "@listNameLabel": {
+    "description": "Champ du nom de liste."
+  },
+  "listNameErrorBlank": "Saisissez un nom pour la liste.",
+  "@listNameErrorBlank": {
+    "description": "Nom de liste vide."
+  },
+  "listNameErrorTooLong": "Le nom ne doit pas dépasser 100 caractères.",
+  "@listNameErrorTooLong": {
+    "description": "Nom de liste trop long."
+  },
+  "listCancel": "Annuler",
+  "@listCancel": {
+    "description": "Bouton d'annulation des dialogues."
+  },
+  "listCreate": "Créer",
+  "@listCreate": {
+    "description": "Bouton de création de liste."
+  },
+  "listSave": "Enregistrer",
+  "@listSave": {
+    "description": "Bouton d'enregistrement du nouveau nom."
+  },
+  "listItemCount": "{count, plural, =0{Aucun article} =1{1 article} other{{count} articles}}",
+  "@listItemCount": {
+    "description": "Nombre d'articles d'une liste.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listCheckedOf": "{checked}/{total} cochés",
+  "@listCheckedOf": {
+    "description": "Articles cochés sur le total.",
+    "placeholders": {
+      "checked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "listItemDeleted": "Article supprimé",
+  "@listItemDeleted": {
+    "description": "Message après suppression d'un article."
+  },
+  "listDeleted": "Liste supprimée",
+  "@listDeleted": {
+    "description": "Message après suppression d'une liste."
+  },
+  "listUndo": "Annuler",
+  "@listUndo": {
+    "description": "Action d'annulation d'une suppression."
+  },
+  "listRenameTooltip": "Renommer la liste",
+  "@listRenameTooltip": {
+    "description": "Infobulle de l'action de renommage."
+  },
+  "listAddItem": "Ajouter un article",
+  "@listAddItem": {
+    "description": "Action : ouvrir la feuille d'ajout d'article."
+  },
+  "listEmptyItems": "Cette liste est vide. Ajoutez votre premier article.",
+  "@listEmptyItems": {
+    "description": "Liste sans article."
+  },
+  "listNotFoundTitle": "Liste introuvable",
+  "@listNotFoundTitle": {
+    "description": "Liste inconnue ou supprimée."
+  },
+  "listNotFoundAction": "Retour aux listes",
+  "@listNotFoundAction": {
+    "description": "Bouton de retour depuis une liste introuvable."
+  },
+  "quantityDecrease": "Diminuer la quantité",
+  "@quantityDecrease": {
+    "description": "Infobulle du bouton moins."
+  },
+  "quantityIncrease": "Augmenter la quantité",
+  "@quantityIncrease": {
+    "description": "Infobulle du bouton plus."
+  },
+  "quantityValue": "Quantité : {count}",
+  "@quantityValue": {
+    "description": "Libellé d'accessibilité de la quantité.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addItemLabel": "Article",
+  "@addItemLabel": {
+    "description": "Champ de l'article libre."
+  },
+  "addItemHint": "Ex. : lait, pain, savon",
+  "@addItemHint": {
+    "description": "Exemple de saisie."
+  },
+  "addItemErrorBlank": "Saisissez le nom de l'article.",
+  "@addItemErrorBlank": {
+    "description": "Article vide."
+  },
+  "addItemErrorTooLong": "L'article ne doit pas dépasser 200 caractères.",
+  "@addItemErrorTooLong": {
+    "description": "Article trop long."
+  },
+  "addItemSubmit": "Ajouter",
+  "@addItemSubmit": {
+    "description": "Bouton d'ajout d'un article."
+  },
+  "addToListTitle": "Ajouter à une liste",
+  "@addToListTitle": {
+    "description": "Titre de la feuille de choix de liste."
+  },
+  "addToListEmpty": "Vous n'avez pas encore de liste.",
+  "@addToListEmpty": {
+    "description": "Aucune liste existante."
+  },
+  "addToListAdded": "Ajouté à « {name} »",
+  "@addToListAdded": {
+    "description": "Confirmation après ajout.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOffline": "Hors ligne",
+  "@syncOffline": {
+    "description": "Pastille de synchronisation : hors ligne."
+  },
+  "syncPending": "{count} en attente",
+  "@syncPending": {
+    "description": "Pastille : opérations en attente.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncSyncing": "Synchronisation…",
+  "@syncSyncing": {
+    "description": "Pastille : synchronisation en cours."
+  },
+  "syncError": "Synchronisation impossible, réessai plus tard",
+  "@syncError": {
+    "description": "Pastille : échec de synchronisation."
   }
 }
