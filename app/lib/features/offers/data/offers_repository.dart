@@ -7,28 +7,8 @@ import '../../../core/db/daos/public_dao.dart';
 import '../../../core/db/daos/sync_meta_keys.dart';
 import '../../../core/errors/app_error.dart';
 import '../../../core/errors/error_mapper.dart';
+import '../../../core/sync/refresh_outcome.dart';
 import '../../../core/util/clock.dart';
-
-/// Result of a refresh attempt; refreshes never throw.
-sealed class RefreshOutcome {
-  const RefreshOutcome();
-}
-
-/// New data was fetched and stored (or the server has no current flyer).
-final class Refreshed extends RefreshOutcome {
-  const Refreshed();
-}
-
-/// The cache is younger than the TTL; no request was made.
-final class SkippedFresh extends RefreshOutcome {
-  const SkippedFresh();
-}
-
-/// The refresh failed; the cache is untouched.
-final class Failed extends RefreshOutcome {
-  const Failed(this.error);
-  final AppError error;
-}
 
 const currentFlyerTtl = Duration(minutes: 15);
 const _maxPages = 50;

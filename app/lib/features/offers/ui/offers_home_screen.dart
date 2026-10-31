@@ -15,6 +15,7 @@ import '../../../core/ui/error_view.dart';
 import '../../../core/ui/offline_banner.dart';
 import '../../../core/ui/skeleton.dart';
 import '../../../core/util/clock.dart';
+import '../../../core/sync/refresh_outcome.dart';
 import '../state/offers_controller.dart';
 import '../state/offers_providers.dart';
 import 'offer_card.dart';

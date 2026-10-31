@@ -31,6 +31,22 @@ class StoresDao extends DatabaseAccessor<AppDatabase> with _$StoresDaoMixin {
         });
       });
 
+  /// Inserts or updates one store and replaces ITS opening hours only.
+  Future<void> upsertStoreWithHours(
+    StoreRow storeRow,
+    List<OpeningHoursRow> hourRows,
+  ) =>
+      transaction(() async {
+        await into(stores).insertOnConflictUpdate(storeRow);
+        await (delete(openingHours)
+              ..where((t) => t.storeId.equals(storeRow.id)))
+            .go();
+        await batch((b) => b.insertAll(openingHours, hourRows));
+      });
+
+  /// Opening hours of every store (for open/closed badges in the list).
+  Stream<List<OpeningHoursRow>> watchAllHours() => select(openingHours).watch();
+
   Stream<List<StoreRow>> watchStores({String query = ''}) {
     final q = select(stores)..orderBy([(t) => OrderingTerm.asc(t.name)]);
     if (foldSearch(query).trim().isNotEmpty) {

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_error.dart';
-import '../data/offers_repository.dart';
+import '../../../core/sync/refresh_outcome.dart';
 import 'offers_providers.dart';
 
 /// Category and text filter applied locally to the cached offers.
@@ -37,29 +37,6 @@ final offersFilterProvider =
   OffersFilterNotifier.new,
 );
 
-/// Progress of the last refresh, for the UI.
-sealed class RefreshStatus {
-  const RefreshStatus();
-}
-
-final class RefreshIdle extends RefreshStatus {
-  const RefreshIdle();
-}
-
-final class RefreshLoading extends RefreshStatus {
-  const RefreshLoading();
-}
-
-final class RefreshFailed extends RefreshStatus {
-  const RefreshFailed(this.error);
-  final AppError error;
-}
-
-RefreshStatus _statusOf(RefreshOutcome outcome) => switch (outcome) {
-      Failed(:final error) => RefreshFailed(error),
-      Refreshed() || SkippedFresh() => const RefreshIdle(),
-    };
-
 abstract class _RefreshNotifier extends Notifier<RefreshStatus> {
   var _disposed = false;
 
@@ -78,7 +55,7 @@ abstract class _RefreshNotifier extends Notifier<RefreshStatus> {
       // The repository never throws; this guards provider wiring errors.
       outcome = Failed(e is AppError ? e : UnknownError(e));
     }
-    if (!_disposed) state = _statusOf(outcome);
+    if (!_disposed) state = statusOf(outcome);
     return outcome;
   }
 }

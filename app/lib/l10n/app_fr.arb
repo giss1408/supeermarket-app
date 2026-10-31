@@ -340,5 +340,149 @@
   "archiveTagCurrent": "En cours",
   "@archiveTagCurrent": {
     "description": "Étiquette : prospectus en cours."
+  },
+  "storesSearchHint": "Rechercher un magasin",
+  "@storesSearchHint": {
+    "description": "Champ de recherche des magasins."
+  },
+  "storesSearchClear": "Effacer la recherche",
+  "@storesSearchClear": {
+    "description": "Bouton pour vider la recherche."
+  },
+  "storesLocationTitle": "Activez la localisation pour trier par distance",
+  "@storesLocationTitle": {
+    "description": "Carte : proposer la localisation."
+  },
+  "storesLocationAllow": "Autoriser",
+  "@storesLocationAllow": {
+    "description": "Bouton : demander la permission de localisation."
+  },
+  "storesLocationSettings": "Ouvrir les réglages",
+  "@storesLocationSettings": {
+    "description": "Bouton : ouvrir les réglages système."
+  },
+  "storesLocationDismiss": "Masquer",
+  "@storesLocationDismiss": {
+    "description": "Bouton : masquer la carte de localisation."
+  },
+  "storesEmptyTitle": "Aucun magasin",
+  "@storesEmptyTitle": {
+    "description": "Titre : aucun magasin."
+  },
+  "storesEmptyMessage": "Les magasins apparaîtront ici dès que vous serez connecté.",
+  "@storesEmptyMessage": {
+    "description": "Message : aucun magasin."
+  },
+  "storesNoMatchTitle": "Aucun magasin ne correspond",
+  "@storesNoMatchTitle": {
+    "description": "Titre : recherche sans résultat."
+  },
+  "storesNoMatchMessage": "Essayez une autre recherche.",
+  "@storesNoMatchMessage": {
+    "description": "Message : recherche sans résultat."
+  },
+  "storeAddressLine": "{address}, {city}",
+  "@storeAddressLine": {
+    "description": "Adresse suivie de la ville.",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "storeBadgeOpen": "Ouvert",
+  "@storeBadgeOpen": {
+    "description": "Pastille : magasin ouvert."
+  },
+  "storeBadgeClosed": "Fermé",
+  "@storeBadgeClosed": {
+    "description": "Pastille : magasin fermé."
+  },
+  "storeOpenNow": "Ouvert maintenant",
+  "@storeOpenNow": {
+    "description": "Statut : magasin ouvert maintenant."
+  },
+  "storeCallLabel": "Appeler le magasin",
+  "@storeCallLabel": {
+    "description": "Libellé d'accessibilité du numéro de téléphone."
+  },
+  "storeDirections": "Itinéraire",
+  "@storeDirections": {
+    "description": "Bouton : ouvrir l'itinéraire dans les cartes."
+  },
+  "storeMapsError": "Impossible d'ouvrir l'application de cartes",
+  "@storeMapsError": {
+    "description": "Message : cartes indisponibles."
+  },
+  "storeHoursTitle": "Horaires d'ouverture",
+  "@storeHoursTitle": {
+    "description": "Titre de la section des horaires."
+  },
+  "storeHoursUnavailable": "Horaires indisponibles",
+  "@storeHoursUnavailable": {
+    "description": "Message : horaires inconnus."
+  },
+  "storeHoursClosedDay": "Fermé",
+  "@storeHoursClosedDay": {
+    "description": "Jour sans ouverture."
+  },
+  "storeHoursRange": "{opens} – {closes}",
+  "@storeHoursRange": {
+    "description": "Plage horaire d'un jour.",
+    "placeholders": {
+      "opens": {
+        "type": "String"
+      },
+      "closes": {
+        "type": "String"
+      }
+    }
+  },
+  "weekday0": "Lundi",
+  "@weekday0": {
+    "description": "Jour de la semaine 0 (0 = lundi)."
+  },
+  "weekday1": "Mardi",
+  "@weekday1": {
+    "description": "Jour de la semaine 1 (0 = lundi)."
+  },
+  "weekday2": "Mercredi",
+  "@weekday2": {
+    "description": "Jour de la semaine 2 (0 = lundi)."
+  },
+  "weekday3": "Jeudi",
+  "@weekday3": {
+    "description": "Jour de la semaine 3 (0 = lundi)."
+  },
+  "weekday4": "Vendredi",
+  "@weekday4": {
+    "description": "Jour de la semaine 4 (0 = lundi)."
+  },
+  "weekday5": "Samedi",
+  "@weekday5": {
+    "description": "Jour de la semaine 5 (0 = lundi)."
+  },
+  "weekday6": "Dimanche",
+  "@weekday6": {
+    "description": "Jour de la semaine 6 (0 = lundi)."
+  },
+  "storePay": "Payer par mobile money",
+  "@storePay": {
+    "description": "Bouton : aller au paiement."
+  },
+  "storeNotFoundTitle": "Magasin introuvable",
+  "@storeNotFoundTitle": {
+    "description": "Titre : magasin inconnu."
+  },
+  "storeNotFoundMessage": "Ce magasin n'est pas disponible pour le moment.",
+  "@storeNotFoundMessage": {
+    "description": "Message : magasin inconnu."
+  },
+  "storeBack": "Retour",
+  "@storeBack": {
+    "description": "Bouton : revenir à la liste."
   }
 }

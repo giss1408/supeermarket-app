@@ -19,6 +19,20 @@ OpeningHoursRow hours(int storeId, int weekday) => OpeningHoursRow(
     );
 
 void main() {
+  test('upsertStoreWithHours replaces only that store hours; watchAllHours',
+      () async {
+    final db = createTestDb();
+    await db.storesDao.replaceStores(
+        [store(1), store(2)], [hours(1, 0), hours(1, 1), hours(2, 0)]);
+    await db.storesDao.upsertStoreWithHours(store(1, city: 'Bouaké'), [
+      hours(1, 3),
+    ]);
+    final all = await db.storesDao.watchAllHours().first;
+    expect(all.map((h) => (h.storeId, h.weekday)).toSet(), {(1, 3), (2, 0)});
+    final s = await db.storesDao.watchStore(1).first;
+    expect(s!.store.city, 'Bouaké');
+  });
+
   test('deleting a store cascades its opening hours', () async {
     final db = createTestDb();
     await db.storesDao.replaceStores(

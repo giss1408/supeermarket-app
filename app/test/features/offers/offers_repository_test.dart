@@ -4,6 +4,7 @@ import 'package:api_client/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supermarket_app/core/db/daos/sync_meta_keys.dart';
 import 'package:supermarket_app/core/errors/app_error.dart';
+import 'package:supermarket_app/core/sync/refresh_outcome.dart';
 import 'package:supermarket_app/features/offers/data/offers_repository.dart';
 
 import '../../core/db/test_db.dart';
