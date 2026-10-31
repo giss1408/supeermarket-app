@@ -78,3 +78,8 @@ hardening, test gaps, contract polish and documentation. Grouped by area, roughl
   and the release checklist asks to re-verify it.
 - Native behavior is untested on devices and `integration_test/offline_list_sync_test.dart` has never been run
   (only a manual Android USB run happened, and it passed).
+- Sign-out race (final review): list mutations are not session-checked, so a change made during sign-out can leave an
+  unowned outbox op that the next user adopts (`wipeUserData` also clears `lastUserId`). Reject mutations when not
+  signed in, stamp ops with the owner, and keep a "wipe pending" marker so the next sign-in wipes defensively.
+- `_failRestore` (session_controller) clears the token store on any error, including network failures: a user with a
+  partial store who starts the app offline is signed out for good. Clear only on a 400/401 from refresh or `/me`.
