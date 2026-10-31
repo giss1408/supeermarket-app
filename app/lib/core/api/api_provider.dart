@@ -35,14 +35,44 @@ Dio createDio({
   );
 }
 
+/// Test seam: flip [online] to false and every request made through the app's
+/// Dio instances fails as if the device had no network. Always online in
+/// production; only the integration test closes it.
+class NetworkGate {
+  bool online = true;
+}
+
+final networkGateProvider = Provider<NetworkGate>((ref) => NetworkGate());
+
+/// Rejects requests with a connection error while the gate is closed.
+class NetworkGateInterceptor extends Interceptor {
+  NetworkGateInterceptor(this._gate);
+
+  final NetworkGate _gate;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (_gate.online) return handler.next(options);
+    handler.reject(
+      DioException.connectionError(
+        requestOptions: options,
+        reason: 'NetworkGate is closed',
+      ),
+      true,
+    );
+  }
+}
+
 /// Base URL of the API; overridable in tests.
 final apiBaseUrlProvider = Provider<String>((ref) => AppConfig.apiBaseUrl);
 
 /// Dio WITHOUT interceptors: login, register, logout and refresh calls, so
 /// they can never trigger token handling.
-final bareDioProvider = Provider<Dio>(
-  (ref) => createDio(baseUrl: ref.watch(apiBaseUrlProvider)),
-);
+final bareDioProvider = Provider<Dio>((ref) {
+  final dio = createDio(baseUrl: ref.watch(apiBaseUrlProvider));
+  dio.interceptors.add(NetworkGateInterceptor(ref.watch(networkGateProvider)));
+  return dio;
+});
 
 /// In-memory access token shared by the session controller and the
 /// interceptor. Never persisted.
@@ -54,6 +84,7 @@ final accessTokenProvider = Provider<AccessTokenHolder>(
 /// it on 401.
 final dioProvider = Provider<Dio>((ref) {
   final dio = createDio(baseUrl: ref.watch(apiBaseUrlProvider));
+  dio.interceptors.add(NetworkGateInterceptor(ref.watch(networkGateProvider)));
   dio.interceptors.add(
     AuthInterceptor(
       dio: dio,

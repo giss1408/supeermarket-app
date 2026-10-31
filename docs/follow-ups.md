@@ -61,3 +61,20 @@ hardening, test gaps, contract polish and documentation. Grouped by area, roughl
 - Add `caddy validate` (CI or on the server) for `deploy/Caddyfile`; it could not be run locally.
 - Docs: if Caddy is ever placed behind a CDN/load balancer, `remote_ip` (admin allowlist) and `NUM_PROXIES` both
   change; the privacy-policy URL is a client-content item (not a backend deliverable).
+
+## Mobile app
+- Server idempotency key for list creation. Today the first-sync adoption of ambiguous list creates is unbounded,
+  and item adoption matches by content.
+- Sync deletion tombstones.
+- Provider app shortcuts (Wave, Orange Money, MTN MoMo deep links).
+- Confirm the barcode symbology with the POS team.
+- Per-store payment numbers (v1 has one set for the whole retailer).
+- Staff mode: separate spec and plan (same Flutter app, role-gated).
+- Image cache policy (R25).
+- Deferred minors: `PaymentRepository` refresh controller shows one frame of stale state; the "Vérifié…" line stays
+  hidden after a failed refresh; categories are only upserted, never removed; the minor lists from Tasks 4, 7, 9, 10,
+  11 and 12 are in the (git-ignored) SDD ledger.
+- `ACCESS_FINE_LOCATION` comes from the merged manifest of `geolocator_android`; it is removed in the app manifest
+  and the release checklist asks to re-verify it.
+- Native behavior is untested on devices and `integration_test/offline_list_sync_test.dart` has never been run
+  (only a manual Android USB run happened, and it passed).
