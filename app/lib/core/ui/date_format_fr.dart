@@ -72,3 +72,27 @@ bool isFutureFr(String isoDate, DateTime now) {
     return false;
   }
 }
+
+String _dayMonth(DateTime d) => '${_day(d.day)} ${_months[d.month - 1]}';
+
+String _hhmm(DateTime d) =>
+    '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+/// `Vérifié aujourd'hui à 14:32`, `Vérifié le 28 oct. à 14:32`, with the year
+/// when it is not the current one. Both times are shown in local time.
+String formatCheckedAtFr(DateTime checked, DateTime now) {
+  final c = checked.toLocal();
+  final n = now.toLocal();
+  if (c.year == n.year && c.month == n.month && c.day == n.day) {
+    return "Vérifié aujourd'hui à ${_hhmm(c)}";
+  }
+  final year = c.year == n.year ? '' : ' ${c.year}';
+  return 'Vérifié le ${_dayMonth(c)}$year à ${_hhmm(c)}';
+}
+
+/// `Mis à jour le 3 nov.` (year added when not the current one).
+String formatUpdatedOnFr(DateTime updated, DateTime now) {
+  final u = updated.toLocal();
+  final year = u.year == now.toLocal().year ? '' : ' ${u.year}';
+  return 'Mis à jour le ${_dayMonth(u)}$year';
+}

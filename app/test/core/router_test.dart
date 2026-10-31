@@ -192,7 +192,10 @@ void main() {
     testWidgets('/pay is reachable as guest without bottom bar', (t) async {
       final h = await pumpApp(t);
       h.router(t).go(Routes.pay);
-      await t.pumpAndSettle();
+      // The pay screen shows a pulsing skeleton while it refreshes, so
+      // pumpAndSettle would never return.
+      await t.pump();
+      await t.pump(const Duration(seconds: 1));
       expect(find.byType(PayScreen), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
     });

@@ -484,5 +484,52 @@
   "storeBack": "Retour",
   "@storeBack": {
     "description": "Bouton : revenir à la liste."
+  },
+  "payTitle": "Payer par mobile money",
+  "@payTitle": {
+    "description": "Titre de l'écran de paiement."
+  },
+  "payExplanation": "Envoyez le montant au numéro ci-dessous depuis votre application, puis montrez le message de confirmation à la caissière ou au caissier.",
+  "@payExplanation": {
+    "description": "Explication du paiement par mobile money."
+  },
+  "payChecking": "Vérification en cours…",
+  "@payChecking": {
+    "description": "Indicateur : les numéros sont en cours de vérification."
+  },
+  "payStaleWarning": "Ces numéros sont peut-être périmés. Confirmez le numéro à la caisse avant de payer.",
+  "@payStaleWarning": {
+    "description": "Avertissement : numéros non confirmés par le serveur."
+  },
+  "payEmpty": "Aucun mode de paiement disponible pour le moment. Renseignez-vous à la caisse.",
+  "@payEmpty": {
+    "description": "État vide : aucun mode de paiement."
+  },
+  "payCopyNumber": "Copier le numéro",
+  "@payCopyNumber": {
+    "description": "Bouton : copier le numéro de paiement."
+  },
+  "payCopied": "Numéro copié",
+  "@payCopied": {
+    "description": "Confirmation : numéro copié dans le presse-papiers."
+  },
+  "paySemantics": "{provider}, numéro {number}. {instructions}",
+  "@paySemantics": {
+    "description": "Description accessible d'une carte de paiement.",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      },
+      "instructions": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPay": "Payer par mobile money",
+  "@accountPay": {
+    "description": "Bouton du compte : aller au paiement."
   }
 }

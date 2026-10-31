@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/session.dart';
 import '../../../core/auth/session_controller.dart';
+import '../../../core/router/routes.dart';
 import '../../../core/router/sign_in_gate.dart';
 
 /// Placeholder replaced by a later task; offers sign-in to guests.
@@ -21,6 +23,12 @@ class AccountScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.placeholderAccount),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => context.push(Routes.pay),
+              icon: const Icon(Icons.payments_outlined),
+              label: Text(l10n.accountPay),
+            ),
             if (guest) ...[
               const SizedBox(height: 16),
               FilledButton(

@@ -16,6 +16,12 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase>
     return row?.value;
   }
 
+  /// Emits the value now and on every change (null when missing).
+  Stream<String?> watch(String key) =>
+      (select(syncMeta)..where((t) => t.key.equals(key)))
+          .watchSingleOrNull()
+          .map((row) => row?.value);
+
   Future<void> set(String key, String value) =>
       into(syncMeta).insertOnConflictUpdate(
         SyncMetaCompanion.insert(key: key, value: value),
