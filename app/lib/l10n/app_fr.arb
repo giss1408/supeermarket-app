@@ -209,5 +209,136 @@
   "busyLabel": "Veuillez patienter",
   "@busyLabel": {
     "description": "Libellé accessible du chargement."
+  },
+  "offersSearchHint": "Rechercher une offre",
+  "@offersSearchHint": {
+    "description": "Indication du champ de recherche des offres."
+  },
+  "offersSearchClear": "Effacer la recherche",
+  "@offersSearchClear": {
+    "description": "Infobulle du bouton qui vide la recherche."
+  },
+  "offersCategoryAll": "Tout",
+  "@offersCategoryAll": {
+    "description": "Puce de filtre : toutes les catégories."
+  },
+  "offersArchiveAction": "Anciens prospectus",
+  "@offersArchiveAction": {
+    "description": "Bouton d'accès aux anciens prospectus."
+  },
+  "offersNoFlyerTitle": "Aucun prospectus en cours",
+  "@offersNoFlyerTitle": {
+    "description": "Titre : le serveur n'a pas de prospectus en cours."
+  },
+  "offersNoFlyerMessage": "Revenez bientôt pour découvrir les prochaines offres.",
+  "@offersNoFlyerMessage": {
+    "description": "Message : pas de prospectus en cours."
+  },
+  "offersNoMatchTitle": "Aucune offre ne correspond",
+  "@offersNoMatchTitle": {
+    "description": "Titre : le filtre ne trouve aucune offre."
+  },
+  "offersNoMatchMessage": "Essayez une autre recherche ou une autre catégorie.",
+  "@offersNoMatchMessage": {
+    "description": "Message : le filtre ne trouve aucune offre."
+  },
+  "offersMaybeEnded": "Ce prospectus est peut-être terminé",
+  "@offersMaybeEnded": {
+    "description": "Indication : la date de l'appareil dépasse la fin du prospectus."
+  },
+  "offersValidity": "Valable {dates}",
+  "@offersValidity": {
+    "description": "Validité du prospectus.",
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "offerImageUnavailable": "Image indisponible",
+  "@offerImageUnavailable": {
+    "description": "Libellé accessible quand la photo ne charge pas."
+  },
+  "offerDetailAddToList": "Ajouter à une liste",
+  "@offerDetailAddToList": {
+    "description": "Bouton de la fiche offre."
+  },
+  "offerDetailCategory": "Catégorie : {category}",
+  "@offerDetailCategory": {
+    "description": "Catégorie du produit.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDetailUnit": "Conditionnement : {unit}",
+  "@offerDetailUnit": {
+    "description": "Unité du produit.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDetailValidity": "Offre valable {dates}",
+  "@offerDetailValidity": {
+    "description": "Validité propre à l'offre.",
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDetailValidUntil": "Offre valable jusqu'au {date}",
+  "@offerDetailValidUntil": {
+    "description": "Fin de validité de l'offre.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDetailValidFrom": "Offre valable à partir du {date}",
+  "@offerDetailValidFrom": {
+    "description": "Début de validité de l'offre.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "archiveTitle": "Anciens prospectus",
+  "@archiveTitle": {
+    "description": "Titre de l'écran des anciens prospectus."
+  },
+  "archiveEmptyTitle": "Aucun ancien prospectus",
+  "@archiveEmptyTitle": {
+    "description": "Titre : l'archive est vide."
+  },
+  "archiveEmptyMessage": "Les prospectus passés apparaîtront ici.",
+  "@archiveEmptyMessage": {
+    "description": "Message : l'archive est vide."
+  },
+  "archiveOfferCount": "{count, plural, =0{Aucune offre} =1{1 offre} other{{count} offres}}",
+  "@archiveOfferCount": {
+    "description": "Nombre d'offres d'un prospectus.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveTagEnded": "Terminé",
+  "@archiveTagEnded": {
+    "description": "Étiquette : prospectus terminé."
+  },
+  "archiveTagUpcoming": "À venir",
+  "@archiveTagUpcoming": {
+    "description": "Étiquette : prospectus à venir."
+  },
+  "archiveTagCurrent": "En cours",
+  "@archiveTagCurrent": {
+    "description": "Étiquette : prospectus en cours."
   }
 }

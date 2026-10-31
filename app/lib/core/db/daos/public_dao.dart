@@ -49,6 +49,18 @@ class PublicDao extends DatabaseAccessor<AppDatabase> with _$PublicDaoMixin {
         }
       });
 
+  /// "The server has no current flyer": removes the offers of the current
+  /// flyer and demotes it to the archive. Products and categories are kept.
+  Future<void> clearCurrentFlyer() => transaction(() async {
+        final current = await (select(flyers)
+              ..where((t) => t.isCurrent.equals(true)))
+            .get();
+        final ids = current.map((f) => f.id).toList();
+        await (delete(offers)..where((t) => t.flyerId.isIn(ids))).go();
+        await (update(flyers)..where((t) => t.isCurrent.equals(true)))
+            .write(const FlyersCompanion(isCurrent: Value(false)));
+      });
+
   Future<void> upsertCategories(List<CategoryRow> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(categories, rows));
 
