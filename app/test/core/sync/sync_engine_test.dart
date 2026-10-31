@@ -247,6 +247,35 @@ void main() {
     expect(y2000.$1.where((c) => c.startsWith('createList:Fête')), isEmpty);
   });
 
+  test(
+      'edits_after_an_ambiguous_create_queue_behind_it_and_never_duplicate_or_resurrect',
+      () async {
+    final h = SyncHarness();
+    final a = await h.repo.createList('A');
+    await h.sync();
+    // Item create reaches the server but the answer times out; user deletes it.
+    final item = await h.repo.addItem(a, text: 'Lait');
+    h.api.failNext('createItem', const AppTimeoutError(), applyFirst: true);
+    await h.sync();
+    await h.repo.deleteItem(item);
+    expect((await h.ops()).map((o) => o.opType), ['createItem', 'deleteItem']);
+    await h.sync();
+    expect(h.api.itemCount(1), 0);
+    expect(await h.items(), isEmpty);
+    expect(h.api.count('createItem'), 1);
+
+    // Same for a list: create times out, user renames it, then sync again.
+    final b = await h.repo.createList('Courses');
+    h.api.failNext('createList', const AppTimeoutError(), applyFirst: true);
+    await h.sync();
+    await h.repo.renameList(b, 'Courses Lidl');
+    expect((await h.ops()).map((o) => o.opType), ['createList', 'renameList']);
+    await h.sync();
+    expect(h.api.listNames(), ['A', 'Courses Lidl']);
+    expect((await h.lists()).map((l) => l.name).toSet(), {'A', 'Courses Lidl'});
+    expect(await h.ops(), isEmpty);
+  });
+
   test('reconcile_removes_lists_missing_on_the_server_unless_dirty_or_unsynced',
       () async {
     final h = SyncHarness();

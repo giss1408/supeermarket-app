@@ -41,6 +41,25 @@ class OutboxRepository {
     return null;
   }
 
+  /// A create that was never sent. A create flagged `adopt` may already be on
+  /// the server (timeout / kill): it is never folded into nor cancelled, later
+  /// edits queue behind it as separate ops.
+  OutboxOpRow? _unsentCreate(List<OutboxOpRow> ops, String type) {
+    final o = _pending(ops, type);
+    return o != null && decodePayload(o)['adopt'] != true ? o : null;
+  }
+
+  /// Drops pending ops except creates that may already exist on the server.
+  Future<void> _dropPending(List<OutboxOpRow> ops) async {
+    for (final o in ops) {
+      if (o.state != 'pending') continue;
+      if (OpType.isCreate(o.opType) && decodePayload(o)['adopt'] == true) {
+        continue;
+      }
+      await _db.outboxDao.delete(o.id);
+    }
+  }
+
   Future<void> _enqueue(
     String type,
     String listLocalId,
@@ -68,7 +87,7 @@ class OutboxRepository {
         if (list == null || list.deletedLocally) return;
         await _db.listsDao.upsertList(list.copyWith(name: name, dirty: true));
         final ops = await _db.outboxDao.opsOfList(localId);
-        final create = _pending(ops, OpType.createList);
+        final create = _unsentCreate(ops, OpType.createList);
         if (create != null) {
           await _db.outboxDao.updatePayload(create.id,
               encodePayload({...decodePayload(create), 'name': name}));
@@ -87,14 +106,16 @@ class OutboxRepository {
         final list = await _db.listsDao.listByLocalId(localId);
         if (list == null) return;
         final ops = await _db.outboxDao.opsOfList(localId);
-        if (_pending(ops, OpType.createList) != null) {
+        if (_unsentCreate(ops, OpType.createList) != null) {
           // The server never heard of it: cancel everything, send nothing.
           await _db.outboxDao.deleteByList(localId, pendingOnly: true);
           await _db.listsDao.deleteList(localId);
           return;
         }
         // The server cascades to the items; their queued ops are pointless.
-        await _db.outboxDao.deleteByList(localId, pendingOnly: true);
+        // An ambiguous create stays: the delete resolves the server id after
+        // it (the row keeps its place, hidden by deletedLocally).
+        await _dropPending(ops);
         await _db.listsDao.setListDeletedLocally(localId, deleted: true);
         await _db.listsDao.setListDirty(localId, dirty: true);
         await _enqueue(
@@ -140,7 +161,7 @@ class OutboxRepository {
         final ops = await _db.outboxDao.opsOfItem(itemLocalId);
         // Fold into a create that has not been sent, else merge into the
         // last unsent update (latest value per field wins).
-        final target = _pending(ops, OpType.createItem) ??
+        final target = _unsentCreate(ops, OpType.createItem) ??
             _pending(ops, OpType.updateItem);
         if (target != null) {
           await _db.outboxDao.updatePayload(
@@ -157,15 +178,15 @@ class OutboxRepository {
         final item = await _db.listsDao.itemByLocalId(itemLocalId);
         if (item == null) return;
         final ops = await _db.outboxDao.opsOfItem(itemLocalId);
-        if (_pending(ops, OpType.createItem) != null) {
+        if (_unsentCreate(ops, OpType.createItem) != null) {
           await _db.outboxDao.deleteByItem(itemLocalId, pendingOnly: true);
           await _db.listsDao.deleteItem(itemLocalId);
           return;
         }
-        await _db.outboxDao.deleteByItem(itemLocalId, pendingOnly: true);
+        await _dropPending(ops);
         if (item.remoteId == null) {
-          // Its create is mid-send: keep the row so the push can resolve the
-          // server id once the create answered, then delete it.
+          // Its create is mid-send or ambiguous: keep the row so the push can
+          // resolve the server id once the create is linked, then delete it.
           await _enqueue(OpType.deleteItem, item.listLocalId, {},
               itemLocalId: itemLocalId);
           return;
