@@ -141,8 +141,7 @@ ThemeData lightTheme(Brand brand) {
         vertical: 14,
       ),
       labelStyle: text.bodyMedium,
-      floatingLabelStyle:
-          text.bodyMedium?.copyWith(color: scheme.primary),
+      floatingLabelStyle: text.bodyMedium?.copyWith(color: scheme.primary),
       hintStyle: text.bodyLarge?.copyWith(color: Palette.body),
       errorStyle: text.labelSmall?.copyWith(color: Palette.danger),
       border: border(Palette.borderStrong, 1),
@@ -229,11 +228,13 @@ TextTheme _textTheme(TextTheme b, ColorScheme s) {
       );
   return b.copyWith(
     // 12 captions/labels, 14 body/UI, 16 input, 20-22 titles, 30-32 page.
-    labelSmall: st(b.labelSmall, 12, FontWeight.w500, color: s.onSurfaceVariant),
+    labelSmall:
+        st(b.labelSmall, 12, FontWeight.w500, color: s.onSurfaceVariant),
     labelMedium: st(b.labelMedium, 12, FontWeight.w500),
     labelLarge: st(b.labelLarge, 14, FontWeight.w500),
     bodySmall: st(b.bodySmall, 12, FontWeight.w400, color: s.onSurfaceVariant),
-    bodyMedium: st(b.bodyMedium, 14, FontWeight.w400, color: s.onSurfaceVariant),
+    bodyMedium:
+        st(b.bodyMedium, 14, FontWeight.w400, color: s.onSurfaceVariant),
     bodyLarge: st(b.bodyLarge, 16, FontWeight.w400),
     titleSmall: st(b.titleSmall, 14, FontWeight.w600),
     titleMedium: st(b.titleMedium, 16, FontWeight.w600),
@@ -258,7 +259,5 @@ double _contrastOnWhite(Color c) => 1.05 / (c.computeLuminance() + 0.05);
 
 Color _darken(Color c, double amount) {
   final hsl = HSLColor.fromColor(c);
-  return hsl
-      .withLightness((hsl.lightness - amount).clamp(0.0, 1.0))
-      .toColor();
+  return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
 }

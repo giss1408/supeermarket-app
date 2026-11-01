@@ -9,6 +9,7 @@ import '../../../core/errors/app_error.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/ui/brand_logo.dart';
 
 /// Shared sign-in / registration form. Pops `true` on success and `false`
 /// when closed.
@@ -140,6 +141,8 @@ class _AuthFormState extends ConsumerState<AuthForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Center(child: BrandLogo()),
+                  const SizedBox(height: Space.lg),
                   if (_banner.isNotEmpty) ...[
                     Semantics(
                       liveRegion: true,
