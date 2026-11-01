@@ -13,6 +13,7 @@ import '../../../core/util/clock.dart';
 import '../../../core/sync/refresh_outcome.dart';
 import '../state/offers_controller.dart';
 import '../state/offers_providers.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Past and upcoming flyers. Items are not tappable in v1 (no flyer-detail
 /// route yet).
@@ -197,7 +198,7 @@ class _FlyerTile extends StatelessWidget {
                       DecoratedBox(
                         decoration: BoxDecoration(
                           color: tagBg,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(Radii.md),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(

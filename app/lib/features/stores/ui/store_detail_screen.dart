@@ -13,6 +13,7 @@ import '../../../core/util/url_opener.dart';
 import '../state/stores_providers.dart';
 import 'store_tile.dart';
 import 'weekday_names.dart';
+import '../../../core/theme/tokens.dart';
 
 /// One store: address, call, directions, the week's opening hours.
 class StoreDetailScreen extends ConsumerStatefulWidget {
@@ -196,7 +197,7 @@ class _StoreDetailScreenState extends ConsumerState<StoreDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: today ? theme.colorScheme.primaryContainer : null,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(Radii.sm),
       ),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,

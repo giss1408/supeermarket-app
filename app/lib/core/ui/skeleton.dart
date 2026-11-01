@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/tokens.dart';
 
 /// Pulsing placeholder. Static when the platform asks to disable animations.
 class Skeleton extends StatefulWidget {
@@ -52,7 +53,7 @@ class _SkeletonState extends State<Skeleton>
           height: widget.height,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: widget.radius ?? BorderRadius.circular(8),
+            borderRadius: widget.radius ?? BorderRadius.circular(Radii.sm),
           ),
         ),
       ),

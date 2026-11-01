@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/db/daos/public_dao.dart';
 import '../../../core/money/xof.dart';
 import '../../../core/ui/price_text.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Product photo with a placeholder while loading, on error or when absent.
 /// Photos are not cached for offline use in v1.
@@ -157,7 +158,7 @@ class _BadgeChip extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Radii.md),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

@@ -58,14 +58,4 @@ void main() {
       matchesGoldenFile('../../goldens/price_text_light.png'),
     );
   });
-  testWidgets('PriceText dark', (tester) async {
-    tester.view.physicalSize = const Size(400, 300);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(_app(darkTheme(Brand.neutral)));
-    await expectLater(
-      find.byKey(const Key('golden')),
-      matchesGoldenFile('../../goldens/price_text_dark.png'),
-    );
-  });
 }

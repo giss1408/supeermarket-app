@@ -10,6 +10,7 @@ import '../../../core/ui/skeleton.dart';
 import '../../../core/util/clock.dart';
 import '../state/payment_controller.dart';
 import 'provider_card.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Mobile-money numbers. Refreshes from the server EVERY time it opens and
 /// warns loudly whenever the numbers could not be confirmed.
@@ -158,7 +159,7 @@ class _StaleWarning extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: scheme.errorContainer,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(Radii.md),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

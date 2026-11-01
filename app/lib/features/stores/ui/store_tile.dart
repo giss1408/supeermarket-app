@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/util/store_utils.dart';
 import '../state/stores_providers.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Open/closed pill shared by the list and the detail screen.
 class OpenBadge extends StatelessWidget {
@@ -21,7 +22,7 @@ class OpenBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Radii.sm),
       ),
       child: Text(
         label ?? (open ? l.storeBadgeOpen : l.storeBadgeClosed),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/sync/sync_coordinator.dart';
 import '../state/lists_providers.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Read-only sync indicator: nothing when idle and fully synced.
 class SyncStatusChip extends ConsumerWidget {
@@ -34,7 +35,7 @@ class SyncStatusChip extends ConsumerWidget {
           key: const Key('sync_chip'),
           decoration: BoxDecoration(
             color: isError ? scheme.errorContainer : scheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(Radii.sm),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

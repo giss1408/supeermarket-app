@@ -15,6 +15,7 @@ import '../../../core/ui/empty_state.dart';
 import '../../../core/ui/error_view.dart';
 import '../../../core/ui/skeleton.dart';
 import '../data/card_repository.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Groups digits four by four for reading at the till: "0419 0957 1937 3".
 List<String> groupDigits(String number) {
@@ -181,7 +182,7 @@ class _CardBody extends StatelessWidget {
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(Radii.md),
             ),
             child: Column(
               children: [

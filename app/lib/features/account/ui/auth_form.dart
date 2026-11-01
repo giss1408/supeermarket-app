@@ -8,6 +8,7 @@ import '../../../core/auth/session_controller.dart';
 import '../../../core/errors/app_error.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Shared sign-in / registration form. Pops `true` on success and `false`
 /// when closed.
@@ -148,7 +149,7 @@ class _AuthFormState extends ConsumerState<AuthForm> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: scheme.errorContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(Radii.sm),
                         ),
                         child: Text(
                           _banner.join('\n'),

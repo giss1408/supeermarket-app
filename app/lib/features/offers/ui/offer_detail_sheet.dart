@@ -5,6 +5,7 @@ import '../../../core/db/daos/public_dao.dart';
 import '../../../core/ui/date_format_fr.dart';
 import '../../../core/ui/price_text.dart';
 import 'offer_card.dart';
+import '../../../core/theme/tokens.dart';
 
 /// Detail of one offer, shown in a modal bottom sheet. The "add to a list"
 /// button only exists when [onAddToList] is given.
@@ -60,7 +61,7 @@ class OfferDetailSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(Radii.md),
             child: AspectRatio(
               aspectRatio: 16 / 10,
               child: OfferImage(url: product.imageUrl),
