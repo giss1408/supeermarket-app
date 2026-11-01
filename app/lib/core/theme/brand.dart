@@ -19,10 +19,10 @@ class Brand {
   final String? logoAsset;
   final Map<PaymentProvider, String?> providerLogos;
 
-  // Green 700: white text on it is 5.0:1.
+  // Blue: white text on it is 8.2:1.
   static const neutral = Brand(
     name: 'Supermarché',
-    seedColor: Color(0xFF15803D),
+    seedColor: Color(0xFF0050AA),
     logoAsset: 'assets/brand/logo_mark.png',
   );
 }

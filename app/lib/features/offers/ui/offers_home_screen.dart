@@ -22,6 +22,8 @@ import '../state/offers_controller.dart';
 import '../state/offers_providers.dart';
 import 'offer_card.dart';
 import 'offer_detail_sheet.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../core/ui/brand_logo.dart';
 
 /// Offers tab: the current flyer, searchable and filterable by category.
 class OffersHomeScreen extends ConsumerStatefulWidget {
@@ -131,7 +133,15 @@ class _OffersHomeScreenState extends ConsumerState<OffersHomeScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.appName)),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const BrandLogo(size: 32),
+            const SizedBox(width: Space.sm),
+            Flexible(child: Text(l.appName, overflow: TextOverflow.ellipsis)),
+          ],
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: _pull,
         child: CustomScrollView(

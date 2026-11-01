@@ -59,11 +59,11 @@ void main() {
       expect(style!.minimumSize!.resolve({})!.height, greaterThanOrEqualTo(48));
     }
   });
-  test('flat bordered cards, rounded chips and inputs', () {
+  test('flat bordered cards, pill chips and buttons, rounded inputs', () {
     expect(t.cardTheme.elevation, 0);
     final card = t.cardTheme.shape as RoundedRectangleBorder;
     expect(card.side.width, 1);
-    expect(t.chipTheme.shape, isA<RoundedRectangleBorder>());
+    expect(t.chipTheme.shape, isA<StadiumBorder>());
     final border = t.inputDecorationTheme.focusedBorder as OutlineInputBorder;
     expect(border.borderRadius, isNot(BorderRadius.zero));
     expect(border.borderSide.width, greaterThanOrEqualTo(2));

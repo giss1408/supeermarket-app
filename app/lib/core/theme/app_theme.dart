@@ -13,18 +13,15 @@ ThemeData lightTheme(Brand brand) {
     brightness: Brightness.light,
     primary: accent,
     onPrimary: Palette.white,
-    primaryContainer: Color.alphaBlend(
-      accent.withOpacity(0.12),
-      Palette.white,
-    ),
-    onPrimaryContainer: _darken(accent, 0.25),
+    primaryContainer: Palette.bgMuted,
+    onPrimaryContainer: Palette.title,
     secondaryContainer: Palette.bgMuted,
     onSecondaryContainer: Palette.heading,
     surface: Palette.white,
     onSurface: Palette.heading,
     onSurfaceVariant: Palette.body,
     surfaceContainerLowest: Palette.white,
-    surfaceContainerLow: Palette.white,
+    surfaceContainerLow: Palette.bgMuted,
     surfaceContainer: Palette.bg,
     surfaceContainerHigh: Palette.bgMuted,
     surfaceContainerHighest: Palette.bgMuted,
@@ -33,13 +30,13 @@ ThemeData lightTheme(Brand brand) {
     error: Palette.danger,
     onError: Palette.white,
     errorContainer: Palette.dangerBg,
-    onErrorContainer: const Color(0xFF7F1D1D),
+    onErrorContainer: const Color(0xFF7A0008),
     surfaceTint: Colors.transparent,
   );
 
   OutlinedBorder shape(double r) =>
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
-  final buttonShape = WidgetStatePropertyAll<OutlinedBorder>(shape(Radii.md));
+  const buttonShape = WidgetStatePropertyAll<OutlinedBorder>(StadiumBorder());
   const buttonMin = WidgetStatePropertyAll<Size>(_minTarget);
   const buttonPad = WidgetStatePropertyAll<EdgeInsetsGeometry>(
     EdgeInsets.symmetric(horizontal: Space.lg),
@@ -95,8 +92,8 @@ ThemeData lightTheme(Brand brand) {
         minimumSize: buttonMin,
         shape: buttonShape,
         padding: buttonPad,
-        foregroundColor: const WidgetStatePropertyAll(Palette.heading),
-        side: const WidgetStatePropertyAll(BorderSide(color: Palette.border)),
+        foregroundColor: WidgetStatePropertyAll(scheme.primary),
+        side: WidgetStatePropertyAll(BorderSide(color: scheme.primary)),
         textStyle: WidgetStatePropertyAll(text.labelLarge),
       ),
     ),
@@ -113,7 +110,7 @@ ThemeData lightTheme(Brand brand) {
     cardTheme: CardTheme(
       elevation: 0,
       margin: EdgeInsets.zero,
-      color: Palette.white,
+      color: Palette.bgMuted,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Radii.md),
@@ -127,9 +124,9 @@ ThemeData lightTheme(Brand brand) {
     chipTheme: ChipThemeData(
       backgroundColor: Palette.white,
       selectedColor: scheme.primaryContainer,
-      shape: shape(Radii.sm),
+      shape: const StadiumBorder(),
       side: const BorderSide(color: Palette.border),
-      labelStyle: text.labelLarge?.copyWith(color: Palette.heading),
+      labelStyle: text.labelLarge?.copyWith(color: scheme.primary),
       secondaryLabelStyle:
           text.labelLarge?.copyWith(color: scheme.onPrimaryContainer),
     ),
@@ -166,19 +163,19 @@ ThemeData lightTheme(Brand brand) {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       height: 64,
-      indicatorColor: scheme.primaryContainer,
+      indicatorColor: Colors.transparent,
       indicatorShape: shape(Radii.md),
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           color: states.contains(WidgetState.selected)
-              ? scheme.onPrimaryContainer
+              ? scheme.primary
               : Palette.body,
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => text.labelSmall?.copyWith(
           color: states.contains(WidgetState.selected)
-              ? scheme.onPrimaryContainer
+              ? scheme.primary
               : Palette.body,
           fontWeight: states.contains(WidgetState.selected)
               ? FontWeight.w600
@@ -231,14 +228,14 @@ TextTheme _textTheme(TextTheme b, ColorScheme s) {
     labelSmall:
         st(b.labelSmall, 12, FontWeight.w500, color: s.onSurfaceVariant),
     labelMedium: st(b.labelMedium, 12, FontWeight.w500),
-    labelLarge: st(b.labelLarge, 14, FontWeight.w500),
+    labelLarge: st(b.labelLarge, 14, FontWeight.w700),
     bodySmall: st(b.bodySmall, 12, FontWeight.w400, color: s.onSurfaceVariant),
     bodyMedium:
         st(b.bodyMedium, 14, FontWeight.w400, color: s.onSurfaceVariant),
     bodyLarge: st(b.bodyLarge, 16, FontWeight.w400),
     titleSmall: st(b.titleSmall, 14, FontWeight.w600),
-    titleMedium: st(b.titleMedium, 16, FontWeight.w600),
-    titleLarge: st(b.titleLarge, 20, FontWeight.w600),
+    titleMedium: st(b.titleMedium, 16, FontWeight.w700),
+    titleLarge: st(b.titleLarge, 20, FontWeight.w700),
     headlineSmall: st(b.headlineSmall, 22, FontWeight.w600),
     headlineMedium: st(b.headlineMedium, 24, FontWeight.w700),
     headlineLarge: st(b.headlineLarge, 30, FontWeight.w700),
