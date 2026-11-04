@@ -4,12 +4,24 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.request import Request
 
 
-class IsStaff(BasePermission):
-    """Authenticated user whose role is "staff"."""
+class _HasRole(BasePermission):
+    role = ""
 
     def has_permission(self, request: Request, view: Any) -> bool:
         user = request.user
-        return bool(user and user.is_authenticated and getattr(user, "role", None) == "staff")
+        return bool(user and user.is_authenticated and getattr(user, "role", None) == self.role)
+
+
+class IsRetailerStaff(_HasRole):
+    """Authenticated user whose role is "retailer_staff"."""
+
+    role = "retailer_staff"
+
+
+class IsPlatformAdmin(_HasRole):
+    """Authenticated user whose role is "platform_admin"."""
+
+    role = "platform_admin"
 
 
 class IsOwner(BasePermission):

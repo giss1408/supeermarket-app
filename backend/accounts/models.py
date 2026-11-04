@@ -38,18 +38,26 @@ class UserManager(BaseUserManager["User"]):
     def create_superuser(self, email: str, password: str | None = None, **extra: Any) -> "User":
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
-        extra.setdefault("role", User.Role.STAFF)
+        extra.setdefault("role", User.Role.PLATFORM_ADMIN)
         return self.create_user(email, password, **extra)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
         CUSTOMER = "customer", "Customer"
-        STAFF = "staff", "Staff"
+        RETAILER_STAFF = "retailer_staff", "Retailer staff"
+        PLATFORM_ADMIN = "platform_admin", "Platform admin"
 
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=150, blank=True)
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.CUSTOMER)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
+    retailer = models.ForeignKey(
+        "retailers.Retailer",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="users",
+    )
     is_active = models.BooleanField(default=True)  # type: ignore[misc]
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

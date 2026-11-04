@@ -165,18 +165,19 @@ offers in whole XOF amounts, 5 stores (Cocody, Marcory, Yopougon, Plateau, Bouak
 hours (Mon-Sat; Sunday closed except for Cocody), three payment methods (Wave
 `+2250100000001`, Orange Money `+2250700000002`, MTN MoMo `+2250500000003`; obviously fake numbers,
 created through `payments.services` so they are audited once and updated, never duplicated, on
-re-runs), a staff user `staff@example.com` and a
+re-runs), a demo retailer `demo` (active, 12-month subscription), its retailer staff user
+`staff@example.com`, a platform admin `platform@example.com` and a
 customer `customer@example.com` (with loyalty card). No images are created.
 
-Passwords come from `DEMO_STAFF_PASSWORD` and `DEMO_CUSTOMER_PASSWORD`. If unset, these dev-only
+Passwords come from `DEMO_STAFF_PASSWORD`, `DEMO_CUSTOMER_PASSWORD` and `DEMO_PLATFORM_PASSWORD`. If unset, these dev-only
 defaults apply (never use them anywhere real): staff `demo-staff-pass-123`, customer
-`demo-customer-pass-123`.
+`demo-customer-pass-123`, platform admin `demo-platform-pass-123`.
 
 ## Staff users
 
 Staff are never created through the API. A superuser (created with `createsuperuser`, below) gets
-the role `staff` automatically and can promote other users to staff in the Django admin
-(`/admin/`, Users, set the role). Locally, `seed_demo` already creates `staff@example.com`.
+the role `platform_admin` automatically; it can set a user's role to `retailer_staff` and pick their
+retailer in the Django admin (`/admin/`, Users). Locally, `seed_demo` already creates `staff@example.com`.
 
 ## Deployment
 

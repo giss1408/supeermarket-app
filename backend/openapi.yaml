@@ -2426,11 +2426,13 @@ components:
     RoleEnum:
       enum:
       - customer
-      - staff
+      - retailer_staff
+      - platform_admin
       type: string
       description: |-
         * `customer` - Customer
-        * `staff` - Staff
+        * `retailer_staff` - Retailer staff
+        * `platform_admin` - Platform admin
     ShoppingList:
       type: object
       properties:

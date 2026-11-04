@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from catalog.models import Category, Product
-from common.permissions import IsStaff
+from common.permissions import IsRetailerStaff
 from offers.models import Flyer, Offer
 from offers.services import publish_flyer, unpublish_flyer
 from stores.models import Store
@@ -42,7 +42,7 @@ class StaffViewSet(ModelViewSet):
     # Staff-only CRUD; no PUT, role checked on every request. (A comment, not a docstring:
     # spectacular would copy a docstring into every staff operation's description.)
 
-    permission_classes = [IsStaff]
+    permission_classes = [IsRetailerStaff]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
     filter_serializer_class: type[serializers.Serializer] | None = None
 

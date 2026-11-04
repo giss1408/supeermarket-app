@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.permissions import IsStaff
+from common.permissions import IsRetailerStaff
 
 from .validators import validate_and_resize
 
@@ -24,7 +24,7 @@ UploadResultSerializer = inline_serializer(
 
 
 class ImageUploadView(APIView):
-    permission_classes = [IsStaff]
+    permission_classes = [IsRetailerStaff]
     parser_classes = [MultiPartParser]
 
     @extend_schema(

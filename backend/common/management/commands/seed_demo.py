@@ -18,13 +18,19 @@ from offers.models import Flyer, Offer
 from offers.services import publish_flyer, unpublish_flyer
 from payments.models import PaymentMethod
 from payments.services import create_method, update_method
+from retailers.models import Payment, Retailer
+from retailers.services import record_payment
 from stores.models import OpeningHours, Store
 
 # Dev-only defaults (documented in README); override with the DEMO_*_PASSWORD env vars.
 DEFAULT_STAFF_PASSWORD = "demo-staff-pass-123"
 DEFAULT_CUSTOMER_PASSWORD = "demo-customer-pass-123"
+DEFAULT_PLATFORM_PASSWORD = "demo-platform-pass-123"
 STAFF_EMAIL = "staff@example.com"
 CUSTOMER_EMAIL = "customer@example.com"
+PLATFORM_EMAIL = "platform@example.com"
+DEMO_RETAILER_SLUG = "demo"
+DEMO_PAYMENT_REF = "seed-demo"
 FLYER_TITLE = "Prospectus de la semaine"
 FLYER_DAYS = 7
 
@@ -195,9 +201,11 @@ class Command(BaseCommand):
             raise CommandError("seed_demo only runs with DEBUG=True (development).")
         staff_pw = os.environ.get("DEMO_STAFF_PASSWORD", DEFAULT_STAFF_PASSWORD)
         customer_pw = os.environ.get("DEMO_CUSTOMER_PASSWORD", DEFAULT_CUSTOMER_PASSWORD)
+        platform_pw = os.environ.get("DEMO_PLATFORM_PASSWORD", DEFAULT_PLATFORM_PASSWORD)
         try:
             validate_password(staff_pw)
             validate_password(customer_pw)
+            validate_password(platform_pw)
         except ValidationError as exc:
             raise CommandError(f"Demo password rejected: {' '.join(exc.messages)}") from None
 
@@ -206,11 +214,13 @@ class Command(BaseCommand):
             self._flyer(products)
             self._stores()
             self._payment_methods()
-            self._users(staff_pw, customer_pw)
+            retailer = self._retailer()
+            self._users(staff_pw, customer_pw, platform_pw, retailer)
 
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
         self.stdout.write(f"  staff:    {STAFF_EMAIL}")
         self.stdout.write(f"  customer: {CUSTOMER_EMAIL}")
+        self.stdout.write(f"  platform: {PLATFORM_EMAIL}")
         self.stdout.write("  Passwords: DEMO_*_PASSWORD env vars, else the dev defaults in README.")
 
     def _catalog(self) -> dict[str, Product]:
@@ -300,15 +310,40 @@ class Command(BaseCommand):
             else:
                 update_method(method, user=None, **fields)  # audits only real changes
 
-    def _users(self, staff_pw: str, customer_pw: str) -> None:
+    def _retailer(self) -> Retailer:
+        retailer, _ = Retailer.objects.get_or_create(
+            slug=DEMO_RETAILER_SLUG,
+            defaults={"name": "Supermarché démo", "status": Retailer.Status.ACTIVE},
+        )
+        if retailer.status != Retailer.Status.ACTIVE:
+            retailer.status = Retailer.Status.ACTIVE
+            retailer.save(update_fields=["status"])
+        if not Payment.objects.filter(provider="manual", reference=DEMO_PAYMENT_REF).exists():
+            record_payment(
+                retailer=retailer,
+                amount=0,
+                provider="manual",
+                reference=DEMO_PAYMENT_REF,
+                period_months=12,
+                confirmed_by=None,
+                source=Payment.Source.MANUAL,
+            )
+        return retailer
+
+    def _users(self, staff_pw: str, customer_pw: str, platform_pw: str, retailer: Retailer) -> None:
         User = get_user_model()
-        for email, name, role, password in (
-            (STAFF_EMAIL, "Équipe démo", "staff", staff_pw),
-            (CUSTOMER_EMAIL, "Client démo", "customer", customer_pw),
+        for email, name, role, password, user_retailer in (
+            (STAFF_EMAIL, "Équipe démo", "retailer_staff", staff_pw, retailer),
+            (CUSTOMER_EMAIL, "Client démo", "customer", customer_pw, None),
+            (PLATFORM_EMAIL, "Admin plateforme", "platform_admin", platform_pw, None),
         ):
             user = User.objects.filter(email__iexact=email).first()
             if user is None:
-                User.objects.create_user(email, password, name=name, role=role)
+                User.objects.create_user(
+                    email, password, name=name, role=role, retailer=user_retailer
+                )
             else:
                 user.set_password(password)
-                user.save(update_fields=["password"])
+                user.role = role
+                user.retailer = user_retailer
+                user.save(update_fields=["password", "role", "retailer"])

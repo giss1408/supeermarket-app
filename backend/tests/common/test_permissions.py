@@ -3,7 +3,7 @@ from unittest import mock
 from django.contrib.auth.models import AnonymousUser
 from rest_framework.test import APIRequestFactory
 
-from common.permissions import IsOwner, IsStaff, ReadOnly
+from common.permissions import IsOwner, IsPlatformAdmin, IsRetailerStaff, ReadOnly
 
 factory = APIRequestFactory()
 
@@ -14,23 +14,25 @@ def req(method="get", **user_attrs):
     return request
 
 
-def test_is_staff_denies_anonymous():
-    assert not IsStaff().has_permission(req(is_authenticated=False, role="staff"), None)
+def test_is_retailer_staff_denies_anonymous():
+    assert not IsRetailerStaff().has_permission(
+        req(is_authenticated=False, role="retailer_staff"), None
+    )
 
 
-def test_is_staff_denies_customer():
-    assert not IsStaff().has_permission(req(is_authenticated=True, role="customer"), None)
+def test_is_retailer_staff_denies_customer():
+    assert not IsRetailerStaff().has_permission(req(is_authenticated=True, role="customer"), None)
 
 
-def test_is_staff_denies_user_without_role_field():
+def test_is_retailer_staff_denies_user_without_role_field():
     user = mock.Mock(spec=["is_authenticated"], is_authenticated=True)
     request = factory.get("/")
     request.user = user
-    assert not IsStaff().has_permission(request, None)
+    assert not IsRetailerStaff().has_permission(request, None)
 
 
-def test_is_staff_allows_staff():
-    assert IsStaff().has_permission(req(is_authenticated=True, role="staff"), None)
+def test_is_retailer_staff_allows_staff():
+    assert IsRetailerStaff().has_permission(req(is_authenticated=True, role="retailer_staff"), None)
 
 
 def test_is_owner():
@@ -56,3 +58,17 @@ def test_is_owner_denies_anonymous_on_null_owner():
 def test_is_owner_allows_authenticated_matching_user():
     request = req(id=5, is_authenticated=True)
     assert IsOwner().has_object_permission(request, None, mock.Mock(user_id=5))
+
+
+def test_is_retailer_staff_rejects_platform_admin_and_customer():
+    for role in ("platform_admin", "customer"):
+        assert not IsRetailerStaff().has_permission(req(is_authenticated=True, role=role), None)
+
+
+def test_is_platform_admin_accepts_only_platform_admin():
+    assert IsPlatformAdmin().has_permission(req(is_authenticated=True, role="platform_admin"), None)
+    for role in ("retailer_staff", "customer"):
+        assert not IsPlatformAdmin().has_permission(req(is_authenticated=True, role=role), None)
+    assert not IsPlatformAdmin().has_permission(
+        req(is_authenticated=False, role="platform_admin"), None
+    )

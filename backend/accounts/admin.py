@@ -7,12 +7,12 @@ from .models import LoyaltyCard, User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ["email"]
-    list_display = ["email", "name", "role", "is_staff", "is_active"]
+    list_display = ["email", "name", "role", "retailer", "is_staff", "is_active"]
     list_filter = ["role", "is_staff", "is_active"]
     search_fields = ["email", "name"]
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Profile", {"fields": ("name", "role")}),
+        ("Profile", {"fields": ("name", "role", "retailer")}),
         (
             "Permissions",
             {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
@@ -23,7 +23,10 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (
             None,
-            {"classes": ("wide",), "fields": ("email", "name", "role", "password1", "password2")},
+            {
+                "classes": ("wide",),
+                "fields": ("email", "name", "role", "retailer", "password1", "password2"),
+            },
         ),
     )
     filter_horizontal = ("groups", "user_permissions")

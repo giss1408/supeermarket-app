@@ -7,6 +7,45 @@ from django.contrib.auth import get_user_model
 PASSWORD = "pass12345!word"
 
 
+def _attach_subscription(retailer, days):
+    from django.utils import timezone
+
+    from retailers.models import Subscription
+
+    now = timezone.now()
+    Subscription.objects.update_or_create(
+        retailer=retailer,
+        defaults={"starts_at": now, "ends_at": now + datetime.timedelta(days=days)},
+    )
+
+
+class RetailerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "retailers.Retailer"
+        skip_postgeneration_save = True
+
+    name = factory.Sequence(lambda n: f"Retailer {n}")
+    slug = factory.Sequence(lambda n: f"retailer-{n}")
+    status = "active"
+
+    @factory.post_generation
+    def subscription(self, create, extracted, **kwargs):
+        if create:
+            _attach_subscription(self, 30)
+
+
+def default_retailer():
+    """Shared active retailer (subscription +365 days) used by factories as the default tenant."""
+    from retailers.models import Retailer
+
+    retailer, created = Retailer.objects.get_or_create(
+        slug="test-retailer", defaults={"name": "Test Retailer", "status": "active"}
+    )
+    if created:
+        _attach_subscription(retailer, 365)
+    return retailer
+
+
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = get_user_model()
@@ -24,7 +63,13 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 class StaffFactory(UserFactory):
     email = factory.Sequence(lambda n: f"staff{n}@example.com")
-    role = "staff"
+    role = "retailer_staff"
+    retailer = factory.LazyFunction(default_retailer)
+
+
+class PlatformAdminFactory(UserFactory):
+    email = factory.Sequence(lambda n: f"admin{n}@example.com")
+    role = "platform_admin"
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):

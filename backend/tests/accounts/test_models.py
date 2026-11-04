@@ -36,13 +36,13 @@ def test_card_numbers_unique_across_many_users():
 
 def test_staff_user_has_no_card():
     staff = StaffFactory()
-    assert staff.role == "staff"
+    assert staff.role == "retailer_staff"
     assert not LoyaltyCard.objects.filter(user=staff).exists()
 
 
-def test_create_superuser_is_staff_role():
+def test_create_superuser_is_platform_admin_role():
     admin = User.objects.create_superuser("root@example.com", "pass12345!word")
-    assert admin.role == "staff"
+    assert admin.role == "platform_admin"
     assert admin.is_staff and admin.is_superuser
     assert not LoyaltyCard.objects.filter(user=admin).exists()
 

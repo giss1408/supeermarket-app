@@ -20,6 +20,10 @@ MODELS = [
     "stores.OpeningHours",
     "payments.PaymentMethod",
     "payments.PaymentMethodChange",
+    "retailers.Retailer",
+    "retailers.Subscription",
+    "retailers.Payment",
+    "retailers.RetailerChange",
 ]
 pytestmark = pytest.mark.django_db
 
@@ -63,7 +67,7 @@ def test_seed_demo_creates_expected_data(debug):
     assert c["offers.Flyer"] == 1
     assert 10 <= c["offers.Offer"] <= 14
     assert c["stores.Store"] == 5
-    assert c["accounts.User"] == 2
+    assert c["accounts.User"] == 3
     assert c["accounts.LoyaltyCard"] == 1
     assert c["payments.PaymentMethod"] == 3
     assert c["payments.PaymentMethodChange"] == 3
@@ -106,6 +110,38 @@ def test_seed_demo_creates_expected_data(debug):
     assert not hasattr(User.objects.get(email="staff@example.com"), "card")
 
 
+def test_seed_demo_creates_demo_retailer_and_platform_admin(debug):
+    from accounts.models import User
+    from retailers.models import Retailer
+
+    seed()
+    retailer = Retailer.objects.get(slug="demo")
+    assert retailer.status == Retailer.Status.ACTIVE
+    assert retailer.can_publish
+    sub = retailer.subscription
+    assert 360 <= (sub.ends_at - sub.starts_at).days <= 366
+    staff = User.objects.get(email="staff@example.com")
+    assert staff.role == User.Role.RETAILER_STAFF and staff.retailer == retailer
+    admin = User.objects.get(email="platform@example.com")
+    assert admin.role == User.Role.PLATFORM_ADMIN and admin.retailer is None
+    login = APIClient().post(
+        "/api/v1/auth/login",
+        {"email": "platform@example.com", "password": "demo-platform-pass-123"},
+        format="json",
+    )
+    assert login.status_code == 200
+
+
+def test_seed_demo_rerun_does_not_extend_subscription(debug):
+    from retailers.models import Payment, Subscription
+
+    seed()
+    end = Subscription.objects.get().ends_at
+    seed()
+    assert Payment.objects.count() == 1
+    assert Subscription.objects.get().ends_at == end
+
+
 def test_seed_demo_refuses_when_debug_false(settings):
     settings.DEBUG = False
     with pytest.raises(CommandError):
@@ -129,6 +165,7 @@ def test_seed_demo_rerun_after_flyer_dates_passed_does_not_crash(debug):
 def test_seed_demo_password_from_env(debug, monkeypatch):
     monkeypatch.setenv("DEMO_STAFF_PASSWORD", "another-Strong-pw-77")
     monkeypatch.setenv("DEMO_CUSTOMER_PASSWORD", "customer-Strong-pw-88")
+    monkeypatch.setenv("DEMO_PLATFORM_PASSWORD", "platform-Strong-pw-99")
     seed()
     client = APIClient()
     ok = client.post(
@@ -146,6 +183,12 @@ def test_seed_demo_password_from_env(debug, monkeypatch):
     ok = client.post(
         "/api/v1/auth/login",
         {"email": "customer@example.com", "password": "customer-Strong-pw-88"},
+        format="json",
+    )
+    assert ok.status_code == 200
+    ok = client.post(
+        "/api/v1/auth/login",
+        {"email": "platform@example.com", "password": "platform-Strong-pw-99"},
         format="json",
     )
     assert ok.status_code == 200
