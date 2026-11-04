@@ -3,7 +3,7 @@ from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 
-from common.views import PublicReadMixin
+from common.views import PublicReadMixin, active_retailer_only
 
 from .models import Flyer, Offer
 from .serializers import (
@@ -15,7 +15,7 @@ from .serializers import (
 
 
 def published_flyers() -> QuerySet[Flyer]:
-    return Flyer.objects.filter(status=Flyer.Status.PUBLISHED)
+    return active_retailer_only(Flyer.objects.filter(status=Flyer.Status.PUBLISHED))
 
 
 class FlyerListView(PublicReadMixin, ListAPIView):
@@ -58,9 +58,10 @@ class OfferListView(PublicReadMixin, ListAPIView):
         params = OfferQuerySerializer(data=self.request.query_params)
         params.is_valid(raise_exception=True)
         data = params.validated_data
-        qs = Offer.objects.filter(flyer__status=Flyer.Status.PUBLISHED).select_related(
-            "product__category"
-        )
+        qs = active_retailer_only(
+            Offer.objects.filter(flyer__status=Flyer.Status.PUBLISHED),
+            "flyer__retailer__status",
+        ).select_related("product__category")
         if "category" in data:
             qs = qs.filter(product__category__slug=data["category"])
         if "flyer" in data:

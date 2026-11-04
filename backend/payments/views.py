@@ -3,7 +3,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.throttling import BaseThrottle, ScopedRateThrottle
 
 from common.pagination import DefaultCursorPagination
-from common.views import PublicReadMixin
+from common.views import PublicReadMixin, active_retailer_only
 from staff.views import StaffViewSet
 
 from .models import PaymentMethod
@@ -20,7 +20,7 @@ class PaymentMethodListView(PublicReadMixin, ListAPIView):
     ordering = ("provider", "id")
 
     def get_queryset(self) -> QuerySet[PaymentMethod]:
-        return PaymentMethod.objects.filter(is_active=True)
+        return active_retailer_only(PaymentMethod.objects.filter(is_active=True))
 
 
 class PaymentMethodStaffViewSet(StaffViewSet):

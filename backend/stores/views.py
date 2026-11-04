@@ -16,7 +16,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from common.pagination import DefaultCursorPagination
-from common.views import PublicReadMixin
+from common.views import PublicReadMixin, active_retailer_only
 
 from .models import OpeningHours, Store
 from .serializers import StoreDetailSerializer, StoreQuerySerializer, StoreSerializer
@@ -70,7 +70,7 @@ class StoreListView(_StoreQueryMixin, PublicReadMixin, ListAPIView):
 
     def get_queryset(self) -> QuerySet[Store]:
         params = self._params()
-        qs = Store.objects.filter(is_active=True)
+        qs = active_retailer_only(Store.objects.filter(is_active=True))
         if params.get("q"):
             q = params["q"]
             qs = qs.filter(
@@ -89,7 +89,7 @@ class StoreDetailView(_StoreQueryMixin, PublicReadMixin, RetrieveAPIView):
 
     def get_queryset(self) -> QuerySet[Store]:
         params = self._params()
-        qs = Store.objects.filter(is_active=True).prefetch_related(
+        qs = active_retailer_only(Store.objects.filter(is_active=True)).prefetch_related(
             Prefetch("opening_hours", queryset=OpeningHours.objects.order_by("weekday"))
         )
         if "lat" in params:

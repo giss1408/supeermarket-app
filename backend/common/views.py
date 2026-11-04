@@ -1,3 +1,4 @@
+from django.db.models import Model, QuerySet
 from django.utils import translation
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.views import SpectacularAPIView
@@ -5,6 +6,16 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from retailers.models import Retailer
+
+
+def active_retailer_only[M: Model](
+    qs: QuerySet[M], lookup: str = "retailer__status"
+) -> QuerySet[M]:
+    # Customers only see content of retailers whose status is active. A lapsed subscription
+    # does not hide content (it only blocks publishing); suspended and pending retailers vanish.
+    return qs.filter(**{lookup: Retailer.Status.ACTIVE})
 
 
 class PublicReadMixin(APIView):

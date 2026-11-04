@@ -1,7 +1,8 @@
+from django.db.models import QuerySet
 from rest_framework.generics import ListAPIView
 
 from common.pagination import DefaultCursorPagination
-from common.views import PublicReadMixin
+from common.views import PublicReadMixin, active_retailer_only
 
 from .models import Category
 from .serializers import CategorySerializer
@@ -12,7 +13,9 @@ class CategoryPagination(DefaultCursorPagination):
 
 
 class CategoryListView(PublicReadMixin, ListAPIView):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = CategoryPagination
     ordering = ("sort_order", "id")
+
+    def get_queryset(self) -> QuerySet[Category]:
+        return active_retailer_only(Category.objects.all())
