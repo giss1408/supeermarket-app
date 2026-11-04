@@ -11,6 +11,10 @@ from django.utils.functional import lazy
 from django.utils.translation import get_language
 
 CATALOG: dict[str, dict[str, str]] = {
+    "subscription_required": {
+        "fr": "Un abonnement actif est requis pour publier un prospectus.",
+        "en": "An active subscription is required to publish a flyer.",
+    },
     "invalid_phone": {
         "fr": (
             "Saisissez un numéro de téléphone ivoirien valide : 10 chiffres, "

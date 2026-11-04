@@ -1,6 +1,9 @@
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 
+from common.messages import msg
+from retailers.errors import SubscriptionRequired
+
 from .models import Flyer, Offer
 from .services import publish_flyer, unpublish_flyer
 
@@ -32,6 +35,10 @@ class FlyerAdmin(admin.ModelAdmin):
         for flyer in queryset:
             try:
                 publish_flyer(flyer)
+            except SubscriptionRequired:
+                self.message_user(
+                    request, f"{flyer.title}: {msg('subscription_required')}", messages.ERROR
+                )
             except ValidationError as exc:
                 self.message_user(
                     request, f"{flyer.title}: {' '.join(exc.messages)}", messages.ERROR

@@ -818,6 +818,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/StaffFlyer'
           description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The retailer has no active subscription (code subscription_required)
         default:
           description: Error in the standard shape
           content:

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, ProtectedError, QuerySet
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, NotFound
@@ -13,9 +13,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from catalog.models import Category, Product
+from common.errors import SubscriptionRequiredError
+from common.messages import msg
+from common.openapi import ERROR_REF
 from common.permissions import IsRetailerStaff
 from offers.models import Flyer, Offer
 from offers.services import publish_flyer, unpublish_flyer
+from retailers.errors import SubscriptionRequired
 from stores.models import Store
 
 from .serializers import (
@@ -189,7 +193,16 @@ class OfferViewSet(StaffViewSet):
 
 @extend_schema_view(
     list=extend_schema(parameters=[FlyerFilterSerializer]),
-    publish=extend_schema(request=None),
+    publish=extend_schema(
+        request=None,
+        responses={
+            200: StaffFlyerSerializer,
+            403: OpenApiResponse(
+                response=ERROR_REF,
+                description="The retailer has no active subscription (code subscription_required)",
+            ),
+        },
+    ),
     unpublish=extend_schema(request=None),
 )
 class FlyerViewSet(StaffViewSet):
@@ -213,6 +226,8 @@ class FlyerViewSet(StaffViewSet):
         flyer = self.get_object()
         try:
             service(flyer)
+        except SubscriptionRequired:
+            raise SubscriptionRequiredError(msg("subscription_required")) from None
         except DjangoValidationError as exc:
             raise serializers.ValidationError(exc.messages) from None
         return Response(self.get_serializer(flyer).data)

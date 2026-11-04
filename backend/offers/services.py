@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
+from retailers.errors import SubscriptionRequired
+
 from .models import Flyer
 
 
@@ -27,12 +29,18 @@ def _overlap_message(clash: Flyer | None) -> str:
 
 
 def publish_flyer(flyer: Flyer) -> Flyer:
-    """Publish a flyer; raises ValidationError if it has no offers or overlaps a published one.
+    """Publish a flyer; raises SubscriptionRequired if its retailer may not publish, else
+    ValidationError if it has no offers or overlaps a published one.
+
+    The subscription gate runs first. It blocks new publishing only: unpublishing is never gated
+    and already-published flyers are untouched.
 
     Overlap is inclusive (sharing a boundary day overlaps, adjacent days do not). The friendly
     check runs first; the database exclusion constraint is the real guarantee, and a race loser's
     IntegrityError is re-raised as the same ValidationError.
     """
+    if not flyer.retailer.can_publish:
+        raise SubscriptionRequired
     try:
         with transaction.atomic():
             locked = Flyer.objects.select_for_update().get(pk=flyer.pk)

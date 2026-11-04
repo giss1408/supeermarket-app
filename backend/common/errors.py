@@ -7,12 +7,20 @@ from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+
+class SubscriptionRequiredError(exceptions.PermissionDenied):
+    """403 for an action that needs an active retailer subscription."""
+
+    default_code = "subscription_required"
+
+
 _CODES: list[tuple[type[Exception], str]] = [
     (exceptions.ValidationError, "validation_error"),
     (Http404, "not_found"),
     (exceptions.NotFound, "not_found"),
     (exceptions.NotAuthenticated, "not_authenticated"),
     (exceptions.AuthenticationFailed, "not_authenticated"),
+    (SubscriptionRequiredError, "subscription_required"),
     (exceptions.PermissionDenied, "permission_denied"),
     (DjangoPermissionDenied, "permission_denied"),
     (exceptions.Throttled, "throttled"),
