@@ -40,7 +40,8 @@ published content of active retailers.
   (enforced by a check constraint).
 - Retailer ownership (non-null FK `retailer`) on `Flyer`, `Store`, `Product`, `Category` and
   `PaymentMethod`. `Offer` is owned through its flyer. Products and categories are per retailer
-  because SKUs and prices differ. `PaymentMethod.provider` is unique per retailer instead of global.
+  because SKUs and prices differ. Global uniqueness becomes per-retailer: `PaymentMethod.provider`,
+  `Category.slug` and `Product.ean` are each unique together with `retailer`.
 - `Payment`: `retailer`, `amount` (whole XOF), `provider`, `reference`, `source` (`manual` or
   `webhook`), `confirmed_by`, `confirmed_at`, `period_months`. Append-only (same guard as
   `PaymentMethodChange`). Unique `(provider, reference)` so one mobile-money transaction cannot be
@@ -76,7 +77,11 @@ published content of active retailers.
 
 ## Dashboard
 
-A new `platform` Django app, server-rendered, French, under `/platform/`.
+A new `platform_admin` Django app, server-rendered, French, served under `/platform/`. (Not named
+`platform`: a top-level package of that name would shadow the Python standard library module.) The
+models and services (`Retailer`, `Subscription`, `Payment`, `RetailerChange`, `record_payment`) live
+in a separate `retailers` app so `accounts`, `offers` and the others can depend on them without
+importing the dashboard.
 
 | Page | Purpose |
 | --- | --- |
