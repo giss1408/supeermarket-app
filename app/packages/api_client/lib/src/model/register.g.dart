@@ -34,5 +34,6 @@ Map<String, dynamic> _$RegisterToJson(Register instance) => <String, dynamic>{
 
 const _$RoleEnumEnumMap = {
   RoleEnum.customer: 'customer',
-  RoleEnum.staff: 'staff',
+  RoleEnum.retailerStaff: 'retailer_staff',
+  RoleEnum.platformAdmin: 'platform_admin',
 };

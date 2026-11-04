@@ -34,5 +34,6 @@ Map<String, dynamic> _$MeToJson(Me instance) => <String, dynamic>{
 
 const _$RoleEnumEnumMap = {
   RoleEnum.customer: 'customer',
-  RoleEnum.staff: 'staff',
+  RoleEnum.retailerStaff: 'retailer_staff',
+  RoleEnum.platformAdmin: 'platform_admin',
 };
