@@ -29,11 +29,12 @@
 	# 	file_server
 	# }
 
-	# Admin IP allowlist. ADMIN_ALLOWED_IPS is a space-separated list of IPs/CIDRs from .env.prod
+	# Admin IP allowlist for the Django admin (/admin/) and the platform dashboard (/platform/).
+	# ADMIN_ALLOWED_IPS is a space-separated list of IPs/CIDRs from .env.prod
 	# (required by docker-compose.prod.yml). Caddy is the edge proxy, so remote_ip is the real
 	# client address and cannot be spoofed through X-Forwarded-For.
 	@admin_blocked {
-		path /admin/*
+		path /admin/* /platform/*
 		not remote_ip {$ADMIN_ALLOWED_IPS}
 	}
 	respond @admin_blocked "Forbidden" 403
