@@ -56,3 +56,19 @@ def test_no_staff_creation_endpoint(staff_client):
         assert word not in names.replace("^", "")
     for path in ("users", "staff", "roles"):
         assert staff_client.post(f"/api/v1/staff/{path}", {}, format="json").status_code == 404
+
+
+def test_related_fields_fail_closed_when_caller_has_no_retailer():
+    from types import SimpleNamespace
+
+    from rest_framework import serializers
+
+    from catalog.models import Category
+    from staff.serializers import _restrict_to_caller_retailer_fields
+    from tests.factories import CategoryFactory
+
+    CategoryFactory()
+    fields = {"category": serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())}
+    ser = SimpleNamespace(context={"request": SimpleNamespace(user=SimpleNamespace(retailer=None))})
+    _restrict_to_caller_retailer_fields(ser, fields, {"category": "retailer"})  # type: ignore[arg-type]
+    assert not fields["category"].queryset.exists()

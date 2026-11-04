@@ -17,6 +17,8 @@ class _ReadOnlyAdmin(admin.ModelAdmin):
 
 @admin.register(Retailer)
 class RetailerAdmin(admin.ModelAdmin):
+    # Status changes must go through retailers.services (they write a RetailerChange row).
+    readonly_fields = ["status"]
     list_display = ["name", "slug", "status", "created_at"]
     list_filter = ["status"]
     search_fields = ["name", "slug"]
@@ -24,7 +26,7 @@ class RetailerAdmin(admin.ModelAdmin):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(_ReadOnlyAdmin):
     list_display = ["retailer", "starts_at", "ends_at"]
 
 

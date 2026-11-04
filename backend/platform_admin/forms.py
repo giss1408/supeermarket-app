@@ -25,7 +25,7 @@ class RetailerCreateForm(forms.Form):
     name = forms.CharField(label="Nom du commerçant", max_length=150)
     staff_email = forms.EmailField(label="E-mail du premier utilisateur")
     staff_password = forms.CharField(
-        label="Mot de passe initial", widget=forms.PasswordInput(render_value=False)
+        label="Mot de passe initial", strip=False, widget=forms.PasswordInput(render_value=False)
     )
 
     def clean_staff_email(self) -> str:

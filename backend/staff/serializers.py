@@ -39,11 +39,12 @@ def _restrict_to_caller_retailer_fields(
     """Limit related fields' choices to the caller's retailer (foreign ids read as unknown)."""
     request = serializer.context.get("request")
     retailer = getattr(getattr(request, "user", None), "retailer", None)
-    if retailer is None:
-        return
     for name, lookup in lookups.items():
         field = fields[name]
-        field.queryset = field.queryset.filter(**{lookup: retailer})
+        if retailer is None:
+            field.queryset = field.queryset.none()  # fail closed
+        else:
+            field.queryset = field.queryset.filter(**{lookup: retailer})
 
 
 class StaffCategorySerializer(serializers.ModelSerializer):

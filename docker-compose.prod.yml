@@ -49,7 +49,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in .env.prod and run compose with --env-file .env.prod}
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env.prod and run compose with --env-file .env.prod}
-      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:?set ADMIN_ALLOWED_IPS in .env.prod (space-separated IPs/CIDRs allowed to reach /admin/)}
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:?set ADMIN_ALLOWED_IPS in .env.prod (space-separated IPs/CIDRs allowed to reach /admin/ and /platform/)}
     ports:
       - "80:80"
       - "443:443"

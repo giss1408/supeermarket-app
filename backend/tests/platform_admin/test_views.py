@@ -256,3 +256,13 @@ def test_suspended_retailer_flyers_vanish_from_public_api(client):
     client.post(reverse("platform:retailer_suspend", args=[retailer.pk]))
     ids = [f["id"] for f in api.get("/api/v1/flyers").json()["results"]]
     assert flyer.pk not in ids
+
+
+def test_retailer_create_form_keeps_password_whitespace():
+    pw = "Zx9!kLmQ72vr "
+    form = RetailerCreateForm({"name": "Ws", "staff_email": "ws@shop.com", "staff_password": pw})
+    assert form.is_valid(), form.errors
+    form.save()
+    user = User.objects.get(email="ws@shop.com")
+    assert user.check_password(pw)
+    assert not user.check_password(pw.strip())
