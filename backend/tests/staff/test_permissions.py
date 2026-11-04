@@ -45,7 +45,7 @@ def test_role_is_read_from_db_on_each_request(anon_client):
     token = str(RefreshToken.for_user(user).access_token)
     anon_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
     assert anon_client.get("/api/v1/staff/stores").status_code == 200
-    user.role = "customer"
+    user.role, user.retailer = "customer", None
     user.save()
     assert anon_client.get("/api/v1/staff/stores").status_code == 403
 

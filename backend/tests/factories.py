@@ -76,6 +76,7 @@ class CategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "catalog.Category"
 
+    retailer = factory.LazyFunction(default_retailer)
     name = factory.Sequence(lambda n: f"Category {n}")
     slug = factory.Sequence(lambda n: f"category-{n}")
 
@@ -84,8 +85,9 @@ class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "catalog.Product"
 
+    retailer = factory.LazyFunction(default_retailer)
     name = factory.Sequence(lambda n: f"Product {n}")
-    category = factory.SubFactory(CategoryFactory)
+    category = factory.SubFactory(CategoryFactory, retailer=factory.SelfAttribute("..retailer"))
     unit = "1 kg"
 
 
@@ -93,6 +95,7 @@ class FlyerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "offers.Flyer"
 
+    retailer = factory.LazyFunction(default_retailer)
     title = factory.Sequence(lambda n: f"Flyer {n}")
     valid_from = factory.LazyFunction(datetime.date.today)
     valid_to = factory.LazyFunction(lambda: datetime.date.today() + datetime.timedelta(days=6))
@@ -112,6 +115,7 @@ class StoreFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "stores.Store"
 
+    retailer = factory.LazyFunction(default_retailer)
     name = factory.Sequence(lambda n: f"Store {n}")
     address = "1 Main Street"
     city = "Springfield"
@@ -148,11 +152,12 @@ class ListItemFactory(factory.django.DjangoModelFactory):
 
 
 class PaymentMethodFactory(factory.django.DjangoModelFactory):
-    """Provider is unique, so pass it explicitly (default wave) or use ``create_all``."""
+    """Provider is unique per retailer: pass it explicitly (default wave) or use ``create_all``."""
 
     class Meta:
         model = "payments.PaymentMethod"
 
+    retailer = factory.LazyFunction(default_retailer)
     provider = "wave"
     phone_number = "+2250700000001"
     display_name = ""

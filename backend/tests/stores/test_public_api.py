@@ -174,10 +174,12 @@ def test_store_detail_distance_with_coordinates(client):
 
 def test_out_of_range_latitude_row_does_not_break_distance_list(client):
     from stores.models import Store
+    from tests.factories import default_retailer
 
     Store.objects.bulk_create(  # bypasses the model validators
         [
             Store(
+                retailer=default_retailer(),
                 name="Bad",
                 address="x",
                 city="y",
@@ -186,6 +188,7 @@ def test_out_of_range_latitude_row_does_not_break_distance_list(client):
                 longitude=Decimal("7"),
             ),
             Store(
+                retailer=default_retailer(),
                 name="Antipode",
                 address="x",
                 city="y",

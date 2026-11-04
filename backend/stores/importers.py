@@ -1,16 +1,16 @@
 """CSV import for stores.
 
-Header columns: name,address,city,postcode,latitude,longitude,phone
+Header columns: retailer_slug,name,address,city,postcode,latitude,longitude,phone
 (phone may be empty; latitude/longitude are decimal degrees).
 """
 
 from decimal import Decimal, InvalidOperation
 
-from common.csv_import import import_rows
+from common.csv_import import import_rows, retailer_by_slug
 
 from .models import Store
 
-COLUMNS = ["name", "address", "city", "postcode", "latitude", "longitude", "phone"]
+COLUMNS = ["retailer_slug", "name", "address", "city", "postcode", "latitude", "longitude", "phone"]
 
 
 def _decimal(row: dict[str, str], key: str) -> Decimal:
@@ -22,6 +22,7 @@ def _decimal(row: dict[str, str], key: str) -> Decimal:
 
 def _build(row: dict[str, str]) -> Store:
     return Store(
+        retailer=retailer_by_slug(row["retailer_slug"]),
         name=row["name"],
         address=row["address"],
         city=row["city"],

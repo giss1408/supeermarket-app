@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 from payments import services
 from payments.models import PaymentMethod, PaymentMethodChange
-from tests.factories import PaymentMethodFactory, StaffFactory
+from tests.factories import PaymentMethodFactory, StaffFactory, default_retailer
 
 pytestmark = pytest.mark.django_db
 
@@ -12,7 +12,11 @@ pytestmark = pytest.mark.django_db
 def test_create_writes_one_row():
     user = StaffFactory()
     m = services.create_method(
-        user=user, provider="wave", phone_number="07 01 02 03 04", instructions="Pay"
+        retailer=default_retailer(),
+        user=user,
+        provider="wave",
+        phone_number="07 01 02 03 04",
+        instructions="Pay",
     )
     assert m.phone_number == "+2250701020304"
     (c,) = PaymentMethodChange.objects.all()
@@ -60,7 +64,12 @@ def test_instructions_only_edit_writes_row():
 
 def test_create_and_delete_record_text_fields():
     m = services.create_method(
-        user=None, provider="wave", phone_number="0700000001", display_name="W", instructions="I"
+        retailer=default_retailer(),
+        user=None,
+        provider="wave",
+        phone_number="0700000001",
+        display_name="W",
+        instructions="I",
     )
     services.delete_method(m, user=None)
     created, deleted = PaymentMethodChange.objects.order_by("id")
@@ -98,7 +107,9 @@ def test_delete_writes_row_with_null_new_values():
 
 
 def test_user_none_allowed():
-    services.create_method(user=None, provider="wave", phone_number="0700000001")
+    services.create_method(
+        retailer=default_retailer(), user=None, provider="wave", phone_number="0700000001"
+    )
     c = PaymentMethodChange.objects.get()
     assert c.changed_by is None and c.changed_by_email == ""
 
@@ -106,7 +117,9 @@ def test_user_none_allowed():
 def test_email_snapshot_survives_user_deletion():
     user = StaffFactory()
     email = user.email
-    services.create_method(user=user, provider="wave", phone_number="0700000001")
+    services.create_method(
+        retailer=default_retailer(), user=user, provider="wave", phone_number="0700000001"
+    )
     get_user_model().objects.filter(pk=user.pk).delete()
     c = PaymentMethodChange.objects.get()
     assert c.changed_by is None
@@ -115,7 +128,9 @@ def test_email_snapshot_survives_user_deletion():
 
 def test_invalid_number_writes_nothing():
     with pytest.raises(ValidationError):
-        services.create_method(user=None, provider="wave", phone_number="07010203")
+        services.create_method(
+            retailer=default_retailer(), user=None, provider="wave", phone_number="07010203"
+        )
     assert PaymentMethod.objects.count() == 0 and PaymentMethodChange.objects.count() == 0
     m = PaymentMethodFactory()
     with pytest.raises(ValidationError):
@@ -128,7 +143,9 @@ def test_invalid_number_writes_nothing():
 def test_duplicate_provider_raises_validation_error():
     PaymentMethodFactory(provider="wave")
     with pytest.raises(ValidationError):
-        services.create_method(user=None, provider="wave", phone_number="0700000009")
+        services.create_method(
+            retailer=default_retailer(), user=None, provider="wave", phone_number="0700000009"
+        )
     assert PaymentMethodChange.objects.count() == 0
 
 
@@ -139,7 +156,9 @@ def test_failure_after_save_rolls_back(monkeypatch):
     # create
     monkeypatch.setattr(PaymentMethodChange.objects, "create", boom)
     with pytest.raises(RuntimeError):
-        services.create_method(user=None, provider="wave", phone_number="0700000001")
+        services.create_method(
+            retailer=default_retailer(), user=None, provider="wave", phone_number="0700000001"
+        )
     assert PaymentMethod.objects.count() == 0
     # update
     m = PaymentMethodFactory()
@@ -155,7 +174,9 @@ def test_failure_after_save_rolls_back(monkeypatch):
 
 
 def test_audit_rows_cannot_be_updated():
-    services.create_method(user=None, provider="wave", phone_number="0700000001")
+    services.create_method(
+        retailer=default_retailer(), user=None, provider="wave", phone_number="0700000001"
+    )
     c = PaymentMethodChange.objects.get()
     c.new_phone_number = "+2250000000000"
     with pytest.raises(RuntimeError):

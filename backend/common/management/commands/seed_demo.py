@@ -210,11 +210,11 @@ class Command(BaseCommand):
             raise CommandError(f"Demo password rejected: {' '.join(exc.messages)}") from None
 
         with transaction.atomic():
-            products = self._catalog()
-            self._flyer(products)
-            self._stores()
-            self._payment_methods()
             retailer = self._retailer()
+            products = self._catalog(retailer)
+            self._flyer(retailer, products)
+            self._stores(retailer)
+            self._payment_methods(retailer)
             self._users(staff_pw, customer_pw, platform_pw, retailer)
 
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
@@ -223,16 +223,17 @@ class Command(BaseCommand):
         self.stdout.write(f"  platform: {PLATFORM_EMAIL}")
         self.stdout.write("  Passwords: DEMO_*_PASSWORD env vars, else the dev defaults in README.")
 
-    def _catalog(self) -> dict[str, Product]:
+    def _catalog(self, retailer: Retailer) -> dict[str, Product]:
         products: dict[str, Product] = {}
         index = 0
         for sort_order, (slug, cat_name, items) in enumerate(CATALOG):
             category, _ = Category.objects.update_or_create(
-                slug=slug, defaults={"name": cat_name, "sort_order": sort_order}
+                retailer=retailer, slug=slug, defaults={"name": cat_name, "sort_order": sort_order}
             )
             for name, unit in items:
                 index += 1
                 product, _ = Product.objects.get_or_create(
+                    retailer=retailer,
                     name=name,
                     category=category,
                     defaults={"unit": unit, "ean": ean13(index)},
@@ -240,12 +241,14 @@ class Command(BaseCommand):
                 products[name] = product
         return products
 
-    def _flyer(self, products: dict[str, Product]) -> None:
+    def _flyer(self, retailer: Retailer, products: dict[str, Product]) -> None:
         today = timezone.localdate()
         start, end = today, today + datetime.timedelta(days=FLYER_DAYS - 1)
-        flyer = Flyer.objects.filter(title=FLYER_TITLE).first()
+        flyer = Flyer.objects.filter(retailer=retailer, title=FLYER_TITLE).first()
         if flyer is None:
-            flyer = Flyer.objects.create(title=FLYER_TITLE, valid_from=start, valid_to=end)
+            flyer = Flyer.objects.create(
+                retailer=retailer, title=FLYER_TITLE, valid_from=start, valid_to=end
+            )
         for order, (name, price, old_price, badge) in enumerate(OFFERS):
             Offer.objects.update_or_create(
                 flyer=flyer,
@@ -268,9 +271,10 @@ class Command(BaseCommand):
         except ValidationError as exc:
             self.stderr.write(f"Demo flyer left as a draft: {' '.join(exc.messages)}")
 
-    def _stores(self) -> None:
+    def _stores(self, retailer: Retailer) -> None:
         for name, address, city, lat, lng, phone, closed in STORES:
             store, _ = Store.objects.update_or_create(
+                retailer=retailer,
                 name=name,
                 defaults={
                     "address": address,
@@ -296,7 +300,7 @@ class Command(BaseCommand):
                     store=store, weekday=weekday, defaults={"opens": opens, "closes": closes}
                 )
 
-    def _payment_methods(self) -> None:
+    def _payment_methods(self, retailer: Retailer) -> None:
         for provider, (display_name, phone, instructions) in PAYMENT_METHODS.items():
             fields = {
                 "phone_number": phone,
@@ -304,9 +308,9 @@ class Command(BaseCommand):
                 "instructions": instructions,
                 "is_active": True,
             }
-            method = PaymentMethod.objects.filter(provider=provider).first()
+            method = PaymentMethod.objects.filter(retailer=retailer, provider=provider).first()
             if method is None:
-                create_method(user=None, provider=provider, **fields)
+                create_method(user=None, retailer=retailer, provider=provider, **fields)
             else:
                 update_method(method, user=None, **fields)  # audits only real changes
 

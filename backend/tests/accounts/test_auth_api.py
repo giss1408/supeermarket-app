@@ -56,7 +56,7 @@ def test_register_duplicate_email_case_insensitive_returns_400_field_error(clien
 
 
 def test_register_ignores_role_field(client):
-    r = _register(client, role="staff")
+    r = _register(client, role="platform_admin")
     assert r.status_code == 201
     assert r.json()["role"] == "customer"
     assert User.objects.get(email="a@x.com").role == "customer"

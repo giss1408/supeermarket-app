@@ -13,7 +13,30 @@ from uploads.fields import UploadedImageNameField
 MAX_ID = 2**31 - 1
 
 
+def _unique_for_retailer(serializer: serializers.ModelSerializer, field: str, value: Any) -> Any:
+    """Per-retailer uniqueness (the DB constraint is (retailer, field)) as a field error."""
+    if value in (None, ""):
+        return value
+    instance = serializer.instance
+    retailer = (
+        instance.retailer  # type: ignore[attr-defined]
+        if instance is not None
+        else serializer.context["request"].user.retailer
+    )
+    model: Any = serializer.Meta.model  # type: ignore[attr-defined]
+    qs = model.objects.filter(retailer=retailer, **{field: value})
+    if instance is not None:
+        qs = qs.exclude(pk=instance.pk)  # type: ignore[attr-defined]
+    if qs.exists():
+        name = model._meta.verbose_name
+        raise serializers.ValidationError(f"{name} with this {field} already exists.")
+    return value
+
+
 class StaffCategorySerializer(serializers.ModelSerializer):
+    def validate_slug(self, value: str) -> str:
+        return _unique_for_retailer(self, "slug", value)
+
     class Meta:
         model = Category
         fields = ["id", "name", "slug", "sort_order"]
@@ -54,6 +77,9 @@ class StaffProductSerializer(serializers.ModelSerializer):
                 type("EanField", (field_class,), {"__module__": __name__})
             )
         return field_class, field_kwargs
+
+    def validate_ean(self, value: str | None) -> str | None:
+        return _unique_for_retailer(self, "ean", value)
 
     class Meta:
         model = Product

@@ -75,7 +75,9 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict[str, Any]) -> PaymentMethod:
         try:
-            return services.create_method(user=self.context["request"].user, **validated_data)
+            user = self.context["request"].user
+            retailer = validated_data.pop("retailer", None) or user.retailer
+            return services.create_method(user=user, retailer=retailer, **validated_data)
         except DjangoValidationError as exc:
             raise _to_drf(exc) from None
         except IntegrityError:

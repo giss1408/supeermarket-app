@@ -18,7 +18,14 @@ class PaymentMethodForm(forms.ModelForm):
 
     class Meta:
         model = PaymentMethod
-        fields = ["provider", "phone_number", "display_name", "instructions", "is_active"]
+        fields = [
+            "retailer",
+            "provider",
+            "phone_number",
+            "display_name",
+            "instructions",
+            "is_active",
+        ]
 
     def clean_phone_number(self) -> str:
         return normalize_ci_phone(self.cleaned_data["phone_number"])
@@ -27,11 +34,18 @@ class PaymentMethodForm(forms.ModelForm):
 @admin.register(PaymentMethod)
 class PaymentMethodAdmin(admin.ModelAdmin):
     form = PaymentMethodForm
-    list_display = ["provider", "phone_number", "display_name", "is_active", "updated_at"]
+    list_display = [
+        "retailer",
+        "provider",
+        "phone_number",
+        "display_name",
+        "is_active",
+        "updated_at",
+    ]
     list_filter = ["is_active"]
 
     def get_readonly_fields(self, request: HttpRequest, obj: PaymentMethod | None = None):
-        return ["provider"] if obj else []
+        return ["retailer", "provider"] if obj else []
 
     def save_model(
         self, request: HttpRequest, obj: PaymentMethod, form: forms.ModelForm, change: bool

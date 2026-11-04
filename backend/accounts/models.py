@@ -3,6 +3,7 @@ from typing import Any
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models, transaction
+from django.db.models import Q
 from django.db.models.functions import Lower
 
 CARD_DIGITS = 13
@@ -65,7 +66,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
-        constraints = [models.UniqueConstraint(Lower("email"), name="user_email_ci_unique")]
+        constraints = [
+            models.UniqueConstraint(Lower("email"), name="user_email_ci_unique"),
+            # Retailer staff belong to exactly one retailer; nobody else belongs to any.
+            models.CheckConstraint(
+                condition=Q(role="retailer_staff", retailer__isnull=False)
+                | (~Q(role="retailer_staff") & Q(retailer__isnull=True)),
+                name="user_retailer_matches_role",
+            ),
+        ]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []  # type: ignore[misc]

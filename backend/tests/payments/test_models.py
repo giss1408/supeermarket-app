@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
 from payments.models import PaymentMethod, PaymentMethodChange
-from tests.factories import PaymentMethodFactory
+from tests.factories import PaymentMethodFactory, RetailerFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -42,3 +42,15 @@ def test_str():
     assert str(m) == "Orange Money (+2250700000001)"
     c = PaymentMethodChange(provider="wave", old_phone_number="a", new_phone_number="b")
     assert "wave" in str(c)
+
+
+def test_two_retailers_can_share_payment_provider():
+    PaymentMethodFactory(provider="wave", retailer=RetailerFactory())
+    PaymentMethodFactory(provider="wave", retailer=RetailerFactory())
+
+
+def test_same_retailer_payment_provider_rejected():
+    retailer = RetailerFactory()
+    PaymentMethodFactory(provider="wave", retailer=retailer)
+    with pytest.raises(IntegrityError), transaction.atomic():
+        PaymentMethodFactory(provider="wave", retailer=retailer)

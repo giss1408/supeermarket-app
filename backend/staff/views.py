@@ -54,6 +54,10 @@ class StaffViewSet(ModelViewSet):
         params.is_valid(raise_exception=True)
         return params.validated_data
 
+    def perform_create(self, serializer: serializers.BaseSerializer) -> None:
+        # Content is owned by the creating staff member's retailer.
+        serializer.save(retailer=self.request.user.retailer)  # type: ignore[union-attr]
+
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         try:
             return super().destroy(request, *args, **kwargs)
@@ -144,6 +148,9 @@ class OfferViewSet(StaffViewSet):
                     {"flyer": "Cannot remove the last offer of a published flyer; unpublish first."}
                 )
             yield
+
+    def perform_create(self, serializer: serializers.BaseSerializer) -> None:
+        serializer.save()  # offers belong to their flyer's retailer; no field of their own
 
     def perform_destroy(self, instance: Offer) -> None:
         with self._guard_last_offer(instance):

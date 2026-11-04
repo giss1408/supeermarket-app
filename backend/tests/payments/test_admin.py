@@ -18,6 +18,7 @@ def test_add_via_admin_normalises_and_audits(client, admin_user):
     resp = client.post(
         reverse("admin:payments_paymentmethod_add"),
         {
+            "retailer": admin_user.retailer_id,
             "provider": "wave",
             "phone_number": "07 01 02 03 04",
             "display_name": "Wave",
@@ -36,7 +37,12 @@ def test_add_via_admin_normalises_and_audits(client, admin_user):
 def test_invalid_number_shows_form_error(client, admin_user):
     resp = client.post(
         reverse("admin:payments_paymentmethod_add"),
-        {"provider": "wave", "phone_number": "07010203", "is_active": "on"},
+        {
+            "retailer": admin_user.retailer_id,
+            "provider": "wave",
+            "phone_number": "07010203",
+            "is_active": "on",
+        },
     )
     assert resp.status_code == 200
     assert "phone_number" in resp.context["adminform"].form.errors
@@ -116,7 +122,12 @@ def test_change_admin_is_read_only(client, admin_user):
 def test_admin_accepts_phone_variants(client, admin_user, raw):
     resp = client.post(
         reverse("admin:payments_paymentmethod_add"),
-        {"provider": "wave", "phone_number": raw, "is_active": "on"},
+        {
+            "retailer": admin_user.retailer_id,
+            "provider": "wave",
+            "phone_number": raw,
+            "is_active": "on",
+        },
     )
     assert resp.status_code == 302
     assert PaymentMethod.objects.get().phone_number == "+2250701020304"
@@ -126,7 +137,12 @@ def test_admin_accepts_phone_variants(client, admin_user, raw):
 def test_admin_rejects_bad_phone_with_field_error(client, admin_user, raw):
     resp = client.post(
         reverse("admin:payments_paymentmethod_add"),
-        {"provider": "wave", "phone_number": raw, "is_active": "on"},
+        {
+            "retailer": admin_user.retailer_id,
+            "provider": "wave",
+            "phone_number": raw,
+            "is_active": "on",
+        },
     )
     assert resp.status_code == 200
     assert "phone_number" in resp.context["adminform"].form.errors

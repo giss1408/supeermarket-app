@@ -12,7 +12,10 @@ class PaymentMethod(models.Model):
         ORANGE_MONEY = "orange_money", "Orange Money"
         MTN_MOMO = "mtn_momo", "MTN MoMo"
 
-    provider = models.CharField(max_length=20, choices=Provider.choices, unique=True)
+    retailer = models.ForeignKey(
+        "retailers.Retailer", on_delete=models.PROTECT, related_name="payment_methods"
+    )
+    provider = models.CharField(max_length=20, choices=Provider.choices)
     phone_number = models.CharField(max_length=14, validators=[validate_ci_phone])
     display_name = models.CharField(max_length=100, blank=True)
     instructions = models.CharField(max_length=500, blank=True)
@@ -21,6 +24,11 @@ class PaymentMethod(models.Model):
 
     class Meta:
         ordering = ["provider"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["retailer", "provider"], name="paymentmethod_retailer_provider_unique"
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.get_provider_display()} ({self.phone_number})"

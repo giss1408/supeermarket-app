@@ -57,7 +57,7 @@ def test_patch_me_updates_name(client):
 def test_patch_me_cannot_change_role(client):
     user = UserFactory()
     _auth(client, user)
-    r = client.patch(ME, {"role": "staff", "email": "evil@x.com"}, format="json")
+    r = client.patch(ME, {"role": "retailer_staff", "email": "evil@x.com"}, format="json")
     assert r.status_code == 200
     assert r.json()["role"] == "customer"
     user.refresh_from_db()

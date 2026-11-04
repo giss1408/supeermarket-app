@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
 from catalog.models import Product
-from tests.factories import CategoryFactory, ProductFactory
+from tests.factories import CategoryFactory, ProductFactory, RetailerFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -39,3 +39,28 @@ def test_categories_ordered_by_sort_order_then_name():
     from catalog.models import Category
 
     assert list(Category.objects.values_list("slug", flat=True)) == ["z", "a", "b"]
+
+
+def test_two_retailers_can_share_category_slug():
+    CategoryFactory(slug="fruits", retailer=RetailerFactory())
+    CategoryFactory(slug="fruits", retailer=RetailerFactory())
+
+
+def test_same_retailer_category_slug_rejected():
+    retailer = RetailerFactory()
+    CategoryFactory(slug="fruits", retailer=retailer)
+    with pytest.raises(IntegrityError), transaction.atomic():
+        CategoryFactory(slug="fruits", retailer=retailer)
+
+
+def test_two_retailers_can_share_product_ean():
+    a, b = RetailerFactory(), RetailerFactory()
+    ProductFactory(ean="12345678", retailer=a, category__retailer=a)
+    ProductFactory(ean="12345678", retailer=b, category__retailer=b)
+
+
+def test_same_retailer_product_ean_rejected():
+    retailer = RetailerFactory()
+    ProductFactory(ean="12345678", retailer=retailer)
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ProductFactory(ean="12345678", retailer=retailer)

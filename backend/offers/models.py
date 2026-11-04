@@ -10,6 +10,9 @@ class Flyer(models.Model):
         DRAFT = "draft", "Draft"
         PUBLISHED = "published", "Published"
 
+    retailer = models.ForeignKey(
+        "retailers.Retailer", on_delete=models.PROTECT, related_name="flyers"
+    )
     title = models.CharField(max_length=200)
     valid_from = models.DateField()
     valid_to = models.DateField()
@@ -24,10 +27,11 @@ class Flyer(models.Model):
             models.CheckConstraint(
                 condition=Q(valid_from__lte=F("valid_to")), name="flyer_valid_from_lte_valid_to"
             ),
-            # Published flyers may not overlap; '[]' makes both end days inclusive.
+            # A retailer's published flyers may not overlap; '[]' makes both end days inclusive.
             ExclusionConstraint(
                 name="flyer_published_no_overlap",
                 expressions=[
+                    ("retailer", RangeOperators.EQUAL),
                     (
                         Func(
                             F("valid_from"),
@@ -37,7 +41,7 @@ class Flyer(models.Model):
                             output_field=DateRangeField(),
                         ),
                         RangeOperators.OVERLAPS,
-                    )
+                    ),
                 ],
                 condition=Q(status="published"),
             ),

@@ -4,6 +4,9 @@ from django.db.models import F, Q
 
 
 class Store(models.Model):
+    retailer = models.ForeignKey(
+        "retailers.Retailer", on_delete=models.PROTECT, related_name="stores"
+    )
     name = models.CharField(max_length=200)
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=120)

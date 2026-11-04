@@ -5,6 +5,8 @@ from typing import Any
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import transaction
 
+from retailers.models import Retailer
+
 from .models import PaymentMethod, PaymentMethodChange
 from .validators import normalize_ci_phone
 
@@ -17,11 +19,13 @@ def _actor(user: AbstractBaseUser | None) -> dict[str, Any]:
     return {"changed_by": user, "changed_by_email": getattr(user, "email", "")}
 
 
-def create_method(*, user: AbstractBaseUser | None, **fields: Any) -> PaymentMethod:
+def create_method(
+    *, user: AbstractBaseUser | None, retailer: Retailer, **fields: Any
+) -> PaymentMethod:
     if "phone_number" in fields:
         fields["phone_number"] = normalize_ci_phone(fields["phone_number"])
     with transaction.atomic():
-        method = PaymentMethod(**fields)
+        method = PaymentMethod(retailer=retailer, **fields)
         method.full_clean()
         method.save()
         PaymentMethodChange.objects.create(

@@ -18,6 +18,16 @@ class CsvImportError(Exception):
         self.errors = errors
 
 
+def retailer_by_slug(slug: str) -> Any:
+    """The Retailer a CSV row belongs to (LookupError when unknown)."""
+    from retailers.models import Retailer
+
+    try:
+        return Retailer.objects.get(slug=slug)
+    except Retailer.DoesNotExist:
+        raise LookupError(f"unknown retailer_slug '{slug}'") from None
+
+
 def iter_rows(text: str, columns: list[str]) -> Iterator[tuple[int, dict[str, str]]]:
     """Yield (row_number, row) where row 1 is the header and data starts at 2."""
     reader = csv.DictReader(io.StringIO(text.lstrip("﻿")))
