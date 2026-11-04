@@ -1,0 +1,11 @@
+{% extends "platform_admin/base.html" %}
+{% block title %}Enregistrer un paiement{% endblock %}
+{% block content %}
+<h1>Enregistrer un paiement</h1>
+<p>{{ retailer.name }}</p>
+<form method="post">{% csrf_token %}
+{{ form.as_p }}
+<button class="btn" type="submit">Enregistrer</button>
+<a href="{% url 'platform:retailer_detail' retailer.pk %}">Annuler</a>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "platform_admin/base.html" %}
+{% block title %}Nouveau commerçant{% endblock %}
+{% block content %}
+<h1>Nouveau commerçant</h1>
+<form method="post">{% csrf_token %}
+{{ form.as_p }}
+<button class="btn" type="submit">Créer</button>
+<a href="{% url 'platform:retailer_list' %}">Annuler</a>
+</form>
+{% endblock %}

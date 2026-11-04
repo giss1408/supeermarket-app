@@ -2,7 +2,8 @@
 
 DRF handles errors raised inside API views; these cover everything outside them, so the
 standard ``{"code", "detail", "fields"}`` shape holds for every non-admin path. Under
-``/admin/`` the stock HTML pages are kept so staff in a browser get readable pages.
+``/admin/`` and ``/platform/`` the stock HTML pages are kept so staff in a browser get
+readable pages.
 """
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -11,7 +12,7 @@ from django.views.csrf import csrf_failure as default_csrf_failure
 
 
 def _is_admin(request: HttpRequest) -> bool:
-    return request.path.startswith("/admin/")
+    return request.path.startswith(("/admin/", "/platform/"))
 
 
 def _json(status: int, code: str, detail: str) -> JsonResponse:

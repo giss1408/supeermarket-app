@@ -1,0 +1,21 @@
+{% extends "platform_admin/base.html" %}
+{% block title %}Commerçants{% endblock %}
+{% block content %}
+<h1>Commerçants</h1>
+<p><a class="btn" href="{% url 'platform:retailer_create' %}">Nouveau commerçant</a></p>
+<p class="filters">
+{% for value, label in filters %}<a href="?filter={{ value }}"{% if value == current_filter %} class="on"{% endif %}>{{ label }}</a>{% endfor %}
+</p>
+<table>
+<tr><th>Nom</th><th>Statut</th><th>Fin d'abonnement</th></tr>
+{% for r in retailers %}
+<tr>
+<td><a href="{% url 'platform:retailer_detail' r.pk %}">{{ r.name }}</a></td>
+<td>{{ r.get_status_display }}</td>
+<td>{% if r.subscription %}{{ r.subscription.ends_at|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">Aucun commerçant.</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

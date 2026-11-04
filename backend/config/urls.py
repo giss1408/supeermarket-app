@@ -34,6 +34,7 @@ urlpatterns = [
     path("api/v1/staff/", include("staff.urls")),
     path("api/v1/staff/", include("uploads.urls")),
     path("admin/", admin.site.urls),
+    path("platform/", include("platform_admin.urls")),
 ]
 
 # Local media is served by Django only in development (prod uses S3 or a real web server).

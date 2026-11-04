@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "accounts",
     "retailers",
+    "platform_admin",
     "catalog",
     "offers",
     "stores",

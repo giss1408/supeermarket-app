@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Plateforme{% endblock %}</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;color:#1a1a1a;background:#f6f6f4}
+header{background:#1f3a2e;color:#fff;padding:.7rem 1.2rem;display:flex;gap:1rem;align-items:center}
+header a,header button{color:#fff;background:none;border:0;font:inherit;cursor:pointer;text-decoration:underline}
+header form{margin:0 0 0 auto}
+main{max-width:56rem;margin:1.2rem auto;padding:0 1rem}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid #e3e3e0}
+.msg{padding:.6rem .8rem;margin:.5rem 0;background:#e6f2ea;border-left:4px solid #2d7a4f}
+.msg.error{background:#fbeaea;border-color:#b3261e}
+.errorlist{color:#b3261e;margin:.2rem 0;padding-left:1rem}
+.filters a{margin-right:.8rem}.filters .on{font-weight:700}
+.btn,button.btn{display:inline-block;padding:.4rem .8rem;background:#1f3a2e;color:#fff;border:0;border-radius:4px;text-decoration:none;font:inherit;cursor:pointer}
+.btn.danger{background:#b3261e}
+form p{margin:.6rem 0}label{display:block;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+<strong>Plateforme</strong>
+{% if user.is_authenticated %}
+<a href="{% url 'platform:retailer_list' %}">Commerçants</a>
+<form method="post" action="{% url 'platform:logout' %}">{% csrf_token %}<button type="submit">Se déconnecter</button></form>
+{% endif %}
+</header>
+<main>
+{% for message in messages %}<div class="msg {{ message.tags }}">{{ message }}</div>{% endfor %}
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

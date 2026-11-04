@@ -1,0 +1,28 @@
+{% extends "platform_admin/base.html" %}
+{% block title %}{{ retailer.name }}{% endblock %}
+{% block content %}
+<h1>{{ retailer.name }}</h1>
+<p>Statut : <strong>{{ retailer.get_status_display }}</strong>
+ | Fin d'abonnement : <strong>{% if subscription %}{{ subscription.ends_at|date:"d/m/Y" }}{% else %}aucun abonnement{% endif %}</strong>
+ | Publication : {% if retailer.can_publish %}autorisée{% else %}non autorisée{% endif %}</p>
+<div style="display:flex;gap:.6rem">
+<form method="post" action="{% url 'platform:retailer_activate' retailer.pk %}">{% csrf_token %}<button class="btn" type="submit">Activer</button></form>
+<form method="post" action="{% url 'platform:retailer_suspend' retailer.pk %}">{% csrf_token %}<button class="btn danger" type="submit">Suspendre</button></form>
+<a class="btn" href="{% url 'platform:payment_create' retailer.pk %}">Enregistrer un paiement</a>
+</div>
+<h2>Paiements</h2>
+<table>
+<tr><th>Date</th><th>Montant (XOF)</th><th>Moyen</th><th>Référence</th><th>Mois</th></tr>
+{% for p in payments %}
+<tr><td>{{ p.confirmed_at|date:"d/m/Y H:i" }}</td><td>{{ p.amount }}</td><td>{{ p.provider }}</td><td>{{ p.reference }}</td><td>{{ p.period_months }}</td></tr>
+{% empty %}
+<tr><td colspan="5">Aucun paiement.</td></tr>
+{% endfor %}
+</table>
+<h2>Utilisateurs</h2>
+<table>
+<tr><th>E-mail</th><th>Nom</th></tr>
+{% for u in staff_users %}<tr><td>{{ u.email }}</td><td>{{ u.name }}</td></tr>
+{% empty %}<tr><td colspan="2">Aucun utilisateur.</td></tr>{% endfor %}
+</table>
+{% endblock %}
