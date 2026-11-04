@@ -7,11 +7,20 @@ Mobile app (Tasks 1-16) is done, reviewed once and merged to `main`. Backend is 
 - `app/integration_test/offline_list_sync_test.dart` is written but **never run**: needs a dev backend and a device.
 - Final whole-branch review done; two findings were deferred (see `docs/follow-ups.md`, "Mobile app").
 
+## Platform admin (sub-project 1 of 3): done
+Backend multi-retailer model, subscriptions, roles (`customer`, `retailer_staff`, `platform_admin`) and the
+`/platform/` dashboard are implemented on branch `feat/platform-admin`; `/platform/*` is behind the same
+`ADMIN_ALLOWED_IPS` edge allowlist as `/admin/`.
+
+Pending sub-projects:
+2. Customer app: multi-retailer browsing.
+3. Retailer publishing UI / staff mode in the app (own spec and plan).
+
 ## Do next
 1. Run the integration test and the README release checklist (`app/README.md`) on a real device.
 2. Fix the two deferred review findings (sign-out race on list mutations; `_failRestore` on transient errors).
 3. Set the real `staging.json` / `prod.json` hosts, signing config, store listings.
-4. Staff mode needs its own spec and plan.
+4. Staff mode needs its own spec and plan (sub-project 3 above).
 
 ## Guardrails
 - Never touch container `flariane-postgres-1` (or the other flariane containers). Leave `agriTechCMS` alone.

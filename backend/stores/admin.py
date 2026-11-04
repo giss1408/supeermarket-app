@@ -13,7 +13,7 @@ class OpeningHoursInline(admin.TabularInline):
 
 @admin.register(Store)
 class StoreAdmin(CsvImportAdminMixin, admin.ModelAdmin):
-    """Import CSV header: name,address,city,postcode,latitude,longitude,phone."""
+    """Import CSV header: retailer_slug,name,address,city,postcode,latitude,longitude,phone."""
 
     list_display = ["name", "city", "postcode", "is_active"]
     list_filter = ["is_active", "city"]

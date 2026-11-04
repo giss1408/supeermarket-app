@@ -45,6 +45,8 @@ HTML error pages.
 
 Client notes:
 
+- `User.role` is now `customer`, `retailer_staff` or `platform_admin` (the old `staff` is gone).
+  Publishing without an active subscription answers `403` with code `subscription_required`.
 - Cursor pagination over mutable sort keys (shopping lists are ordered by `-updated_at`) can skip
   or repeat rows when data changes between page requests. Sync clients should use `updated_since`.
 - Send `updated_since` in UTC with a `Z` suffix (`2026-11-02T10:00:00Z`). A literal `+00:00` must
@@ -175,9 +177,21 @@ defaults apply (never use them anywhere real): staff `demo-staff-pass-123`, cust
 
 ## Staff users
 
-Staff are never created through the API. A superuser (created with `createsuperuser`, below) gets
-the role `platform_admin` automatically; it can set a user's role to `retailer_staff` and pick their
-retailer in the Django admin (`/admin/`, Users). Locally, `seed_demo` already creates `staff@example.com`.
+There are three roles: `customer` (mobile app users), `retailer_staff` (publish for one retailer)
+and `platform_admin` (operates the platform). Users with elevated roles are never created through
+the API. `createsuperuser` creates a `platform_admin`.
+
+A platform admin signs in at `/platform/` (the platform dashboard) to create the first retailer, set
+the retailer's first staff user and password, and manage subscriptions. Payment is manual in v1: the
+retailer pays by mobile money, the admin records the payment in the dashboard, the subscription is
+extended and the admin activates a pending retailer. Publishing (flyers, offers) needs an active
+subscription, otherwise the API answers `403` with code `subscription_required`; public endpoints
+only show content of active retailers. The Django admin (`/admin/`) stays available to platform
+admins for low-level edits. Locally, `seed_demo` already creates `staff@example.com` and
+`platform@example.com`.
+
+CSV import of products and stores in the Django admin needs `retailer_slug` as the first column
+(for example `retailer_slug,name,category_slug,unit,ean,description`).
 
 ## Deployment
 
@@ -222,7 +236,7 @@ Set these in `.env.prod` (template with comments: `.env.prod.example`).
 | `AUTH_THROTTLE_RATE` | no | `10/min` | |
 | `STAFF_SENSITIVE_THROTTLE_RATE` | no | `5/min` | Per-staff-user limit on creating/updating payment methods; every attempt counts, including wrong passwords. |
 | `NUM_PROXIES` | no | `1` in prod, `0` otherwise | Number of reverse proxies in front of gunicorn (Caddy = 1); the auth throttle uses it to find the real client IP in `X-Forwarded-For`. Set `0` if gunicorn is exposed directly. |
-| `ADMIN_ALLOWED_IPS` | yes (Caddy) | none | Space-separated IPs/CIDRs allowed to reach `/admin/`. Compose refuses to start without it. |
+| `ADMIN_ALLOWED_IPS` | yes (Caddy) | none | Space-separated IPs/CIDRs allowed to reach `/admin/` and `/platform/`. Compose refuses to start without it. |
 | `WEB_CONCURRENCY` | no | `3` | gunicorn workers. |
 | `LOG_LEVEL` | no | `INFO` | Logs go to stdout/stderr. |
 | `SENTRY_DSN` | no | empty | Sentry is initialized only if set. |
@@ -249,21 +263,21 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 curl https://api.example.com/healthz     # {"status": "ok"}
 ```
 
-Create the first staff user (a superuser; it gets the role `staff`):
+Create the first staff user (a superuser; it gets the role `platform_admin`):
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm web python manage.py createsuperuser
 ```
 
-Then sign in at `https://<domain>/admin/` to promote further staff.
+Then sign in at `https://<domain>/platform/` to create the first retailer and its staff user.
 
 ### Securing /admin
 
-Caddy only forwards `/admin/*` to clients whose IP is in `ADMIN_ALLOWED_IPS` (space-separated
+Caddy only forwards `/admin/*` and `/platform/*` to clients whose IP is in `ADMIN_ALLOWED_IPS` (space-separated
 IPs or CIDRs, for example your office or VPN range); everyone else gets `403 Forbidden`. The
 variable is mandatory so the choice is deliberate (`0.0.0.0/0 ::/0` allows everyone and is not
 recommended). Also use strong, unique staff passwords and consider reaching the admin only through
-a VPN. There is no two-factor authentication in v1. The API under `/api/v1/` is not affected.
+a VPN. The same allowlist now protects the platform dashboard. There is no two-factor authentication in v1. The API under `/api/v1/` is not affected.
 
 ### Media storage
 

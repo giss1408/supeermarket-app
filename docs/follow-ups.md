@@ -83,3 +83,14 @@ hardening, test gaps, contract polish and documentation. Grouped by area, roughl
   signed in, stamp ops with the owner, and keep a "wipe pending" marker so the next sign-in wipes defensively.
 - `_failRestore` (session_controller) clears the token store on any error, including network failures: a user with a
   partial store who starts the app offline is signed out for good. Clear only on a 400/401 from refresh or `/me`.
+
+## Platform admin
+- Automated payment confirmation through a provider webhook (`Payment.source=webhook` is ready in the model).
+- Per-retailer branding / white-label.
+- Retailer self-service sign-up and invite email (v1: the platform admin sets the first staff password).
+- Notifications when a subscription is about to lapse or has expired.
+- Shopping `ListItem` accepts any product id and echoes name/unit/image of products of suspended or pending
+  retailers; existing items also keep their summary after a suspension. Decide on redaction.
+- Uploaded image names are not tied to a retailer.
+- Django admin forms can still pair a Product with a Category of another retailer.
+- Django admin `RetailerAdmin.status` and `SubscriptionAdmin` are editable and bypass the audit log (`set_status`).

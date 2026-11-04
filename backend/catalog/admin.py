@@ -15,7 +15,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(CsvImportAdminMixin, admin.ModelAdmin):
-    """Import CSV header: name,category_slug,unit,ean,description."""
+    """Import CSV header: retailer_slug,name,category_slug,unit,ean,description."""
 
     list_display = ["name", "category", "unit", "ean"]
     list_filter = ["category"]
