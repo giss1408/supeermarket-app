@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "common",
     "drf_spectacular",
     "accounts",
+    "retailers",
     "catalog",
     "offers",
     "stores",
