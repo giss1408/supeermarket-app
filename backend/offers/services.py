@@ -7,9 +7,10 @@ from .models import Flyer
 
 
 def _find_overlap(flyer: Flyer) -> Flyer | None:
-    """Another published flyer whose dates overlap (inclusive) this one's."""
+    """Another published flyer of the SAME retailer whose dates overlap (inclusive) this one's."""
     return (
         Flyer.objects.filter(
+            retailer_id=flyer.retailer_id,
             status=Flyer.Status.PUBLISHED,
             valid_from__lte=flyer.valid_to,
             valid_to__gte=flyer.valid_from,

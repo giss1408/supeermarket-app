@@ -115,3 +115,46 @@ def test_admin_publish_action_reports_error(client):
     assert flyer.title in msgs[0].message
     flyer.refresh_from_db()
     assert flyer.status == "draft"
+
+
+D = datetime.date
+
+
+def _overlap_flyer(retailer, **kw):
+    return _flyer(retailer, valid_from=D(2026, 1, 1), valid_to=D(2026, 1, 7), **kw)
+
+
+def test_different_retailers_can_publish_identical_overlapping_flyers():
+    a = _overlap_flyer(RetailerFactory())
+    b = _overlap_flyer(RetailerFactory())
+    publish_flyer(a)
+    publish_flyer(b)
+    b.refresh_from_db()
+    assert b.status == "published"
+
+
+def test_same_retailer_overlap_still_rejected_naming_own_flyer():
+    from django.core.exceptions import ValidationError
+
+    retailer = RetailerFactory()
+    first = _overlap_flyer(retailer, title="Own Flyer Alpha")
+    second = _overlap_flyer(retailer)
+    publish_flyer(first)
+    with pytest.raises(ValidationError) as exc:
+        publish_flyer(second)
+    assert "Own Flyer Alpha" in str(exc.value)
+
+
+def test_overlap_error_never_leaks_other_retailers_flyer_title():
+    from django.core.exceptions import ValidationError
+
+    a = _overlap_flyer(RetailerFactory(), title="SecretTitle-RetailerA-xyz")
+    publish_flyer(a)
+    retailer_b = RetailerFactory()
+    first = _overlap_flyer(retailer_b, title="B Own")
+    second = _overlap_flyer(retailer_b)
+    publish_flyer(first)
+    with pytest.raises(ValidationError) as exc:
+        publish_flyer(second)
+    assert "SecretTitle-RetailerA-xyz" not in str(exc.value)
+    assert "B Own" in str(exc.value)

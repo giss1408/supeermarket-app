@@ -195,11 +195,17 @@ def test_seed_demo_password_from_env(debug, monkeypatch):
 
 
 def test_seed_demo_leaves_flyer_draft_when_another_flyer_blocks_today(debug):
-    from tests.factories import FlyerFactory, OfferFactory
-
-    other = FlyerFactory(title="Other", status="draft")
-    OfferFactory(flyer=other)
+    from common.management.commands.seed_demo import DEMO_RETAILER_SLUG
     from offers.services import publish_flyer
+    from retailers.models import Retailer
+    from tests.factories import FlyerFactory, OfferFactory, RetailerFactory
+
+    # Overlap is per retailer: the blocker must belong to the demo retailer.
+    demo = Retailer.objects.filter(slug=DEMO_RETAILER_SLUG).first() or RetailerFactory(
+        slug=DEMO_RETAILER_SLUG
+    )
+    other = FlyerFactory(title="Other", status="draft", retailer=demo)
+    OfferFactory(flyer=other)
 
     publish_flyer(other)
     seed()  # must warn, not crash
