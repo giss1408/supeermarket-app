@@ -45,6 +45,14 @@ class StaffViewSet(ModelViewSet):
     permission_classes = [IsRetailerStaff]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
     filter_serializer_class: type[serializers.Serializer] | None = None
+    # ORM path from the model to its owning retailer; every queryset goes through scope().
+    retailer_lookup: str = "retailer"
+
+    def scope(self, qs: QuerySet, lookup: str | None = None) -> QuerySet:
+        """Restrict to the caller's retailer: other retailers' rows are simply not found (404)."""
+        if getattr(self, "swagger_fake_view", False):
+            return qs.none()
+        return qs.filter(**{lookup or self.retailer_lookup: self.request.user.retailer})  # type: ignore[union-attr]
 
     def filters(self) -> dict:
         """Validated query params (list only); invalid values raise a 400."""
@@ -66,9 +74,11 @@ class StaffViewSet(ModelViewSet):
 
 
 class CategoryViewSet(StaffViewSet):
-    queryset = Category.objects.all()
     serializer_class = StaffCategorySerializer
     ordering = ("sort_order", "id")
+
+    def get_queryset(self) -> QuerySet[Category]:
+        return self.scope(Category.objects.all())
 
 
 @extend_schema_view(list=extend_schema(parameters=[ProductFilterSerializer]))
@@ -78,7 +88,7 @@ class ProductViewSet(StaffViewSet):
     ordering = ("name", "id")
 
     def get_queryset(self) -> QuerySet[Product]:
-        qs = Product.objects.all()
+        qs = self.scope(Product.objects.all())
         data = self.filters()
         if "q" in data:
             qs = qs.filter(name__icontains=data["q"])
@@ -94,7 +104,7 @@ class StoreViewSet(StaffViewSet):
     ordering = ("name", "id")
 
     def get_queryset(self) -> QuerySet[Store]:
-        qs = Store.objects.prefetch_related("opening_hours")
+        qs = self.scope(Store.objects.prefetch_related("opening_hours"))
         data = self.filters()
         if "q" in data:
             qs = qs.filter(name__icontains=data["q"])
@@ -108,17 +118,17 @@ class OfferViewSet(StaffViewSet):
     serializer_class = StaffOfferSerializer
     filter_serializer_class = OfferFilterSerializer
     ordering = ("sort_order", "id")
+    retailer_lookup = "flyer__retailer"
 
     def get_queryset(self) -> QuerySet[Offer]:
-        qs = Offer.objects.all()
+        qs = self.scope(Offer.objects.all())
         data = self.filters()
         if "flyer" in data:
             qs = qs.filter(flyer_id=data["flyer"])
         return qs
 
-    @staticmethod
     @contextmanager
-    def _guard_last_offer(offer: Offer, new_flyer_id: int | None = None) -> Iterator[None]:
+    def _guard_last_offer(self, offer: Offer, new_flyer_id: int | None = None) -> Iterator[None]:
         """Run the enclosed write under row locks, refusing to empty a published flyer.
 
         Locks the old flyer (and the target flyer when moving) in ascending id order so two
@@ -133,8 +143,12 @@ class OfferViewSet(StaffViewSet):
             offer.flyer_id = current.flyer_id
             ids = {offer.flyer_id, *([new_flyer_id] if new_flyer_id else [])}
             # Evaluated and ordered so rows are locked in ascending id order (no deadlocks).
+            # Scoped to the caller's retailer so a move cannot cross retailers.
             flyers = {
-                f.pk: f for f in Flyer.objects.filter(pk__in=ids).order_by("pk").select_for_update()
+                f.pk: f
+                for f in self.scope(Flyer.objects.filter(pk__in=ids), "retailer")
+                .order_by("pk")
+                .select_for_update()
             }
             if new_flyer_id is not None and new_flyer_id not in flyers:
                 # The target was deleted between validation and the lock.
@@ -187,13 +201,13 @@ class FlyerViewSet(StaffViewSet):
 
     def get_queryset(self) -> QuerySet[Flyer]:
         if self.action == "list":
-            qs = Flyer.objects.annotate(offer_count=Count("offers"))
+            qs = self.scope(Flyer.objects.annotate(offer_count=Count("offers")))
             data = self.filters()
             if "status" in data:
                 qs = qs.filter(status=data["status"])
             return qs
         offers = Offer.objects.order_by("sort_order", "id")
-        return Flyer.objects.prefetch_related(Prefetch("offers", queryset=offers))
+        return self.scope(Flyer.objects.prefetch_related(Prefetch("offers", queryset=offers)))
 
     def _transition(self, service) -> Response:
         flyer = self.get_object()

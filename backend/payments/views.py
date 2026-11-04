@@ -24,12 +24,14 @@ class PaymentMethodListView(PublicReadMixin, ListAPIView):
 
 
 class PaymentMethodStaffViewSet(StaffViewSet):
-    queryset = PaymentMethod.objects.all()
     serializer_class = StaffPaymentMethodSerializer
     pagination_class = PaymentMethodPagination
     ordering = ("provider", "id")
     http_method_names = ["get", "post", "patch", "head", "options"]
     throttle_scope = "staff_sensitive"
+
+    def get_queryset(self) -> QuerySet[PaymentMethod]:
+        return self.scope(PaymentMethod.objects.all())
 
     def get_throttles(self) -> list[BaseThrottle]:
         # Only the writes that ask for the password are throttled (every attempt counts).

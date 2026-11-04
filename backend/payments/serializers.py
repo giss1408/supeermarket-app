@@ -49,7 +49,9 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
         if self.instance is not None:
             if value != self.instance.provider:
                 raise serializers.ValidationError(msg("provider_immutable"))
-        elif PaymentMethod.objects.filter(provider=value).exists():
+        elif PaymentMethod.objects.filter(
+            retailer=self.context["request"].user.retailer, provider=value
+        ).exists():
             raise serializers.ValidationError(msg("provider_exists"))
         return value
 
@@ -76,7 +78,7 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict[str, Any]) -> PaymentMethod:
         try:
             user = self.context["request"].user
-            retailer = validated_data.pop("retailer", None) or user.retailer
+            retailer = validated_data.pop("retailer")  # set by the view's perform_create
             return services.create_method(user=user, retailer=retailer, **validated_data)
         except DjangoValidationError as exc:
             raise _to_drf(exc) from None

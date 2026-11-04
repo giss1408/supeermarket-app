@@ -33,6 +33,19 @@ def _unique_for_retailer(serializer: serializers.ModelSerializer, field: str, va
     return value
 
 
+def _restrict_to_caller_retailer_fields(
+    serializer: serializers.Serializer, fields: dict[str, Any], lookups: dict[str, str]
+) -> None:
+    """Limit related fields' choices to the caller's retailer (foreign ids read as unknown)."""
+    request = serializer.context.get("request")
+    retailer = getattr(getattr(request, "user", None), "retailer", None)
+    if retailer is None:
+        return
+    for name, lookup in lookups.items():
+        field = fields[name]
+        field.queryset = field.queryset.filter(**{lookup: retailer})
+
+
 class StaffCategorySerializer(serializers.ModelSerializer):
     def validate_slug(self, value: str) -> str:
         return _unique_for_retailer(self, "slug", value)
@@ -78,6 +91,11 @@ class StaffProductSerializer(serializers.ModelSerializer):
             )
         return field_class, field_kwargs
 
+    def get_fields(self) -> dict[str, Any]:
+        fields = super().get_fields()
+        _restrict_to_caller_retailer_fields(self, fields, {"category": "retailer"})
+        return fields
+
     def validate_ean(self, value: str | None) -> str | None:
         return _unique_for_retailer(self, "ean", value)
 
@@ -102,6 +120,11 @@ class OfferFieldsSerializer(serializers.ModelSerializer):
             "valid_from",
             "valid_to",
         ]
+
+    def get_fields(self) -> dict[str, Any]:
+        fields = super().get_fields()
+        _restrict_to_caller_retailer_fields(self, fields, {"product": "retailer"})
+        return fields
 
     def _current(self, attrs: dict[str, Any], name: str) -> Any:
         if name in attrs:
@@ -135,6 +158,21 @@ class OfferFieldsSerializer(serializers.ModelSerializer):
 
 
 class StaffOfferSerializer(OfferFieldsSerializer):
+    def get_fields(self) -> dict[str, Any]:
+        fields = super().get_fields()
+        _restrict_to_caller_retailer_fields(self, fields, {"flyer": "retailer"})
+        return fields
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        attrs = super().validate(attrs)
+        flyer = self._current(attrs, "flyer")
+        product = self._current(attrs, "product")
+        if flyer is not None and product is not None and product.retailer_id != flyer.retailer_id:
+            raise serializers.ValidationError(
+                {"product": "Product does not belong to the flyer's retailer."}
+            )
+        return attrs
+
     class Meta(OfferFieldsSerializer.Meta):
         fields = ["id", "flyer", *OfferFieldsSerializer.Meta.fields[1:]]
 
