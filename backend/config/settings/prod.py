@@ -41,8 +41,10 @@ if "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS must not contain the wildcard '*' in production.")
 CSRF_TRUSTED_ORIGINS = _csv("CSRF_TRUSTED_ORIGINS")
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Cookies are Secure (https only) unless COOKIES_SECURE=0, which exists only for a staging stack served over plain http on a laptop.
+_COOKIES_SECURE = os.environ.get("COOKIES_SECURE", "1") != "0"  # noqa: F405
+SESSION_COOKIE_SECURE = _COOKIES_SECURE
+CSRF_COOKIE_SECURE = _COOKIES_SECURE
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "1") == "1"  # noqa: F405
 SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$"]

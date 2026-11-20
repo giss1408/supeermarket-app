@@ -22,7 +22,7 @@ class StaffPaymentMethodRequest {
     this.displayName,
     this.instructions,
     this.isActive,
-    required this.currentPassword,
+    this.currentPassword,
   });
 
   @JsonKey(
@@ -62,10 +62,10 @@ class StaffPaymentMethodRequest {
 
   @JsonKey(
     name: r'current_password',
-    required: true,
+    required: false,
     includeIfNull: false,
   )
-  final String currentPassword;
+  final String? currentPassword;
 
   @override
   bool operator ==(Object other) =>

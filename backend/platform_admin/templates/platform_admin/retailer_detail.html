@@ -22,7 +22,7 @@
 <h2>Utilisateurs</h2>
 <table>
 <tr><th>E-mail</th><th>Nom</th></tr>
-{% for u in staff_users %}<tr><td>{{ u.email }}</td><td>{{ u.name }}</td></tr>
+{% for u in staff_users %}<tr><td>{{ u.email|default:"(connexion par téléphone)" }}</td><td>{{ u.name }}</td></tr>
 {% empty %}<tr><td colspan="2">Aucun utilisateur.</td></tr>{% endfor %}
 </table>
 {% endblock %}

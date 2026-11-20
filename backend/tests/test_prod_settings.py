@@ -282,3 +282,8 @@ def test_readyz_is_exempt_from_the_https_redirect_like_healthz() -> None:
     assert result.returncode == 0, result.stderr
     out = json.loads(result.stdout.strip().splitlines()[-1])
     assert out["plain"] in (200, 503) and out["plain"] != 301  # answered in plain http, never redirected
+
+
+def test_cookies_are_secure_unless_a_local_http_stack_says_otherwise() -> None:
+    assert load(["SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE"]) == {"SESSION_COOKIE_SECURE": True, "CSRF_COOKIE_SECURE": True}
+    assert load(["SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE"], {"COOKIES_SECURE": "0"}) == {"SESSION_COOKIE_SECURE": False, "CSRF_COOKIE_SECURE": False}

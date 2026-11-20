@@ -76,7 +76,7 @@ def hide_form_content_types(
 class BearerAuthScheme(OpenApiAuthenticationExtension):
     """Publish simplejwt's JWTAuthentication as the ``bearerAuth`` security scheme."""
 
-    target_class = "rest_framework_simplejwt.authentication.JWTAuthentication"
+    target_class = "accounts.authentication.DualJWTAuthentication"
     name = "bearerAuth"
     priority = 1
 

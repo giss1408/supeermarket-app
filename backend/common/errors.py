@@ -14,7 +14,32 @@ class SubscriptionRequiredError(exceptions.PermissionDenied):
     default_code = "subscription_required"
 
 
+class StepUpRequiredError(exceptions.PermissionDenied):
+    """403: a sensitive write needs a recent password proof at the auth service (the app calls /v1/step-up there, then retries)."""
+
+    default_code = "step_up_required"
+    default_detail = "step_up_required"
+
+
+class SessionEndedError(exceptions.AuthenticationFailed):
+    """401: the session was closed at the auth service."""
+
+    default_code = "session_ended"
+    default_detail = "session_ended"
+
+
+class SsoUnavailableError(exceptions.APIException):
+    """503: a money write needs the auth service's live check and it cannot be reached (fails closed)."""
+
+    status_code = 503
+    default_code = "sso_unavailable"
+    default_detail = "sso_unavailable"
+
+
 _CODES: list[tuple[type[Exception], str]] = [
+    (StepUpRequiredError, "step_up_required"),
+    (SessionEndedError, "session_ended"),
+    (SsoUnavailableError, "sso_unavailable"),
     (exceptions.ValidationError, "validation_error"),
     (Http404, "not_found"),
     (exceptions.NotFound, "not_found"),

@@ -30,7 +30,8 @@ services:
       start_period: 60s
       retries: 3
 
-  # Purges expired JWT blacklist rows once a day. Only needed until SSO replaces simplejwt; then delete this service.
+  # Every 10 minutes: tells the auth service about people this product erased while it was unreachable (accounts.erasures). Daily: purges expired
+  # JWT blacklist rows (only needed for the app's own tokens: drop that line once LEGACY_AUTH_ENABLED=0 everywhere).
   maintenance:
     <<: *common
     container_name: supermarket-maintenance
@@ -39,9 +40,12 @@ services:
       - -c
       - |
         trap 'exit 0' TERM INT
+        n=0
         while true; do
-          python manage.py flushexpiredtokens || echo "flushexpiredtokens failed"
-          sleep 86400 & wait $$!
+          python manage.py process_auth_erasures || echo "process_auth_erasures failed"
+          if [ $$((n % 144)) -eq 0 ]; then python manage.py flushexpiredtokens || echo "flushexpiredtokens failed"; fi
+          n=$$((n + 1))
+          sleep 600 & wait $$!
         done
     mem_limit: 192m
     cpus: 0.25

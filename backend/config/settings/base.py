@@ -110,8 +110,21 @@ STORAGES: dict[str, dict[str, Any]] = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# --- Platform SSO (the `auth` service). Off by default: the app's own tokens keep working either way. When on, API calls ALSO accept tokens
+# issued by `auth` for audience "supermarket" (verified locally with its JWKS). Customers are opened from the token on first use; staff and
+# platform admins must have been linked or enrolled before (never created from a token). LEGACY_AUTH_ENABLED=0 switches the app's own
+# email register/login/refresh/logout endpoints off: people sign in at `auth` (phone + password, WhatsApp activation), like in flariane and fidelia.
+SSO_ENABLED = os.environ.get("SSO_ENABLED") == "1"
+SSO_ISSUER = os.environ.get("SSO_ISSUER", "")
+SSO_JWKS_URL = os.environ.get("SSO_JWKS_URL", "")
+SSO_AUDIENCE = os.environ.get("SSO_AUDIENCE", "supermarket")
+SSO_AUTH_URL = os.environ.get("SSO_AUTH_URL", "").rstrip("/")  # reachable from this container, e.g. http://auth-web:8000
+SSO_SERVICE_KEY = os.environ.get("SSO_SERVICE_KEY", "")
+SSO_MONEY_FAIL_CLOSED = os.environ.get("SSO_MONEY_FAIL_CLOSED", "1") == "1"
+LEGACY_AUTH_ENABLED = os.environ.get("LEGACY_AUTH_ENABLED", "1") == "1"
+
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["accounts.authentication.DualJWTAuthentication"],
     "EXCEPTION_HANDLER": "common.errors.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultCursorPagination",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

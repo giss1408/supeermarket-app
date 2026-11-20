@@ -1,6 +1,10 @@
+import time
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -10,14 +14,42 @@ from django.views.generic import DetailView, FormView, ListView
 from retailers.models import Retailer
 from retailers.services import set_status
 
-from .forms import PaymentForm, PlatformLoginForm, RetailerCreateForm
+from .forms import (
+    PaymentForm,
+    PlatformLoginForm,
+    PlatformSsoLoginForm,
+    RetailerCreateForm,
+    RetailerCreateSsoForm,
+)
 from .mixins import PlatformAdminRequiredMixin
+
+
+def sso_dashboard() -> bool:
+    """The dashboard signs in at the auth service once the app's own login is switched off (or SSO is the only way)."""
+    return bool(settings.SSO_ENABLED and not settings.LEGACY_AUTH_ENABLED)
 
 
 class PlatformLoginView(LoginView):
     template_name = "platform_admin/login.html"
-    authentication_form = PlatformLoginForm
     redirect_authenticated_user = False
+
+    def get_form_class(self):  # type: ignore[no-untyped-def]
+        return PlatformSsoLoginForm if sso_dashboard() else PlatformLoginForm
+
+    def get_form_kwargs(self):  # type: ignore[no-untyped-def]
+        kwargs = super().get_form_kwargs()
+        if sso_dashboard():
+            kwargs.pop("request", None)
+            kwargs["request"] = self.request
+        return kwargs
+
+    def form_valid(self, form):  # type: ignore[no-untyped-def]
+        response = super().form_valid(form)
+        if sso_dashboard():
+            # the auth session this login belongs to: the mixin asks auth now and then whether it is still alive
+            self.request.session["sso_sid"] = form.sid
+            self.request.session["sso_checked"] = int(time.time())
+        return response
 
     def get_default_redirect_url(self) -> str:
         return reverse("platform:retailer_list")
@@ -66,11 +98,23 @@ class RetailerListView(PlatformAdminRequiredMixin, ListView):
 
 class RetailerCreateView(PlatformAdminRequiredMixin, FormView):
     template_name = "platform_admin/retailer_form.html"
-    form_class = RetailerCreateForm
+
+    def get_form_class(self):  # type: ignore[no-untyped-def]
+        return RetailerCreateSsoForm if sso_dashboard() else RetailerCreateForm
 
     def form_valid(self, form: RetailerCreateForm) -> HttpResponse:  # type: ignore[override]
-        retailer = form.save()
-        messages.success(self.request, "Commerçant créé (en attente d'activation).")
+        try:
+            retailer = form.save()
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return self.form_invalid(form)
+        if sso_dashboard():
+            messages.success(
+                self.request,
+                "Commerçant créé (en attente d'activation). Envoyez le code d'activation WhatsApp au premier utilisateur depuis la file « Codes à envoyer ».",
+            )
+        else:
+            messages.success(self.request, "Commerçant créé (en attente d'activation).")
         return redirect("platform:retailer_detail", pk=retailer.pk)
 
 
@@ -83,7 +127,7 @@ class RetailerDetailView(PlatformAdminRequiredMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         retailer = self.object
         ctx["payments"] = retailer.payments.order_by("-confirmed_at", "-id")
-        ctx["staff_users"] = get_user_model().objects.filter(retailer=retailer).order_by("email")
+        ctx["staff_users"] = get_user_model().objects.filter(retailer=retailer).order_by("id")
         ctx["subscription"] = getattr(retailer, "subscription", None)
         return ctx
 

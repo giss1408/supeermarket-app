@@ -14,3 +14,21 @@ def _clear_cache():
 def _isolated_media(settings, tmp_path):
     """Uploads never touch backend/media/: every test gets its own MEDIA_ROOT."""
     settings.MEDIA_ROOT = tmp_path / "media"
+
+
+@pytest.fixture
+def sso_on(settings, monkeypatch):
+    """SSO enabled with a local key: tokens from tests.sso_helpers are accepted, nothing leaves the process."""
+    from regisse_kit.sso import SsoVerifier
+
+    from accounts import sso
+    from tests import sso_helpers
+
+    settings.SSO_ENABLED = True
+    settings.SSO_ISSUER = sso_helpers.ISS
+    settings.SSO_JWKS_URL = "http://auth.test/.well-known/jwks.json"
+    settings.SSO_AUTH_URL = "http://auth.test"
+    settings.SSO_SERVICE_KEY = "svc-key"
+    verifier = SsoVerifier(issuer=sso_helpers.ISS, audience="supermarket", jwks_fetch=sso_helpers.jwks)
+    monkeypatch.setattr(sso, "verifier", lambda: verifier)
+    return sso

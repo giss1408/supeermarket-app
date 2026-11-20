@@ -2768,7 +2768,6 @@ components:
           writeOnly: true
           minLength: 1
       required:
-      - current_password
       - phone_number
       - provider
     StaffProduct:

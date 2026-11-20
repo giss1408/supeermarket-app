@@ -14,7 +14,7 @@ StaffPaymentMethodRequest _$StaffPaymentMethodRequestFromJson(
       ($checkedConvert) {
         $checkKeys(
           json,
-          requiredKeys: const ['provider', 'phone_number', 'current_password'],
+          requiredKeys: const ['provider', 'phone_number'],
         );
         final val = StaffPaymentMethodRequest(
           provider: $checkedConvert(
@@ -24,7 +24,7 @@ StaffPaymentMethodRequest _$StaffPaymentMethodRequestFromJson(
           instructions: $checkedConvert('instructions', (v) => v as String?),
           isActive: $checkedConvert('is_active', (v) => v as bool?),
           currentPassword:
-              $checkedConvert('current_password', (v) => v as String),
+              $checkedConvert('current_password', (v) => v as String?),
         );
         return val;
       },
@@ -44,7 +44,7 @@ Map<String, dynamic> _$StaffPaymentMethodRequestToJson(
       if (instance.displayName case final value?) 'display_name': value,
       if (instance.instructions case final value?) 'instructions': value,
       if (instance.isActive case final value?) 'is_active': value,
-      'current_password': instance.currentPassword,
+      if (instance.currentPassword case final value?) 'current_password': value,
     };
 
 const _$ProviderEnumEnumMap = {

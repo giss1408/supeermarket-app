@@ -20,10 +20,17 @@ def _add_months(dt: datetime, n: int) -> datetime:
     return dt.replace(year=year, month=month, day=day)
 
 
+def _who(user: AbstractBaseUser) -> str:
+    """Who is named in the audit trail: the e-mail, or, for people who sign in through the auth service (no e-mail here), their auth user id."""
+    email = getattr(user, "email", "") or ""
+    auth_id = getattr(user, "auth_user_id", None)
+    return email or (f"sso:{auth_id}" if auth_id else "")
+
+
 def _actor(user: AbstractBaseUser | None) -> dict[str, Any]:
     if user is None:
         return {"changed_by": None, "changed_by_email": ""}
-    return {"changed_by": user, "changed_by_email": getattr(user, "email", "")}
+    return {"changed_by": user, "changed_by_email": _who(user)}
 
 
 def _payment_exists(provider: str, reference: str) -> bool:

@@ -17,13 +17,14 @@ def _email_taken(email: str) -> bool:
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    # The model's e-mail is optional now (people who sign in through the auth service have none); the app's own sign-up still requires it.
+    email = serializers.EmailField(max_length=254, validators=[])
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     class Meta:
         model = User
         fields = ["id", "email", "password", "name", "role"]
         read_only_fields = ["id", "role"]
-        extra_kwargs: dict[str, Any] = {"email": {"validators": []}}
 
     def validate_email(self, value: str) -> str:
         value = value.lower()
@@ -60,10 +61,17 @@ class LogoutSerializer(serializers.Serializer):
 
 
 class MeSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(read_only=True)
+
     class Meta:
         model = User
         fields = ["id", "email", "name", "role"]
         read_only_fields = ["id", "email", "role"]
+
+    def to_representation(self, instance: User) -> dict[str, Any]:
+        data = super().to_representation(instance)
+        data["email"] = data["email"] or ""  # people who sign in through auth have no e-mail here; the contract stays a string
+        return data
 
 
 @extend_schema_serializer(component_name="LoyaltyCard")

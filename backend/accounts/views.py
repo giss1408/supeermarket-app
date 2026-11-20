@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from . import erasures
 from .models import LoyaltyCard, User
 from .serializers import CardSerializer, LogoutSerializer, MeSerializer, RegisterSerializer
 
@@ -59,6 +60,12 @@ class MeView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self) -> User:
         return cast(User, self.request.user)
+
+    def perform_destroy(self, instance: User) -> None:
+        auth_user_id = instance.auth_user_id
+        super().perform_destroy(instance)
+        if auth_user_id is not None:  # auth is the last step: this product's data is gone first
+            erasures.tell_auth(auth_user_id)
 
 
 class CardView(generics.RetrieveAPIView):
