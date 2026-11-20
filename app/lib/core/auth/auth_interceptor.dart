@@ -1,6 +1,7 @@
 import 'package:api_client/api_client.dart';
 import 'package:dio/dio.dart';
 
+import 'auth_service_client.dart';
 import 'auth_session_guard.dart';
 import 'token_store.dart';
 
@@ -49,7 +50,11 @@ class AuthInterceptor extends Interceptor {
     required this.store,
     required this.guard,
     required this.onSessionExpired,
+    this.authService,
   });
+
+  /// When set, tokens are renewed at the platform auth service instead of the API's own `/auth/refresh`.
+  final AuthServiceClient? authService;
 
   /// The Dio this interceptor is attached to (used to retry).
   final Dio dio;
@@ -144,14 +149,20 @@ class AuthInterceptor extends Interceptor {
   Future<String> _doRefresh(int epoch0) async {
     final sentRefresh = await store.readRefresh();
     if (sentRefresh == null) throw _RefreshFailed(null, expired: false);
-    final TokenRefresh result;
+    final ({String access, String refresh}) result;
     try {
-      final response = await AuthApi(bareDio).authRefreshCreate(
-        tokenRefreshRequest: TokenRefreshRequest(refresh: sentRefresh),
-      );
-      final data = response.data;
-      if (data == null) throw _RefreshFailed(null, expired: false);
-      result = data;
+      final service = authService;
+      if (service != null) {
+        final tokens = await service.refresh(sentRefresh);
+        result = (access: tokens.access, refresh: tokens.refresh);
+      } else {
+        final response = await AuthApi(bareDio).authRefreshCreate(
+          tokenRefreshRequest: TokenRefreshRequest(refresh: sentRefresh),
+        );
+        final data = response.data;
+        if (data == null) throw _RefreshFailed(null, expired: false);
+        result = (access: data.access, refresh: data.refresh);
+      }
     } on DioException catch (e) {
       final status = e.response?.statusCode;
       final rejected = e.type == DioExceptionType.badResponse &&

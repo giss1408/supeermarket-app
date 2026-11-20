@@ -7,6 +7,7 @@ import '../db/daos/sync_meta_keys.dart' as keys;
 import '../db/database_provider.dart';
 import '../errors/app_error.dart';
 import '../errors/error_mapper.dart';
+import 'auth_service_client.dart';
 import 'auth_session_guard.dart';
 import 'session.dart';
 import 'token_store.dart';
@@ -33,6 +34,12 @@ class SessionController extends Notifier<Session> {
   Session build() => const Guest();
 
   AuthSessionGuard get _guard => ref.read(authSessionGuardProvider);
+
+  /// The auth service, or null in the original e-mail mode.
+  AuthServiceClient? get _auth => ref.read(authServiceProvider);
+
+  /// A sign-in with a temporary password waiting for its new password ([completePasswordChange]). In memory only.
+  ({String phone, String password, AuthTokens tokens})? _pendingChange;
   TokenStore get _store => ref.read(tokenStoreProvider);
   set _access(String? v) => ref.read(accessTokenProvider).value = v;
 
@@ -74,15 +81,22 @@ class SessionController extends Notifier<Session> {
     try {
       final refresh = await _store.readRefresh();
       if (refresh == null) return;
-      final pair = await _guard_(
-        () async => (await ref
-                .read(bareApiClientProvider)
-                .getAuthApi()
-                .authRefreshCreate(
-                  tokenRefreshRequest: TokenRefreshRequest(refresh: refresh),
-                ))
-            .data,
-      );
+      final ({String access, String refresh}) pair;
+      if (_auth != null) {
+        final t = await _authCall(() => _auth!.refresh(refresh));
+        pair = (access: t.access, refresh: t.refresh);
+      } else {
+        final p = await _guard_(
+          () async => (await ref
+                  .read(bareApiClientProvider)
+                  .getAuthApi()
+                  .authRefreshCreate(
+                    tokenRefreshRequest: TokenRefreshRequest(refresh: refresh),
+                  ))
+              .data,
+        );
+        pair = (access: p.access, refresh: p.refresh);
+      }
       final user = await _fetchMe(pair.access);
       if (_guard.epoch != epoch0) return;
       // _establish invalidates synchronously on entry, so no other mutation
@@ -107,7 +121,11 @@ class SessionController extends Notifier<Session> {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
+  /// Signs in. In the original mode [identifier] is the e-mail; with the auth service it is the phone number. A temporary password throws
+  /// [PasswordChangeRequired]: call [completePasswordChange] next.
+  Future<void> signIn(String identifier, String password) async {
+    if (_auth != null) return _signInAtAuth(identifier, password);
+    final email = identifier;
     final pair = await _guard_(
       () async =>
           (await ref.read(bareApiClientProvider).getAuthApi().authLoginCreate(
@@ -120,6 +138,76 @@ class SessionController extends Notifier<Session> {
     );
     final user = await _fetchMe(pair.access);
     await _establish(refresh: pair.refresh, access: pair.access, user: user);
+  }
+
+  Future<void> _signInAtAuth(String phone, String password) async {
+    final tokens =
+        await _authCall(() => _auth!.login(phone: phone, password: password));
+    if (tokens.mustChangePassword) {
+      _pendingChange = (phone: phone, password: password, tokens: tokens);
+      throw const PasswordChangeRequired();
+    }
+    await _establishAtAuth(phone, tokens);
+  }
+
+  Future<void> _establishAtAuth(String phone, AuthTokens tokens) async {
+    final me = await _fetchMe(tokens.access);
+    final user = SessionUser(
+        id: me.id, email: me.email, name: me.name, phone: maskPhone(phone));
+    await _establish(
+        refresh: tokens.refresh, access: tokens.access, user: user);
+  }
+
+  /// Auth mode only: creates the (pending) account. Nobody can sign in until the team's WhatsApp code is typed ([activate]).
+  Future<void> registerPhone({
+    required String phone,
+    required String password,
+    required String name,
+  }) =>
+      _authCall(
+          () => _auth!.register(phone: phone, password: password, name: name));
+
+  /// Auth mode only: the code the team sent on WhatsApp activates the account; the person is then signed in.
+  Future<void> activate({
+    required String phone,
+    required String code,
+    required String password,
+  }) async {
+    await _authCall(() => _auth!.activate(phone: phone, code: code));
+    await _signInAtAuth(phone, password);
+  }
+
+  /// Auth mode only: "forgotten password": the team sends a temporary one on WhatsApp.
+  Future<void> requestPasswordReset(String phone) =>
+      _authCall(() => _auth!.requestPasswordReset(phone));
+
+  /// Auth mode only: after [PasswordChangeRequired], chooses the new password and signs in.
+  Future<void> completePasswordChange(String newPassword) async {
+    final pending = _pendingChange;
+    if (pending == null) throw const UnknownError('no password change pending');
+    await _authCall(
+      () => _auth!.changePassword(
+        access: pending.tokens.access,
+        current: pending.password,
+        next: newPassword,
+      ),
+    );
+    _pendingChange = null;
+    // The change ended the other sessions but kept this one: renew it to get a token without the "must change" mark.
+    final fresh = await _authCall(() => _auth!.refresh(pending.tokens.refresh));
+    await _establishAtAuth(pending.phone, fresh);
+  }
+
+  Future<T> _authCall<T>(Future<T> Function() call) async {
+    try {
+      return await call();
+    } on DioException catch (e) {
+      throw mapAuthError(e);
+    } on AppError {
+      rethrow;
+    } on Object catch (e) {
+      throw UnknownError(e);
+    }
   }
 
   Future<void> register({
@@ -161,11 +249,15 @@ class SessionController extends Notifier<Session> {
     try {
       final refresh = await _store.readRefresh();
       if (refresh != null) {
-        await ref
-            .read(bareApiClientProvider)
-            .getAuthApi()
-            .authLogoutCreate(logoutRequest: LogoutRequest(refresh: refresh))
-            .timeout(_logoutTimeout);
+        if (_auth != null) {
+          await _auth!.logout(refresh).timeout(_logoutTimeout);
+        } else {
+          await ref
+              .read(bareApiClientProvider)
+              .getAuthApi()
+              .authLogoutCreate(logoutRequest: LogoutRequest(refresh: refresh))
+              .timeout(_logoutTimeout);
+        }
       }
     } on Object {
       // Best effort: offline or server errors never block sign-out.
@@ -195,6 +287,7 @@ class SessionController extends Notifier<Session> {
         id: current.user.id,
         email: current.user.email,
         name: name,
+        phone: current.user.phone,
       );
       await _store.writeUser(updated);
       // A sign-out may have invalidated the session during the write; its

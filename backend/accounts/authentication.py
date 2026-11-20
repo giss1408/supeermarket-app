@@ -42,7 +42,7 @@ def user_for_principal(p: sso.SsoPrincipal) -> User:
         if p.role != User.Role.CUSTOMER:
             raise AuthenticationFailed("not_linked")
         try:
-            user = User.objects.create_sso_customer(auth_id)
+            user = User.objects.create_sso_customer(auth_id, sso.display_name(auth_id))
         except IntegrityError:  # two first requests at once: the other one created her
             user = User.objects.filter(auth_user_id=auth_id).first()
             if user is None:

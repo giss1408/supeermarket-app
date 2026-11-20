@@ -97,6 +97,18 @@ def sid_alive(sid: str) -> bool | None:
         return None
 
 
+def display_name(auth_user_id: uuid.UUID) -> str:
+    """The name the person gave at auth when she signed up, so a profile opened from her token is not blank. Best effort: "" on any failure."""
+    if not (enabled() and configured_for_calls()):
+        return ""
+    try:
+        r = _service(f"/v1/service/users/{auth_user_id}", method="GET", timeout=3)
+        r.raise_for_status()
+        return str(r.json().get("display_name") or "")[:150]
+    except (httpx.HTTPError, ValueError):
+        return ""
+
+
 def erase_identity(auth_user_id: uuid.UUID) -> bool | None:
     """Tell auth this product erased the person. None = not configured, True = auth answered, False = unreachable (retry later)."""
     if not (enabled() and configured_for_calls()):

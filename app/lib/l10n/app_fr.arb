@@ -824,5 +824,89 @@
         "type": "String"
       }
     }
+  },
+  "fieldPhone": "Numéro de téléphone",
+  "@fieldPhone": {
+    "description": "Phone number field (sign-in through the auth service)"
+  },
+  "fieldPhoneHint": "07 00 00 00 00",
+  "@fieldPhoneHint": {
+    "description": "Phone field hint"
+  },
+  "fieldActivationCode": "Code reçu sur WhatsApp",
+  "@fieldActivationCode": {
+    "description": "Activation code field"
+  },
+  "fieldNewPassword": "Nouveau mot de passe",
+  "@fieldNewPassword": {
+    "description": "New password field"
+  },
+  "fieldNewPasswordConfirm": "Confirmez le mot de passe",
+  "@fieldNewPasswordConfirm": {
+    "description": "Confirm new password field"
+  },
+  "activationTitle": "Activez votre compte",
+  "@activationTitle": {
+    "description": "Activation step title"
+  },
+  "activationInfo": "L'équipe vous envoie un code sur WhatsApp. Saisissez-le ici pour activer votre compte.",
+  "@activationInfo": {
+    "description": "Activation step explanation"
+  },
+  "actionActivate": "Activer mon compte",
+  "@actionActivate": {
+    "description": "Activation button"
+  },
+  "newPasswordTitle": "Choisissez votre mot de passe",
+  "@newPasswordTitle": {
+    "description": "New password step title"
+  },
+  "newPasswordInfo": "Votre mot de passe était temporaire. Choisissez-en un qui n'est qu'à vous.",
+  "@newPasswordInfo": {
+    "description": "New password step explanation"
+  },
+  "actionSavePassword": "Enregistrer",
+  "@actionSavePassword": {
+    "description": "Save new password button"
+  },
+  "errorPasswordsDiffer": "Les deux mots de passe sont différents.",
+  "@errorPasswordsDiffer": {
+    "description": "Passwords differ"
+  },
+  "actionForgotPassword": "Mot de passe oublié ?",
+  "@actionForgotPassword": {
+    "description": "Forgot password link"
+  },
+  "forgotPasswordSent": "Si ce numéro a un compte, l'équipe vous envoie un mot de passe temporaire sur WhatsApp.",
+  "@forgotPasswordSent": {
+    "description": "Forgot password confirmation"
+  },
+  "errorWrongCredentialsPhone": "Numéro ou mot de passe incorrect.",
+  "@errorWrongCredentialsPhone": {
+    "description": "Wrong phone or password"
+  },
+  "errorPhoneTaken": "Ce numéro a déjà un compte : connectez-vous.",
+  "@errorPhoneTaken": {
+    "description": "Phone already registered"
+  },
+  "errorNotActivated": "Ce compte n'est pas encore activé : saisissez le code reçu sur WhatsApp.",
+  "@errorNotActivated": {
+    "description": "Account not activated yet"
+  },
+  "errorWrongActivationCode": "Code incorrect ou expiré.",
+  "@errorWrongActivationCode": {
+    "description": "Wrong activation code"
+  },
+  "errorActivationLocked": "Trop d'essais. Demandez un nouveau code à l'équipe.",
+  "@errorActivationLocked": {
+    "description": "Too many activation attempts"
+  },
+  "errorAccountBlocked": "Ce compte est suspendu. Contactez le magasin.",
+  "@errorAccountBlocked": {
+    "description": "Account suspended"
+  },
+  "errorWeakPassword": "Mot de passe trop simple : choisissez-en un autre.",
+  "@errorWeakPassword": {
+    "description": "Weak password"
   }
 }

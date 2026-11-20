@@ -39,6 +39,13 @@ final class ApiError extends AppError {
   String toString() => 'ApiError($code, $status)';
 }
 
+/// Signed in with a temporary password: a new one must be chosen before anything else ([SessionController.completePasswordChange]).
+final class PasswordChangeRequired extends AppError {
+  const PasswordChangeRequired();
+  @override
+  String toString() => 'PasswordChangeRequired';
+}
+
 /// Anything else (cancelled request, bad certificate, programming error...).
 final class UnknownError extends AppError {
   const UnknownError(this.cause);

@@ -50,7 +50,9 @@ class AccountScreen extends ConsumerWidget {
                         children: [
                           Text(user.name, style: theme.textTheme.titleLarge),
                           Text(
-                            user.email,
+                            user.email.isNotEmpty
+                                ? user.email
+                                : (user.phone ?? ''),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),

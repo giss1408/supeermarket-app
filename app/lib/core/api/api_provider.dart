@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_interceptor.dart';
+import '../auth/auth_service_client.dart';
 import '../auth/auth_session_guard.dart';
 import '../auth/session_controller.dart';
 import '../auth/token_store.dart';
@@ -66,6 +67,27 @@ class NetworkGateInterceptor extends Interceptor {
 /// Base URL of the API; overridable in tests.
 final apiBaseUrlProvider = Provider<String>((ref) => AppConfig.apiBaseUrl);
 
+/// Base URL of the platform auth service; empty keeps the API's own e-mail sign-in. Overridable in tests.
+final authBaseUrlProvider = Provider<String>((ref) => AppConfig.authBaseUrl);
+
+/// True when people sign up and sign in at the auth service (phone + password, WhatsApp activation).
+final authModeProvider =
+    Provider<bool>((ref) => ref.watch(authBaseUrlProvider).isNotEmpty);
+
+/// Dio for the auth service (no token handling: its own endpoints carry their own proof).
+final authServiceDioProvider = Provider<Dio>((ref) {
+  final dio = createDio(baseUrl: ref.watch(authBaseUrlProvider));
+  dio.interceptors.add(NetworkGateInterceptor(ref.watch(networkGateProvider)));
+  return dio;
+});
+
+/// The auth service client, or null in the original e-mail mode.
+final authServiceProvider = Provider<AuthServiceClient?>(
+  (ref) => ref.watch(authModeProvider)
+      ? AuthServiceClient(ref.watch(authServiceDioProvider))
+      : null,
+);
+
 /// Dio WITHOUT interceptors: login, register, logout and refresh calls, so
 /// they can never trigger token handling.
 final bareDioProvider = Provider<Dio>((ref) {
@@ -92,6 +114,7 @@ final dioProvider = Provider<Dio>((ref) {
       tokens: ref.watch(accessTokenProvider),
       store: ref.watch(tokenStoreProvider),
       guard: ref.watch(authSessionGuardProvider),
+      authService: ref.watch(authServiceProvider),
       onSessionExpired: (epoch) =>
           ref.read(sessionProvider.notifier).expireIfCurrent(epoch),
     ),

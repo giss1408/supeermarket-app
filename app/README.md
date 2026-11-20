@@ -13,10 +13,18 @@ files in `env/`:
 | --- | --- | --- |
 | `env/dev.json` | `http://10.0.2.2:8000` | Android emulator (10.0.2.2 is the host) |
 | `env/dev_ios.json` | `http://localhost:8000` | iOS simulator |
-| `env/staging.json` | `https://api.example.com` | placeholder, set the real host |
-| `env/prod.json` | `https://api.example.com` | placeholder, set the real host |
+| `env/staging.json` | `https://supermarket-api.regisse.com` | the platform hosts (set `AUTH_BASE_URL`: sign-in at the auth service); change if staging has its own |
+| `env/prod.json` | `https://supermarket-api.regisse.com` | the platform hosts |
 
     flutter run --dart-define-from-file=env/dev.json
+
+### Sign-in through the platform auth service
+
+With `AUTH_BASE_URL` set (staging and prod do), nobody signs in at the API: people sign up and sign in at the platform `auth` service with a
+phone number and a password, like in the other apps of the platform. A new account is activated with a code the team sends on WhatsApp
+(the app asks for it right after sign-up, or at the next sign-in if it was never typed). "Forgotten password" asks the team for a temporary
+password on WhatsApp; the app then asks for a new one before anything else. Without `AUTH_BASE_URL` (the dev files) the original e-mail
+sign-in against the API is used, unchanged.
 
 An empty `API_BASE_URL` makes the app fail at start on purpose. A physical
 phone needs the host's LAN address in a local copy of the file; do not commit

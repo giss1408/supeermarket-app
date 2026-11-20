@@ -1,2 +1,3 @@
 tags:
   golden: {}
+  live: {}   # against the real platform: only with --dart-define=LIVE_CFG (platform/tests/smoke_supermarket_app_auth.sh)

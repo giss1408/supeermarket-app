@@ -34,6 +34,19 @@ def test_a_customer_is_opened_from_the_token_on_first_use_with_a_card_and_no_ema
     assert User.objects.filter(auth_user_id=sub).count() == 1  # the second call finds her
 
 
+def test_a_new_customer_gets_the_name_she_gave_at_sign_up(sso_on, monkeypatch):
+    monkeypatch.setattr("accounts.sso.display_name", lambda uid: "Awa Koné")
+    sub = uuid.uuid4()
+    assert get("/api/v1/me", **bearer(token(sub))).json()["name"] == "Awa Koné"
+    monkeypatch.setattr("accounts.sso.display_name", lambda uid: "Changed Elsewhere")
+    assert get("/api/v1/me", **bearer(token(sub))).json()["name"] == "Awa Koné"  # asked once, when the profile is opened
+
+
+def test_without_a_name_from_auth_the_profile_is_just_blank(sso_on, monkeypatch):
+    monkeypatch.setattr("accounts.sso.display_name", lambda uid: "")
+    assert get("/api/v1/me", **bearer(token(uuid.uuid4()))).json()["name"] == ""
+
+
 def test_staff_and_platform_admins_are_never_created_from_a_token(sso_on):
     for role in ("retailer_staff", "platform_admin"):
         r = get("/api/v1/me", **bearer(token(role=role)))

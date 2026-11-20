@@ -78,6 +78,21 @@ class AuthHarness {
       };
 }
 
+const authBaseUrl = 'https://auth.test';
+
+/// Same harness with the platform auth service switched on: its Dio answers from the SAME fake adapter (paths are told apart by suffix).
+AuthHarness createAuthModeHarness(
+    {String? refresh, SessionUser? user, String? access}) {
+  final h = createAuthHarness(
+    refresh: refresh,
+    user: user,
+    access: access,
+    overrides: [authBaseUrlProvider.overrideWithValue(authBaseUrl)],
+  );
+  h.container.read(authServiceDioProvider).httpClientAdapter = h.http;
+  return h;
+}
+
 AuthHarness createAuthHarness({
   String? refresh,
   SessionUser? user,
