@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+# The supermarket API image for the shared platform (compose.platform.yaml). Same as `Dockerfile` plus the shared platform kit (build
+# context `kit`, declared in the compose file): SSO verification and the other shared code live there.
+
+# ---- builder: compile wheels once so the final image carries no build cache ----
+FROM python:3.13-slim AS builder
+WORKDIR /build
+COPY pyproject.toml ./
+RUN pip wheel --wheel-dir /wheels .
+
+# ---- final image ----
+FROM python:3.13-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.prod
+WORKDIR /app
+
+RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
+    pip install --no-cache-dir --no-index --find-links=/wheels supermarket-backend
+
+# Shared platform kit. Pin by git tag once the kit has a remote.
+COPY --from=kit . /kit
+RUN pip install --no-cache-dir "/kit[sso]"
+
+RUN useradd --system --create-home --uid 1000 app
+COPY --chown=app:app . .
+
+# Collect admin static files into the image (the key and database URL exist only for this RUN).
+RUN SECRET_KEY=build-time-only-not-a-secret-0123456789abcdef \
+    DATABASE_URL=postgres://build:build@localhost:5432/build \
+    ALLOWED_HOSTS=localhost \
+    python manage.py collectstatic --noinput
+
+# Local-disk media directory (only when S3/R2 is not configured), owned by the app user so a named volume inherits it.
+RUN mkdir -p /app/media && chown app:app /app/media
+
+USER app
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "healthcheck.py"]
+
+CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-3} --timeout 30 --access-logfile - --error-logfile - --worker-tmp-dir /dev/shm"]

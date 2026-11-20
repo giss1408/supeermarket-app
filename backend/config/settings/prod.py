@@ -45,7 +45,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "1") == "1"  # noqa: F405
-SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
+SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$"]
 SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))  # noqa: F405
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS") == "1"  # noqa: F405
 SECURE_HSTS_PRELOAD = False
@@ -63,14 +63,23 @@ REST_FRAMEWORK = {  # noqa: F405
     "NUM_PROXIES": int(os.environ.get("NUM_PROXIES", "1")),  # noqa: F405
 }
 
-# Shared cache so the auth throttle limit holds across gunicorn workers.
-# Create the table with `python manage.py createcachetable` after `migrate`.
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "django_cache_table",
+# Shared cache so the auth throttle limit holds across gunicorn workers. On the shared platform it is the product's Redis (REDIS_URL, an
+# ACL user and a database index of its own); otherwise the database table (create it with `python manage.py createcachetable` after `migrate`).
+if os.environ.get("REDIS_URL"):  # noqa: F405
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.environ["REDIS_URL"],  # noqa: F405
+            "KEY_PREFIX": "supermarket",
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "django_cache_table",
+        }
+    }
 
 # Admin static files are served by WhiteNoise (collected at image build time).
 MIDDLEWARE = [

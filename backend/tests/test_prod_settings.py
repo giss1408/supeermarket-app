@@ -267,3 +267,18 @@ def test_check_deploy_passes_with_prod_settings() -> None:
         timeout=120,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_the_cache_is_the_products_redis_when_one_is_configured_else_the_database_table() -> None:
+    redis = load(["CACHES"], {"REDIS_URL": "redis://supermarket:pw@redis:6379/6"})["CACHES"]["default"]
+    assert redis["BACKEND"] == "django.core.cache.backends.redis.RedisCache"
+    assert redis["LOCATION"] == "redis://supermarket:pw@redis:6379/6" and redis["KEY_PREFIX"] == "supermarket"
+    assert load(["CACHES"])["CACHES"]["default"]["BACKEND"] == "django.core.cache.backends.db.DatabaseCache"
+
+
+def test_readyz_is_exempt_from_the_https_redirect_like_healthz() -> None:
+    # a database that cannot be reached (nothing listens on port 1): readyz answers 503 in plain http, it is not redirected to https
+    result = run_py(HEALTHZ_PROBE.replace("/healthz", "/readyz"), {"DATABASE_URL": "postgres://u:p@127.0.0.1:1/x"})
+    assert result.returncode == 0, result.stderr
+    out = json.loads(result.stdout.strip().splitlines()[-1])
+    assert out["plain"] in (200, 503) and out["plain"] != 301  # answered in plain http, never redirected

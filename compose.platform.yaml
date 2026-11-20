@@ -1,0 +1,59 @@
+# Supermarket on the shared platform. Postgres/Redis/Caddy come from platform/infra (run `infra/scripts/new-product.sh supermarket`
+# first, then `infra/scripts/make-product-env.sh supermarket .env.platform --defaults platform.env.defaults`). This file runs only the app.
+# The old docker-compose.prod.yml (own Caddy, own Postgres) stays for a stand-alone VPS.
+name: supermarket
+
+x-common: &common
+  build:
+    context: ./backend
+    dockerfile: Dockerfile.platform
+    additional_contexts:
+      kit: ../platform/kit
+  image: supermarket-backend:local
+  env_file: .env.platform
+  restart: unless-stopped
+  networks: [infra_net]
+
+services:
+  web:
+    <<: *common
+    container_name: supermarket-web          # the upstream infra/conf.d/supermarket.caddy proxies to
+    # migrations first (the cache lives in Redis now: no cache table to create), then gunicorn as PID 1
+    command: ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-3} --timeout 30 --access-logfile - --error-logfile - --worker-tmp-dir /dev/shm"]
+    volumes: [media:/app/media]
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  # Purges expired JWT blacklist rows once a day. Only needed until SSO replaces simplejwt; then delete this service.
+  maintenance:
+    <<: *common
+    container_name: supermarket-maintenance
+    command:
+      - sh
+      - -c
+      - |
+        trap 'exit 0' TERM INT
+        while true; do
+          python manage.py flushexpiredtokens || echo "flushexpiredtokens failed"
+          sleep 86400 & wait $$!
+        done
+    mem_limit: 192m
+    cpus: 0.25
+    healthcheck:
+      test: ["CMD", "true"]   # a loop with nothing to probe; a healthcheck lets `docker compose up --wait` finish
+      interval: 60s
+    depends_on:
+      web: {condition: service_healthy}   # web applies the migrations first
+
+volumes:
+  media:
+
+networks:
+  infra_net:
+    external: true

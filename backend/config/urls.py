@@ -18,6 +18,28 @@ def healthz(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"status": "ok"})
 
 
+def readyz(request: HttpRequest) -> JsonResponse:
+    """Readiness: the database and the shared cache answer. Only the names of what is down are returned, never the reason."""
+    from django.core.cache import cache
+    from django.db import connection
+
+    down = []
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except Exception:
+        down.append("database")
+    try:
+        cache.set("readyz", "1", 5)
+        if cache.get("readyz") != "1":
+            down.append("cache")
+    except Exception:
+        down.append("cache")
+    if down:
+        return JsonResponse({"status": "unavailable", "down": down}, status=503)
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
     path(
         "api/schema/",
@@ -25,6 +47,7 @@ urlpatterns = [
         name="schema",
     ),
     path("healthz", healthz),
+    path("readyz", readyz),
     path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("catalog.urls")),
     path("api/v1/", include("offers.urls")),
