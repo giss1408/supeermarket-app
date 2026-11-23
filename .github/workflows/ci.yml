@@ -24,19 +24,38 @@ jobs:
     env:
       DATABASE_URL: postgres://app:app@localhost:5432/app
       SECRET_KEY: ci-secret-key
+      # The platform kit (regisse_kit) is in the private platform repo: a read-only token (fine-grained PAT, Contents: read on regisse-platform)
+      # stored as the repository secret PLATFORM_READ_TOKEN lets CI install it. Without it the SSO tests are not collected and the accounts
+      # coverage gate is skipped (they supply most of that coverage), with a warning.
+      HAS_KIT_TOKEN: ${{ secrets.PLATFORM_READ_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Platform kit (private repo)
+        if: env.HAS_KIT_TOKEN == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/regisse-platform
+          path: platform
+          token: ${{ secrets.PLATFORM_READ_TOKEN }}
+      - name: Warn when the kit is missing
+        if: env.HAS_KIT_TOKEN != 'true'
+        run: |
+          echo "::warning::PLATFORM_READ_TOKEN is not set. The platform kit is not installed, the SSO and observability tests are skipped and the accounts coverage gate is not enforced."
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: backend/pyproject.toml
       - run: pip install -e ".[dev]"
+      - name: Install the platform kit
+        if: env.HAS_KIT_TOKEN == 'true'
+        run: pip install "../platform/kit[sso,django]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy .
       - run: pytest --cov
       - name: Coverage gate (accounts)
+        if: env.HAS_KIT_TOKEN == 'true'
         run: coverage report --include="accounts/*" --fail-under=85
       - name: Coverage gate (offers)
         run: coverage report --include="offers/*" --fail-under=85

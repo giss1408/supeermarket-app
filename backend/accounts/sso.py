@@ -3,6 +3,10 @@ this product makes back (service key).
 
 Never raises on a bad token; never logs a token, a phone number or a service key."""
 
+# Annotations stay lazy: without the platform kit (stand-alone image) SsoVerifier is not
+# defined, and `-> SsoVerifier` would raise at import.
+from __future__ import annotations
+
 import logging
 import uuid
 from dataclasses import dataclass, field

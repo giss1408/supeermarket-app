@@ -1,6 +1,14 @@
 import pytest
 from django.core.cache import cache
 
+# The platform kit (regisse_kit) lives in the private platform repo. Where it is not installed
+# (a plain pip install of this backend), the SSO and observability tests cannot run: they are
+# not collected, and the rest of the suite still does.
+try:
+    import regisse_kit  # noqa: F401
+except ImportError:
+    collect_ignore_glob = ["*test_sso_*.py", "test_observability.py"]
+
 
 @pytest.fixture(autouse=True)
 def _clear_cache():
