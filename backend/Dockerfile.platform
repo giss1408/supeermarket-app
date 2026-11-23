@@ -19,7 +19,7 @@ RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
 
 # Shared platform kit. Pin by git tag once the kit has a remote.
 COPY --from=kit . /kit
-RUN pip install --no-cache-dir "/kit[sso]"
+RUN pip install --no-cache-dir "/kit[sso,django]"
 
 RUN useradd --system --create-home --uid 1000 app
 COPY --chown=app:app . .

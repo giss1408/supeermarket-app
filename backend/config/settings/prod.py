@@ -47,7 +47,7 @@ SESSION_COOKIE_SECURE = _COOKIES_SECURE
 CSRF_COOKIE_SECURE = _COOKIES_SECURE
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "1") == "1"  # noqa: F405
-SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$"]
+SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$", r"^metrics$"]  # /metrics is scraped over plain http inside the private network
 SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))  # noqa: F405
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS") == "1"  # noqa: F405
 SECURE_HSTS_PRELOAD = False
@@ -110,10 +110,28 @@ if os.environ.get("AWS_STORAGE_BUCKET_NAME"):  # noqa: F405
         },
     }
 
+# Observability (shared platform kit; absent on the stand-alone VPS image, which then runs as before): request ids, metrics by route template,
+# one access line per request WITHOUT the query string, a token-gated /metrics (config/urls.py), and masking of phone numbers and tokens in logs.
+try:
+    from regisse_kit.redact import RedactingFilter  # noqa: F401
+
+    _KIT_OBSERVABILITY = True
+except ImportError:  # pragma: no cover
+    _KIT_OBSERVABILITY = False
+
+OBSERVABILITY_SERVICE = "supermarket"
+METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "").strip()  # noqa: F405
+if METRICS_TOKEN and len(METRICS_TOKEN) < 32:
+    raise ImproperlyConfigured("METRICS_TOKEN must be at least 32 characters (or unset to disable /metrics).")
+if _KIT_OBSERVABILITY:
+    # Third: SecurityMiddleware stays first and WhiteNoise second (tests/test_prod_settings.py); static files are not metered.
+    MIDDLEWARE = [*MIDDLEWARE[:2], "regisse_kit.django_observability.ObservabilityMiddleware", *MIDDLEWARE[2:]]
+
 # Logs go to stdout/stderr only; the container runtime collects them.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": ({"redact": {"()": "regisse_kit.redact.RedactingFilter"}} if _KIT_OBSERVABILITY else {}),
     "formatters": {
         "plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
     },
@@ -122,6 +140,7 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "stream": sys.stderr,
             "formatter": "plain",
+            "filters": (["redact"] if _KIT_OBSERVABILITY else []),
         },
     },
     "root": {

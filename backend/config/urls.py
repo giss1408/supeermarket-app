@@ -63,3 +63,12 @@ urlpatterns = [
 # Local media is served by Django only in development (prod uses S3 or a real web server).
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Prometheus scrape endpoint of the platform kit: answers 404 unless METRICS_TOKEN is set, then only to that bearer token. Caddy never routes it
+# (infra/scripts/new-product.sh); the monitoring agent reads it on the private network.
+try:
+    from regisse_kit.django_observability import metrics_view
+
+    urlpatterns += [path("metrics", metrics_view)]
+except ImportError:  # the stand-alone VPS image has no kit
+    pass
