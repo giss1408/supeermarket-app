@@ -18,7 +18,8 @@ def _isolated_media(settings, tmp_path):
 
 @pytest.fixture
 def sso_on(settings, monkeypatch):
-    """SSO enabled with a local key: tokens from tests.sso_helpers are accepted, nothing leaves the process."""
+    """SSO enabled with a local key: tokens from tests.sso_helpers are accepted, nothing leaves the
+    process."""
     from regisse_kit.sso import SsoVerifier
 
     from accounts import sso
@@ -29,6 +30,8 @@ def sso_on(settings, monkeypatch):
     settings.SSO_JWKS_URL = "http://auth.test/.well-known/jwks.json"
     settings.SSO_AUTH_URL = "http://auth.test"
     settings.SSO_SERVICE_KEY = "svc-key"
-    verifier = SsoVerifier(issuer=sso_helpers.ISS, audience="supermarket", jwks_fetch=sso_helpers.jwks)
+    verifier = SsoVerifier(
+        issuer=sso_helpers.ISS, audience="supermarket", jwks_fetch=sso_helpers.jwks
+    )
     monkeypatch.setattr(sso, "verifier", lambda: verifier)
     return sso

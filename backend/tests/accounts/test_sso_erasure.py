@@ -1,4 +1,5 @@
-"""DELETE /me tells the auth service by the opaque auth user id (no phone number is kept anywhere here); a failure is queued and retried."""
+"""DELETE /me tells the auth service by the opaque auth user id (no phone number is kept anywhere
+here); a failure is queued and retried."""
 
 import uuid
 from datetime import timedelta
@@ -56,14 +57,27 @@ def test_when_auth_is_down_the_deletion_stands_and_the_call_is_queued_with_the_i
     assert delete_me(sub).status_code == 204
     row = AuthErasure.objects.get()
     assert row.auth_user_id == sub and row.status == "pending" and row.attempts == 1
-    assert {f.name for f in AuthErasure._meta.get_fields()} == {"id", "auth_user_id", "created_at", "attempts", "next_attempt_at", "status", "finished_at"}
+    assert {f.name for f in AuthErasure._meta.get_fields()} == {
+        "id",
+        "auth_user_id",
+        "created_at",
+        "attempts",
+        "next_attempt_at",
+        "status",
+        "finished_at",
+    }
 
 
 def test_the_retry_grows_then_finishes_and_a_finished_row_is_purged(outcome):
     outcome["answer"] = False
     erasures.tell_auth(uuid.uuid4())
     row = AuthErasure.objects.get()
-    assert erasures.process(row.created_at) == {"done": 0, "retry": 0, "gave_up": 0, "purged": 0}  # not due yet
+    assert erasures.process(row.created_at) == {
+        "done": 0,
+        "retry": 0,
+        "gave_up": 0,
+        "purged": 0,
+    }  # not due yet
     later = row.next_attempt_at + timedelta(seconds=1)
     assert erasures.process(later)["retry"] == 1
     row.refresh_from_db()
@@ -81,7 +95,11 @@ def test_after_the_maximum_age_it_gives_up_and_says_so_without_naming_anyone(out
     row = AuthErasure.objects.get()
     caplog.set_level("ERROR")
     out = erasures.process(row.created_at + erasures.max_age() + timedelta(days=1))
-    assert out["gave_up"] == 1 and "GIVEN UP" in caplog.text and str(row.auth_user_id) not in caplog.text
+    assert (
+        out["gave_up"] == 1
+        and "GIVEN UP" in caplog.text
+        and str(row.auth_user_id) not in caplog.text
+    )
 
 
 def test_the_command_prints_counts_only(outcome, capsys):

@@ -1,4 +1,5 @@
-"""Platform monitoring: /metrics is private and carries no personal data; requests get an id; logs mask numbers and tokens."""
+"""Platform monitoring: /metrics is private and carries no personal data; requests get an id; logs
+mask numbers and tokens."""
 
 import logging
 
@@ -36,7 +37,9 @@ def test_requests_are_counted_by_route_without_query_strings(client: Client, obs
     body = client.get("/metrics", HTTP_AUTHORIZATION=f"Bearer {TOKEN}").content.decode()
     assert 'service="supermarket"' in body and 'route="unmatched"' in body
     assert "0701020304" not in body
-    logged = " ".join(str(v) for r in caplog.records if r.name == "supermarket.http" for v in r.__dict__.values())
+    logged = " ".join(
+        str(v) for r in caplog.records if r.name == "supermarket.http" for v in r.__dict__.values()
+    )
     assert "0701020304" not in logged
 
 

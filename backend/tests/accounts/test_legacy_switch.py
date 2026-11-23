@@ -1,4 +1,5 @@
-"""LEGACY_AUTH_ENABLED=0 removes the app's own e-mail register/login/refresh/logout: people sign in at the auth service."""
+"""LEGACY_AUTH_ENABLED=0 removes the app's own e-mail register/login/refresh/logout: people sign in
+at the auth service."""
 
 import json
 
@@ -17,7 +18,8 @@ PROBE = """
         except Resolver404:
             return False
 
-    print(json.dumps({p: exists("/api/v1/" + p) for p in ("auth/register", "auth/login", "auth/refresh", "auth/logout", "me", "me/card")}))
+    paths = ("auth/register", "auth/login", "auth/refresh", "auth/logout", "me", "me/card")
+    print(json.dumps({p: exists("/api/v1/" + p) for p in paths}))
 """
 
 

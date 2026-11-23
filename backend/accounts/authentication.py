@@ -1,7 +1,10 @@
-"""API authentication: the app's own JWT (simplejwt) and, when SSO is on, tokens issued by the platform `auth` service.
+"""API authentication: the app's own JWT (simplejwt) and, when SSO is on, tokens issued by the
+platform `auth` service.
 
-Customers are opened from the token on first use (auth already proved the phone and recorded consent). Retailer staff and platform admins are
-NEVER created from a token: they must have been enrolled by the platform (dashboard) or linked by `manage.py link_sso_user`, because their role
+Customers are opened from the token on first use (auth already proved the phone and recorded
+consent). Retailer staff and platform admins are
+NEVER created from a token: they must have been enrolled by the platform (dashboard) or linked by
+`manage.py link_sso_user`, because their role
 carries a retailer binding and power that only this product can grant."""
 
 import uuid
@@ -30,7 +33,9 @@ def user_for_principal(p: sso.SsoPrincipal) -> User:
     except ValueError:
         raise AuthenticationFailed("invalid_token") from None
     user = User.objects.filter(auth_user_id=auth_id).first()
-    if user is None and p.legacy_id:  # a migrated account: auth says which row of this product it is
+    if (
+        user is None and p.legacy_id
+    ):  # a migrated account: auth says which row of this product it is
         try:
             user = User.objects.filter(pk=int(p.legacy_id), auth_user_id__isnull=True).first()
         except ValueError:

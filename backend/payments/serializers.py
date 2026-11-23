@@ -30,8 +30,10 @@ def _to_drf(exc: DjangoValidationError) -> serializers.ValidationError:
 class StaffPaymentMethodSerializer(serializers.ModelSerializer):
     # Not the model validator: it only accepts the normalised form, and input is normalised here.
     phone_number = serializers.CharField(max_length=50)
-    # Required for the app's own accounts. Staff who signed in through the auth service have no local password: they prove themselves with a
-    # fresh password step-up at auth (the token's `auth_time`/`amr`) and a live session check instead, and may leave this out.
+    # Required for the app's own accounts. Staff who signed in through the auth service have
+    # no local password: they prove themselves with a
+    # fresh password step-up at auth (the token's `auth_time`/`amr`) and a live session check
+    # instead, and may leave this out.
     current_password = serializers.CharField(
         write_only=True, style={"input_type": "password"}, trim_whitespace=False, required=False
     )
@@ -88,7 +90,8 @@ class StaffPaymentMethodSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def _sso_step_up(principal: SsoPrincipal) -> None:
-        """Where customers pay is the retailer's money: a password re-proved within 5 minutes AT AUTH, and the session still alive there."""
+        """Where customers pay is the retailer's money: a password re-proved within 5 minutes AT
+        AUTH, and the session still alive there."""
         try:
             principal.require_step_up(300, amr="pwd")
         except SsoError:

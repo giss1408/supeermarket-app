@@ -15,7 +15,8 @@ class SubscriptionRequiredError(exceptions.PermissionDenied):
 
 
 class StepUpRequiredError(exceptions.PermissionDenied):
-    """403: a sensitive write needs a recent password proof at the auth service (the app calls /v1/step-up there, then retries)."""
+    """403: a sensitive write needs a recent password proof at the auth service (the app calls
+    /v1/step-up there, then retries)."""
 
     default_code = "step_up_required"
     default_detail = "step_up_required"
@@ -29,7 +30,8 @@ class SessionEndedError(exceptions.AuthenticationFailed):
 
 
 class SsoUnavailableError(exceptions.APIException):
-    """503: a money write needs the auth service's live check and it cannot be reached (fails closed)."""
+    """503: a money write needs the auth service's live check and it cannot be reached (fails
+    closed)."""
 
     status_code = 503
     default_code = "sso_unavailable"

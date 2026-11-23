@@ -25,7 +25,8 @@ from .mixins import PlatformAdminRequiredMixin
 
 
 def sso_dashboard() -> bool:
-    """The dashboard signs in at the auth service once the app's own login is switched off (or SSO is the only way)."""
+    """The dashboard signs in at the auth service once the app's own login is switched off (or SSO
+    is the only way)."""
     return bool(settings.SSO_ENABLED and not settings.LEGACY_AUTH_ENABLED)
 
 
@@ -46,7 +47,8 @@ class PlatformLoginView(LoginView):
     def form_valid(self, form):  # type: ignore[no-untyped-def]
         response = super().form_valid(form)
         if sso_dashboard():
-            # the auth session this login belongs to: the mixin asks auth now and then whether it is still alive
+            # the auth session this login belongs to: the mixin asks auth now and then
+            # whether it is still alive
             self.request.session["sso_sid"] = form.sid
             self.request.session["sso_checked"] = int(time.time())
         return response
@@ -111,7 +113,8 @@ class RetailerCreateView(PlatformAdminRequiredMixin, FormView):
         if sso_dashboard():
             messages.success(
                 self.request,
-                "Commerçant créé (en attente d'activation). Envoyez le code d'activation WhatsApp au premier utilisateur depuis la file « Codes à envoyer ».",
+                "Commerçant créé (en attente d'activation). Envoyez le code d'activation WhatsApp "
+                "au premier utilisateur depuis la file « Codes à envoyer ».",
             )
         else:
             messages.success(self.request, "Commerçant créé (en attente d'activation).")

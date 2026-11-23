@@ -41,13 +41,18 @@ if "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS must not contain the wildcard '*' in production.")
 CSRF_TRUSTED_ORIGINS = _csv("CSRF_TRUSTED_ORIGINS")
 
-# Cookies are Secure (https only) unless COOKIES_SECURE=0, which exists only for a staging stack served over plain http on a laptop.
+# Cookies are Secure (https only) unless COOKIES_SECURE=0, which exists only for a staging stack
+# served over plain http on a laptop.
 _COOKIES_SECURE = os.environ.get("COOKIES_SECURE", "1") != "0"  # noqa: F405
 SESSION_COOKIE_SECURE = _COOKIES_SECURE
 CSRF_COOKIE_SECURE = _COOKIES_SECURE
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "1") == "1"  # noqa: F405
-SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$", r"^metrics$"]  # /metrics is scraped over plain http inside the private network
+SECURE_REDIRECT_EXEMPT = [
+    r"^healthz$",
+    r"^readyz$",
+    r"^metrics$",
+]  # /metrics is scraped over plain http inside the private network
 SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))  # noqa: F405
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS") == "1"  # noqa: F405
 SECURE_HSTS_PRELOAD = False
@@ -65,8 +70,10 @@ REST_FRAMEWORK = {  # noqa: F405
     "NUM_PROXIES": int(os.environ.get("NUM_PROXIES", "1")),  # noqa: F405
 }
 
-# Shared cache so the auth throttle limit holds across gunicorn workers. On the shared platform it is the product's Redis (REDIS_URL, an
-# ACL user and a database index of its own); otherwise the database table (create it with `python manage.py createcachetable` after `migrate`).
+# Shared cache so the auth throttle limit holds across gunicorn workers. On the shared platform it
+# is the product's Redis (REDIS_URL, an
+# ACL user and a database index of its own); otherwise the database table (create it with `python
+# manage.py createcachetable` after `migrate`).
 if os.environ.get("REDIS_URL"):  # noqa: F405
     CACHES = {
         "default": {
@@ -110,8 +117,10 @@ if os.environ.get("AWS_STORAGE_BUCKET_NAME"):  # noqa: F405
         },
     }
 
-# Observability (shared platform kit; absent on the stand-alone VPS image, which then runs as before): request ids, metrics by route template,
-# one access line per request WITHOUT the query string, a token-gated /metrics (config/urls.py), and masking of phone numbers and tokens in logs.
+# Observability (shared platform kit; absent on the stand-alone VPS image, which then runs as
+# before): request ids, metrics by route template,
+# one access line per request WITHOUT the query string, a token-gated /metrics (config/urls.py),
+# and masking of phone numbers and tokens in logs.
 try:
     from regisse_kit.redact import RedactingFilter  # noqa: F401
 
@@ -122,16 +131,25 @@ except ImportError:  # pragma: no cover
 OBSERVABILITY_SERVICE = "supermarket"
 METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "").strip()  # noqa: F405
 if METRICS_TOKEN and len(METRICS_TOKEN) < 32:
-    raise ImproperlyConfigured("METRICS_TOKEN must be at least 32 characters (or unset to disable /metrics).")
+    raise ImproperlyConfigured(
+        "METRICS_TOKEN must be at least 32 characters (or unset to disable /metrics)."
+    )
 if _KIT_OBSERVABILITY:
-    # Third: SecurityMiddleware stays first and WhiteNoise second (tests/test_prod_settings.py); static files are not metered.
-    MIDDLEWARE = [*MIDDLEWARE[:2], "regisse_kit.django_observability.ObservabilityMiddleware", *MIDDLEWARE[2:]]
+    # Third: SecurityMiddleware stays first and WhiteNoise second
+    # (tests/test_prod_settings.py); static files are not metered.
+    MIDDLEWARE = [
+        *MIDDLEWARE[:2],
+        "regisse_kit.django_observability.ObservabilityMiddleware",
+        *MIDDLEWARE[2:],
+    ]
 
 # Logs go to stdout/stderr only; the container runtime collects them.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "filters": ({"redact": {"()": "regisse_kit.redact.RedactingFilter"}} if _KIT_OBSERVABILITY else {}),
+    "filters": (
+        {"redact": {"()": "regisse_kit.redact.RedactingFilter"}} if _KIT_OBSERVABILITY else {}
+    ),
     "formatters": {
         "plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
     },

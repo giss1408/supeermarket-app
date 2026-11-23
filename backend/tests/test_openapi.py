@@ -207,8 +207,10 @@ def test_current_password_is_write_only_in_requests_and_absent_from_responses(sc
     schemas = schema["components"]["schemas"]
     create = schemas["StaffPaymentMethodRequest"]
     assert create["properties"]["current_password"]["writeOnly"] is True
-    # Not in the schema's `required`: staff who signed in through the auth service prove themselves with a step-up there. The app's own accounts
-    # still must send it (a 400 `current_password_required` otherwise: see tests/payments/test_staff_api.py).
+    # Not in the schema's `required`: staff who signed in through the auth service prove
+    # themselves with a step-up there. The app's own accounts
+    # still must send it (a 400 `current_password_required` otherwise: see
+    # tests/payments/test_staff_api.py).
     assert "current_password" not in create["required"]
     patched = schemas["PatchedStaffPaymentMethodRequest"]
     assert patched["properties"]["current_password"]["writeOnly"] is True

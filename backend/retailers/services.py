@@ -21,7 +21,8 @@ def _add_months(dt: datetime, n: int) -> datetime:
 
 
 def _who(user: AbstractBaseUser) -> str:
-    """Who is named in the audit trail: the e-mail, or, for people who sign in through the auth service (no e-mail here), their auth user id."""
+    """Who is named in the audit trail: the e-mail, or, for people who sign in through the auth
+    service (no e-mail here), their auth user id."""
     email = getattr(user, "email", "") or ""
     auth_id = getattr(user, "auth_user_id", None)
     return email or (f"sso:{auth_id}" if auth_id else "")

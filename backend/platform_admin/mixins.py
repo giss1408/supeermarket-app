@@ -23,7 +23,8 @@ class PlatformAdminRequiredMixin(AccessMixin):
             return self.handle_no_permission()
         sid = request.session.get("sso_sid")
         if sid and time.time() - request.session.get("sso_checked", 0) > self.CHECK_EVERY_SECONDS:
-            # An admin switched off or signed out at the auth service must not keep a dashboard session: ask auth (fails closed).
+            # An admin switched off or signed out at the auth service must not keep a
+            # dashboard session: ask auth (fails closed).
             if sso.sid_alive(sid) is not True:
                 logout(request)
                 return self.handle_no_permission()

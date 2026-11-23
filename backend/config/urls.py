@@ -19,7 +19,8 @@ def healthz(request: HttpRequest) -> JsonResponse:
 
 
 def readyz(request: HttpRequest) -> JsonResponse:
-    """Readiness: the database and the shared cache answer. Only the names of what is down are returned, never the reason."""
+    """Readiness: the database and the shared cache answer. Only the names of what is down are
+    returned, never the reason."""
     from django.core.cache import cache
     from django.db import connection
 
@@ -64,7 +65,8 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Prometheus scrape endpoint of the platform kit: answers 404 unless METRICS_TOKEN is set, then only to that bearer token. Caddy never routes it
+# Prometheus scrape endpoint of the platform kit: answers 404 unless METRICS_TOKEN is set, then
+# only to that bearer token. Caddy never routes it
 # (infra/scripts/new-product.sh); the monitoring agent reads it on the private network.
 try:
     from regisse_kit.django_observability import metrics_view
