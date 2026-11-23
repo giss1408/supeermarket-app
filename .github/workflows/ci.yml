@@ -115,5 +115,30 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      # Gradle downloads are cached between runs (keyed on the files that decide the dependencies): once warm, the build downloads almost nothing.
+      # repo.maven.apache.org rate-limits (HTTP 429) the shared addresses of GitHub's runners, so downloads also retry with an exponential backoff.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle', 'app/android/gradle/wrapper/gradle-wrapper.properties', 'app/pubspec.lock') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Gradle download retries
+        working-directory: .
+        run: |
+          mkdir -p ~/.gradle
+          {
+            echo "systemProp.org.gradle.internal.repository.max.tentatives=10"
+            echo "systemProp.org.gradle.internal.repository.initial.backoff=2000"
+            echo "systemProp.org.gradle.internal.http.connectionTimeout=60000"
+            echo "systemProp.org.gradle.internal.http.socketTimeout=60000"
+          } >> ~/.gradle/gradle.properties
       - name: Build the Android debug APK
-        run: flutter build apk --debug --dart-define-from-file=env/dev.json
+        # Up to 3 attempts, 90 s apart: a download refused by a repository (429, timeouts) is not a code error, a real compile error fails all three.
+        run: |
+          for attempt in 1 2 3; do
+            flutter build apk --debug --dart-define-from-file=env/dev.json && exit 0
+            echo "::warning::build attempt $attempt failed"; sleep 90
+          done
+          exit 1
